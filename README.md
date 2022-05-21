@@ -1,14 +1,14 @@
-# CdmInspection
-R Package to support quality control inspection of an OMOP-CDM instance
+# CdmOnboarding
+R Package to support the onboarding process of new CDMs in the DARWIN EU Data Netwokr
 
 # Introduction
-The European Health Data and Evidence Network (EHDEN) project has multiple yearly Open Calls for financial support for data partners to map their data to the OMOP-CDM, for more information see the [EHDEN](https://www.ehden.eu/open-calls/process-overview/) website. In addition, EHDEN is training Small and Medium-sized Enterprises in Europe to provide services to the data partners to map their data to the OMOP-CDM. A large number of these SMEs are now active all over Europe as shown in the [SME Catalogue](https://www.ehden.eu/business-directory/). 
+The DARWIN EU Coordination Center (CC) is resposonsible for building a data network to support EMA and stakeholders to answer regulatory research questions. To support the onboarding process of data sources, the CdmOnboarding R package will generate an onboarding document that is used by the CC and EMA to assess the quality and readiness of the CDM for participating in regulatory studies. 
 
-Quality control of the mapping is clearly important and therefore a procedure has been developed called SME Inspection in which a certified SME performs a series of tests on the CDM and produces a report that is send to the EHDEN Team for review. The goal of the inspection report is to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the EHDEN and OHDSI data networks and participate in research studies. If the SME that is performing the inspection was not involved in the ETL implementation we advise to use a two-stage inspection process. A first inspection report can be made to provide recommendations to the Data Partner on how to improve the ETL and processes, if necessary. Ideally, this includes a site visit of the SME after providing instructions on the content of the report. The Data Partner can share this draft report with EHDEN to obtain additional input. Once the improvements have been made the final report can be created by the SME and send to EHDEN for approval.  
+The goal of the onboarding report is to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the EHDEN and OHDSI data networks and participate in research studies. Additional procedural steps can be added before the data sources is added to the the data network. 
 
-An example of an inspection report for the Synpuf database can be found here: [link](https://github.com/EHDEN/CdmInspection/blob/master/extras/SYNPUF-results.docx).
+An example of an inspection report for the Synpuf database can be found here: [link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/SYNPUF-results.docx).
 
-The CdmInspection R Package is part of this SME Inspection procedure and performs the following checks on top of the required [Data Quality Dashboard](https://github.com/OHDSI/DataQualityDashboard) step:
+The CdmInspection R Package performs the following checks on top of the required [Data Quality Dashboard](https://github.com/OHDSI/DataQualityDashboard) step:
 
 # Features
 
@@ -32,15 +32,15 @@ The CdmInspection R Package is part of this SME Inspection procedure and perform
 
 **Results Document Generation**
 
-Produces a word document in the EHDEN template that contains all the results. This template needs to be completed by the person performing the cdm inspection. 
+Produces a word document in a DARWIN EU template that contains all the results. This template needs to be completed by the data partner team.
 
 Technology
 ==========
-The CdmInspection package is an R package.
+The CdmOnboarding package is an R package.
 
 System Requirements
 ===================
-Requires R. Some of the packages used by CdmInspection require Java.
+Requires R. Some of the packages used by CdmOnboarding require Java.
 
 Installation
 =============
@@ -67,32 +67,32 @@ You should run the cdmInspection package ideally on the same machine you will pe
 Make sure that Achilles has run in the results schema you select when calling the cdmInspection function.
 
 PDF versions of the documentation are available:
-* Package manual: [Link](https://github.com/EHDEN/CdmInspection/blob/master/extras/CdmInspection.pdf)
-* CodeToRun Example: [Link](https://github.com/EHDEN/CdmInspection/blob/master/extras/CodeToRun.R)
-* Report Example: [Link](https://github.com/EHDEN/CdmInspection/blob/master/extras/SYNPUF-results.docx)
+* Package manual: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmInspection.pdf)
+* CodeToRun Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CodeToRun.R)
+* Report Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/SYNPUF-results.docx)
 
 Support
 =======
-* We use the <a href="https://github.com/EHDEN/CdmInspection/issues">GitHub issue tracker</a> for all bugs/issues/enhancements/questions/feedback
+* We use the <a href="https://github.com/darwin-eu/CdmOnbording/issues">GitHub issue tracker</a> for all bugs/issues/enhancements/questions/feedback
 
 Contributing
 ============
-This package is maintained by the EHDEN consortium as part of its quality control procedures. Additions are welcome through pull requests. We suggest to first create an issue and discuss with the maintainer before implementing additional functionality.
+This package is maintained by the Darwin EU Coordination Centre as part of its quality control procedures. Additions are welcome through pull requests. We suggest to first create an issue and discuss with the maintainer before implementing additional functionality.
 
-The roadmap of this tool can be found [here](https://github.com/EHDEN/CdmInspection/projects/1)
+The roadmap of this tool can be found [here](https://github.com/darwin-eu/CdmOnboarding/projects/1)
 
 License
 =======
-CdmInspection is licensed under Apache License 2.0
+CdmOnboarding is licensed under Apache License 2.0
 
 Development
 ===========
-CdmInspection is being developed in R Studio.
+CdmOnboarding is being developed in R Studio.
 
 ### Development status
 
-Stable Release
+The Package is currently under development and should not should be used in production.
 
 ## Acknowledgements
-- The European Health Data & Evidence Network has received funding from the Innovative Medicines Initiative 2 Joint Undertaking (JU) under grant agreement No 806968. The JU receives support from the European Union’s Horizon 2020 research 
-- We like to thank the [contributors](https://github.com/OHDSI/Achilles/graphs/contributors) of the OHDSI community for their fantastic work
+- The package is build upon the CdmInspection R package used and developed by The European Health Data & Evidence Network has received funding from the Innovative Medicines Initiative 2 Joint Undertaking (JU) under grant agreement No 806968. The JU receives support from the European Union’s Horizon 2020 research 
+- We also like to thank the [contributors](https://github.com/OHDSI/Achilles/graphs/contributors) of the OHDSI community for their fantastic work
