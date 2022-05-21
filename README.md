@@ -56,7 +56,7 @@ Installation
 3. In R, use the following commands to download and install CdmInspection:
 
 ```r
-  remotes::install_github("EHDEN/CdmInspection")
+  remotes::install_github("darwin-eu/CdmOnboarding")
 ```
 
 User Documentation
