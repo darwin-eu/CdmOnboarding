@@ -1,5 +1,5 @@
 # CdmOnboarding
-R Package to support the onboarding process of new CDMs in the DARWIN EU Data Netwokr
+R Package to support the onboarding process of new CDMs in the DARWIN EU Data Network
 
 # Introduction
 The DARWIN EU Coordination Center (CC) is resposonsible for building a data network to support EMA and stakeholders to answer regulatory research questions. To support the onboarding process of data sources, the CdmOnboarding R package will generate an onboarding document that is used by the CC and EMA to assess the quality and readiness of the CDM for participating in regulatory studies. 
