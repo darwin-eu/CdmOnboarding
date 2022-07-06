@@ -99,7 +99,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
 
     doc<-doc %>% officer::body_add_par(value = "SME Role", style = "heading 2") %>%
 
-    officer::body_add_par(value = "Describe the involvement of the SME in the ETL Delopment process",style="Highlight") %>%
+    officer::body_add_par(value = "Describe the involvement of the SME in the ETL Development process",style="Highlight") %>%
     officer::body_add_break()
 
 
@@ -107,7 +107,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
 
     doc<-doc %>%
       officer::body_add_par(value = "ETL Development General", style = "heading 1") %>%
-      officer::body_add_par(paste0("This section decribes the ETL development steps and discusses the quality control steps performed by the SME")) %>%
+      officer::body_add_par(paste0("This section describes the ETL development steps and discusses the quality control steps performed by the SME")) %>%
       officer::body_add_par(value = "ETL Documentation", style = "heading 2") %>%
       officer::body_add_par("Perform the following checks and discuss the findings here:", style="Highlight") %>%
 
@@ -274,13 +274,13 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     #system detail
     doc<-doc %>%
       officer::body_add_par(value = "System Information", style = "heading 2") %>%
-      officer::body_add_par(paste0("Installed R version: ",results$sys_details$r_version$version.string)) %>%
-      officer::body_add_par(paste0("System CPU vendor: ",results$sys_details$cpu$vendor_id)) %>%
-      officer::body_add_par(paste0("System CPU model: ",results$sys_details$cpu$model_name)) %>%
-      officer::body_add_par(paste0("System CPU number of cores: ",results$sys_details$cpu$no_of_cores)) %>%
-      officer::body_add_par(paste0("System RAM: ",prettyunits::pretty_bytes(as.numeric(results$sys_details$ram)))) %>%
-      officer::body_add_par(paste0("DBMS: ",results$dms)) %>%
-      officer::body_add_par(paste0("WebAPI version: ",results$webAPIversion)) %>%
+      officer::body_add_par(paste0("Installed R version: ", results$sys_details$r_version$version.string)) %>%
+      officer::body_add_par(paste0("System CPU vendor: ", results$sys_details$cpu$vendor_id, collapse =", ")) %>%
+      officer::body_add_par(paste0("System CPU model: ", results$sys_details$cpu$model_name, collapse =", ")) %>%
+      officer::body_add_par(paste0("System CPU number of cores: ", results$sys_details$cpu$no_of_cores, collapse =", ")) %>%
+      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(results$sys_details$ram, collapse =", ")))) %>%
+      officer::body_add_par(paste0("DBMS: ", results$dms)) %>%
+      officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par(" ")
 
 
