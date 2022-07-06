@@ -1,8 +1,8 @@
-# @file CdmInspection
+# @file CdmOnboarding
 #
-# Copyright 2020 European Health Data and Evidence Network (EHDEN)
+# Copyright 2022 Darwin EU Coordination Center
 #
-# This file is part of CatalogueExport
+# This file is part of CdmOnboarding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# @author European Health Data and Evidence Network
+# @author Darwin EU Coordination Center
 # @author Peter Rijnbeek
+# @author Maxim Moinat
 
 
-#' The main CdmInspection analyses (for v5.x)
+#' The main CDM Onboarding analyses (for v5.x)
 #'
 #' @description
-#' \code{CdmInspection} runs a list of checks as part of the CDM inspection procedure
+#' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
 #'
 #' @details
-#' \code{CdmInspection} runs a list of checks as part of the CDM inspection procedure
+#' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
 #'
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
@@ -52,32 +53,32 @@
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
-cdmInspection <- function (connectionDetails,
-                             cdmDatabaseSchema,
-                             resultsDatabaseSchema = cdmDatabaseSchema,
-                             scratchDatabaseSchema = resultsDatabaseSchema,
-                             vocabDatabaseSchema = cdmDatabaseSchema,
-                             oracleTempSchema = resultsDatabaseSchema,
-                             databaseName = "",
-                             databaseId = "",
-                             databaseDescription = "",
-                             analysisIds = "",
-                             smallCellCount = 5,
-                             runVocabularyChecks = TRUE,
-                             runDataTablesChecks = TRUE,
-                             runPerformanceChecks = TRUE,
-                             runWebAPIChecks = TRUE,
-                             baseUrl,
-                             sqlOnly = FALSE,
-                             outputFolder = "output",
-                             verboseMode = TRUE) {
+cdmOnboarding <- function (connectionDetails,
+                           cdmDatabaseSchema,
+                          resultsDatabaseSchema = cdmDatabaseSchema,
+                          scratchDatabaseSchema = resultsDatabaseSchema,
+                          vocabDatabaseSchema = cdmDatabaseSchema,
+                          oracleTempSchema = resultsDatabaseSchema,
+                          databaseName = "",
+                          databaseId = "",
+                          databaseDescription = "",
+                          analysisIds = "",
+                          smallCellCount = 5,
+                          runVocabularyChecks = TRUE,
+                          runDataTablesChecks = TRUE,
+                          runPerformanceChecks = TRUE,
+                          runWebAPIChecks = TRUE,
+                          baseUrl,
+                          sqlOnly = FALSE,
+                          outputFolder = "output",
+                          verboseMode = TRUE) {
 
 
   # Log execution -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if(!dir.exists(outputFolder)){dir.create(outputFolder,recursive=T)}
 
-  logFileName <-"log_cdmInspection.txt"
+  logFileName <-"log_cdmOnboarding.txt"
 
   if (verboseMode) {
     appenders <- list(ParallelLogger::createConsoleAppender(),
@@ -88,7 +89,7 @@ cdmInspection <- function (connectionDetails,
                                                          fileName = file.path(outputFolder, logFileName)))
   }
 
-  logger <- ParallelLogger::createLogger(name = "cdmInspection",
+  logger <- ParallelLogger::createLogger(name = "cdmOnboarding",
                                          threshold = "INFO",
                                          appenders = appenders)
   ParallelLogger::registerLogger(logger)
@@ -117,7 +118,7 @@ cdmInspection <- function (connectionDetails,
     }
 
     # Logging
-    ParallelLogger::logInfo(paste0("CDM Inspection of database ",databaseName, " started (cdm_version=",cdmVersion,")"))
+    ParallelLogger::logInfo(paste0("CDM Onboarding of database ",databaseName, " started (cdm_version=",cdmVersion,")"))
 
     # run all the checks ------------------------------------------------------------------------------------------------------------
     dataTablesResults <- NULL
@@ -207,7 +208,7 @@ cdmInspection <- function (connectionDetails,
     ParallelLogger::logInfo(paste0("Done."))
 
     duration <- as.numeric(difftime(Sys.time(),start_time), units="mins")
-    ParallelLogger::logInfo(paste("Complete CdmInspection took ", sprintf("%.2f", duration)," minutes"))
+    ParallelLogger::logInfo(paste("Complete cdmOnboarding took ", sprintf("%.2f", duration)," minutes"))
     # save results  ------------------------------------------------------------------------------------------------------------
 
     results<-list(executionDate = date(),
@@ -229,13 +230,13 @@ cdmInspection <- function (connectionDetails,
 
 
     saveRDS(results, file.path(outputFolder,"inspection_results.rds"))
-    ParallelLogger::logInfo(sprintf("The cdm inspection results have been exported to: %s", outputFolder))
+    ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
     bundledResultsLocation <- bundleResults(outputFolder, databaseId)
-    ParallelLogger::logInfo(paste("All cdm inspection results are bundled for sharing at: ", bundledResultsLocation))
+    ParallelLogger::logInfo(paste("All CDM Onboarding results are bundled for sharing at: ", bundledResultsLocation))
     ParallelLogger::logInfo("Next step: generate and complete the inspection report and share this together with the zip file.")
 
     duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
-    ParallelLogger::logInfo(paste("CdmInspection run took", sprintf("%.2f", duration),"secs"))
+    ParallelLogger::logInfo(paste("CdmOnboarding run took", sprintf("%.2f", duration),"secs"))
     return(results)
 
   }
@@ -282,7 +283,7 @@ cdmInspection <- function (connectionDetails,
 .getCdmSource <- function(connectionDetails,
                            cdmDatabaseSchema,sqlOnly,outputFolder) {
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks","get_cdm_source_table.sql"),
-                                           packageName = "CdmInspection",
+                                           packageName = "CdmOnboarding",
                                            dbms = connectionDetails$dbms,
                                            warnOnMissingParameters = FALSE,
                                            cdmDatabaseSchema = cdmDatabaseSchema)

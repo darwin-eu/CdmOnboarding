@@ -45,8 +45,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 }
 }
 \description{
-\code{CdmInspection} runs a list of checks on the vocabulary as part of the CDM inspection procedure
+\code{vocabularyChecks} runs a list of checks on the vocabulary as part of the CDM Onboarding procedure
 }
 \details{
-\code{CdmInspection} runs a list of checks on the vocabulary as part of the CDM inspection procedure
+\code{vocabularyChecks} runs a list of checks on the vocabulary as part of the CDM Onboarding procedure
 }

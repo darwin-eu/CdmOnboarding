@@ -1,8 +1,8 @@
-# @file CdmInspection
+# @file VocabularyCheck
 #
-# Copyright 2020 European Health Data and Evidence Network (EHDEN)
+# Copyright 2022 Darwin EU Coordination Center
 #
-# This file is part of CatalogueExport
+# This file is part of CdmOnboarding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# @author European Health Data and Evidence Network
+# @author Darwin EU Coordination Center
 # @author Peter Rijnbeek
+# @author Maxim Moinat
 
 
 #' The vocabulary checks (for v5.x)
 #'
 #' @description
-#' \code{CdmInspection} runs a list of checks on the vocabulary as part of the CDM inspection procedure
+#' \code{vocabularyChecks} runs a list of checks on the vocabulary as part of the CDM Onboarding procedure
 #'
 #' @details
-#' \code{CdmInspection} runs a list of checks on the vocabulary as part of the CDM inspection procedure
+#' \code{vocabularyChecks} runs a list of checks on the vocabulary as part of the CDM Onboarding procedure
 #'
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.

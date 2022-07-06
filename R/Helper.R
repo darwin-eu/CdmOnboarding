@@ -1,8 +1,8 @@
-# @file Helper.R
+# @file Helper
 #
-# Copyright 2020 European Health Data and Evidence Network (EHDEN)
+# Copyright 2022 Darwin EU Coordination Center
 #
-# This file is part of CatalogueExport
+# This file is part of CdmOnboarding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# @author European Health Data and Evidence Network
+# @author Darwin EU Coordination Center
 # @author Peter Rijnbeek
+# @author Maxim Moinat
 
 executeQuery <- function(outputFolder,sqlFileName, successMessage, connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema=NULL, resultsDatabaseSchema=NULL, smallCellCount = 5){
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks",sqlFileName),
-                                           packageName = "CdmInspection",
+                                           packageName = "CdmOnboarding",
                                            dbms = connectionDetails$dbms,
                                            warnOnMissingParameters = FALSE,
                                            vocabDatabaseSchema = vocabDatabaseSchema,

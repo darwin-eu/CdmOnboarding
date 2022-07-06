@@ -42,8 +42,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 }
 }
 \description{
-\code{PerformanceChecks} runs a list of performance checks as part of the CDM inspection procedure
+\code{PerformanceChecks} runs a list of performance checks as part of the CDM Onboarding procedure
 }
 \details{
-\code{PerformanceChecks} runs a list of performance checks as part of the CDM inspection procedure
+\code{PerformanceChecks} runs a list of performance checks as part of the CDM Onboarding procedure
 }

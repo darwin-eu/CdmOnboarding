@@ -56,12 +56,12 @@ Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
 # When asked to update packages, select '1' ('update all') (could be multiple times)
 # When asked whether to install from source, select 'No' (could be multiple times)
 #install.packages("devtools")
-#devtools::install_github("EHDEN/CdmInspection.R")
+#devtools::install_github("Darwin-eu/CdmOnboarding.R")
 
 # *******************************************************
 # SECTION 2: Set Local Details
 # *******************************************************
-library(CdmInspection)
+library(CdmOnboarding)
 
 # Optional: specify where the temporary files (used by the ff package) will be created:
 fftempdir <- if (Sys.getenv("FFTEMP_DIR") == "") "~/fftemp" else Sys.getenv("FFTEMP_DIR")
@@ -107,27 +107,39 @@ verboseMode <- TRUE
 # SECTION 3: Run the package
 # *******************************************************
 
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = dbms,
-                                                                server = server,
-                                                                user = user,
-                                                                password = password,
-                                                                connectionString = connectionString)
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+  dbms = dbms,
+  server = server,
+  user = user,
+  password = password,
+  connectionString = connectionString
+)
 
-results<-cdmInspection(connectionDetails,
-                cdmDatabaseSchema = cdmDatabaseSchema,
-                resultsDatabaseSchema = resultsDatabaseSchema,
-                vocabDatabaseSchema = vocabDatabaseSchema,
-                oracleTempSchema = oracleTempSchema,
-                databaseName = databaseName,
-                runVocabularyChecks = TRUE,
-                runDataTablesChecks = TRUE,
-                runPerformanceChecks = TRUE,
-                runWebAPIChecks = TRUE,
-                smallCellCount = smallCellCount,
-                baseUrl = baseUrl,
-                sqlOnly = FALSE,
-                outputFolder = outputFolder,
-                verboseMode = verboseMode)
+results <- cdmOnboarding(
+  connectionDetails,
+  cdmDatabaseSchema = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  vocabDatabaseSchema = vocabDatabaseSchema,
+  oracleTempSchema = oracleTempSchema,
+  databaseName = databaseName,
+  runVocabularyChecks = TRUE,
+  runDataTablesChecks = TRUE,
+  runPerformanceChecks = TRUE,
+  runWebAPIChecks = TRUE,
+  smallCellCount = smallCellCount,
+  baseUrl = baseUrl,
+  sqlOnly = FALSE,
+  outputFolder = outputFolder,
+  verboseMode = verboseMode
+)
 
-generateResultsDocument(results,outputFolder, authors=authors, databaseDescription = databaseDescription, databaseName = databaseName, databaseId = databaseId, smallCellCount = smallCellCount)
+generateResultsDocument(
+  results,
+  outputFolder,
+  authors=authors,
+  databaseDescription = databaseDescription,
+  databaseName = databaseName,
+  databaseId = databaseId,
+  smallCellCount = smallCellCount
+)
 

@@ -1,12 +1,32 @@
+# @file GenerateResultsDocument
+#
+# Copyright 2022 Darwin EU Coordination Center
+#
+# This file is part of CdmOnboarding
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @author Darwin EU Coordination Center
+# @author Peter Rijnbeek
+# @author Maxim Moinat
+
 
 #' Generates the Results Document
 #'
 #' @description
 #' \code{generateResultsDocument} creates a word document with results based on a template
-#' @param results             Results object from \code{cdmInspection}
-#'
+#' @param results             Results object from \code{cdmOnboarding}
 #' @param outputFolder        Folder to store the results
-#' @param docTemplate         Name of the document template (EHDEN)
 #' @param authors             List of author names to be added in the document
 #' @param databaseDescription Description of the database
 #' @param databaseName        Name of the database
@@ -14,21 +34,18 @@
 #' @param smallCellCount      Date with less than this number of patients are removed
 #' @param silent              Flag to not create output in the terminal (default = FALSE)
 #' @export
-generateResultsDocument<- function(results, outputFolder, docTemplate="EHDEN", authors = "Author Names", databaseDescription, databaseName, databaseId,smallCellCount,silent=FALSE) {
-
-  if (docTemplate=="EHDEN"){
-    docTemplate <- system.file("templates", "Template-EHDEN.docx", package="CdmInspection")
-    logo <- system.file("templates", "pics", "ehden-logo.png", package="CdmInspection")
-  }
+generateResultsDocument<- function(results, outputFolder, authors = "Author Names", databaseDescription, databaseName, databaseId, smallCellCount, silent=FALSE) {
+  docTemplate <- system.file("templates", "Template-Darwin.docx", package="CdmOnboarding")
+  logo <- system.file("templates", "pics", "darwin-logo.png", package="CdmOnboarding")
 
   ## open a new doc from the doctemplate
   doc<-officer::read_docx(path = docTemplate)
   ## add Title Page
   doc<- doc %>%
     officer::body_add_img(logo,width=6.10,height=1.59, style = "Title") %>%
-    officer::body_add_par(value = paste0("CDM Inspection report for the ",databaseName," database"), style = "Title") %>%
+    officer::body_add_par(value = paste0("CDM Onboarding report for the ",databaseName," database"), style = "Title") %>%
     #body_add_par(value = "Note", style = "heading 1") %>%
-    officer::body_add_par(value = paste0("Package Version: ", packageVersion("CdmInspection")), style = "Centered") %>%
+    officer::body_add_par(value = paste0("Package Version: ", packageVersion("CdmOnboarding")), style = "Centered") %>%
     officer::body_add_par(value = paste0("Date: ", date()), style = "Centered") %>%
     officer::body_add_par(value = paste0("Authors: ", authors), style = "Centered") %>%
     officer::body_add_break()
@@ -330,7 +347,7 @@ generateResultsDocument<- function(results, outputFolder, docTemplate="EHDEN", a
       body_add_par("[ ] ETL Code", style = "Normal") %>%
       body_add_par("[ ] DQD dashboard json file", style = "Normal") %>%
       body_add_par("[ ] White Rabbit output", style = "Normal") %>%
-      body_add_par("[ ] CdmInspection results.zip ", style = "Normal") %>%
+      body_add_par("[ ] CdmOnboarding results.zip ", style = "Normal") %>%
       body_add_par("Comments:", style = "Normal")
 
 

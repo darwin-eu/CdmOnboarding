@@ -8,7 +8,7 @@ The goal of the onboarding report is to provide insight into the completeness, t
 
 An example of an inspection report for the Synpuf database can be found here: [link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/SYNPUF-results.docx).
 
-The CdmInspection R Package performs the following checks on top of the required [Data Quality Dashboard](https://github.com/OHDSI/DataQualityDashboard) step:
+The CdmOnboarding R Package performs the following checks on top of the required [Data Quality Dashboard](https://github.com/OHDSI/DataQualityDashboard) step:
 
 # Features
 
@@ -53,7 +53,7 @@ Installation
   remotes::install_github("OHDSI/ROhdsiWebApi")
 ```
 
-3. In R, use the following commands to download and install CdmInspection:
+3. In R, use the following commands to download and install CdmOnboarding:
 
 ```r
   remotes::install_github("darwin-eu/CdmOnboarding")
@@ -62,12 +62,12 @@ Installation
 User Documentation
 ==================
 
-You should run the cdmInspection package ideally on the same machine you will perform actual anlyses so we can test its performance.
+You should run the CdmOnboarding package ideally on the same machine you will perform actual anlyses so we can test its performance.
 
-Make sure that Achilles has run in the results schema you select when calling the cdmInspection function.
+Make sure that Achilles has run in the results schema you select when calling the cdmOnboarding function.
 
 PDF versions of the documentation are available:
-* Package manual: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmInspection.pdf)
+* Package manual: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding.pdf)
 * CodeToRun Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CodeToRun.R)
 * Report Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/SYNPUF-results.docx)
 

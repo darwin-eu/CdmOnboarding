@@ -16,24 +16,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# @author European Health Data and Evidence Network
+# @author DARWIN EU Coordination Center
 # @author Peter Rijnbeek
 
 # Manually delete package from library. Avoids "Already in use" message when rebuilding
-unloadNamespace("CdmInspection")
+unloadNamespace("CdmOnboarding")
 .rs.restartR()
-folder <- system.file(package = "CdmInspection")
+folder <- system.file(package = "CdmOnboarding")
 folder
 unlink(folder, recursive = TRUE, force = TRUE)
 file.exists(folder)
 
 # Format and check code:
 OhdsiRTools::formatRFolder()
-OhdsiRTools::checkUsagePackage("CdmInspection")
+OhdsiRTools::checkUsagePackage("CdmOnboarding")
 OhdsiRTools::updateCopyrightYearFolder()
 OhdsiRTools::findNonAsciiStringsInFolder()
 devtools::spell_check()
 
 # Create manual and vignettes:
-unlink("extras/CdmInspection.pdf")
-system("R CMD Rd2pdf ./ --output=extras/CdmInspection.pdf")
+unlink("extras/CdmOnboarding.pdf")
+system("R CMD Rd2pdf ./ --output=extras/CdmOnboarding.pdf")
