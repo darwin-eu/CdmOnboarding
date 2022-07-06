@@ -40,3 +40,5 @@ vignettes/*.pdf
 
 # Mac
 .DS_Store
+results/
+errorReport*.txt

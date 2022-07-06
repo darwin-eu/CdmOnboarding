@@ -95,8 +95,7 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
   officer::body_add_xml(x = x, str = xml_elt, pos = pos)
 }
 
-
-my_source_value_count_section <- function (x, data, table_number, domain, kind,smallCellCount) {
+my_source_value_count_section <- function (x, data, table_number, domain, kind, smallCellCount) {
   n <- nrow(data$result)
 
   msg <- paste0("Counts are rounded up to the nearest hundred. Values with a record count <=",smallCellCount," are omitted.")
@@ -109,7 +108,7 @@ my_source_value_count_section <- function (x, data, table_number, domain, kind,s
   }
 
   if (n>0) {
-    my_body_add_table(x, value = data$result, style = "EHDEN")
+    my_body_add_table(x, value = data$result, style = "Normal Table")
   }
 
   officer::body_add_par(x, paste0("Query executed in ", sprintf("%.2f", data$duration), " secs"))
@@ -139,7 +138,7 @@ recordsCountPlot <- function(results){
 #' @param databaseId    ID of your database, this will be used as subfolder for the results.
 #' @export
 bundleResults <- function(outputFolder, databaseId) {
-  zipName <- file.path(outputFolder, paste0("Results_Inspection_", databaseId, ".zip"))
+  zipName <- file.path(outputFolder, paste0("Results_Onboarding_", databaseId, ".zip"))
   files <- list.files(outputFolder, "*.*", full.names = TRUE, recursive = TRUE)
   oldWd <- setwd(outputFolder)
   on.exit(setwd(oldWd), add = TRUE)

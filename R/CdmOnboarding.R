@@ -229,11 +229,10 @@ cdmOnboarding <- function (connectionDetails,
 
 
 
-    saveRDS(results, file.path(outputFolder,"inspection_results.rds"))
+    saveRDS(results, file.path(outputFolder, "onboarding_results.rds"))
     ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
     bundledResultsLocation <- bundleResults(outputFolder, databaseId)
     ParallelLogger::logInfo(paste("All CDM Onboarding results are bundled for sharing at: ", bundledResultsLocation))
-    ParallelLogger::logInfo("Next step: generate and complete the inspection report and share this together with the zip file.")
 
     duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
     ParallelLogger::logInfo(paste("CdmOnboarding run took", sprintf("%.2f", duration),"secs"))

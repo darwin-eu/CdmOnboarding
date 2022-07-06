@@ -35,8 +35,8 @@
 #' @param silent              Flag to not create output in the terminal (default = FALSE)
 #' @export
 generateResultsDocument<- function(results, outputFolder, authors = "Author Names", databaseDescription, databaseName, databaseId, smallCellCount, silent=FALSE) {
-  docTemplate <- system.file("templates", "Template-Darwin.docx", package="CdmOnboarding")
-  logo <- system.file("templates", "pics", "darwin-logo.png", package="CdmOnboarding")
+  docTemplate <- system.file("templates", "Template-DarwinEU.docx", package="CdmOnboarding")
+  logo <- system.file("templates", "img", "darwin-logo.jpg", package="CdmOnboarding")
 
   ## open a new doc from the doctemplate
   doc<-officer::read_docx(path = docTemplate)
@@ -45,9 +45,9 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     officer::body_add_img(logo,width=6.10,height=1.59, style = "Title") %>%
     officer::body_add_par(value = paste0("CDM Onboarding report for the ",databaseName," database"), style = "Title") %>%
     #body_add_par(value = "Note", style = "heading 1") %>%
-    officer::body_add_par(value = paste0("Package Version: ", packageVersion("CdmOnboarding")), style = "Centered") %>%
-    officer::body_add_par(value = paste0("Date: ", date()), style = "Centered") %>%
-    officer::body_add_par(value = paste0("Authors: ", authors), style = "Centered") %>%
+    officer::body_add_par(value = paste0("Package Version: ", packageVersion("CdmOnboarding")), style = "Heading centred (Agency)") %>%
+    officer::body_add_par(value = paste0("Date: ", date()), style = "Heading centred (Agency)") %>%
+    officer::body_add_par(value = paste0("Authors: ", authors), style = "Heading centred (Agency)") %>%
     officer::body_add_break()
 
   ## add Table of content
@@ -62,7 +62,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc<-doc %>%
       officer::body_add_par(value = "Record counts data tables", style = "heading 2") %>%
       officer::body_add_par("Table 1. Shows the number of records in all clinical data tables") %>%
-      my_body_add_table(value = df_t1[order(df_t1$COUNT, decreasing=TRUE),], style = "EHDEN") %>%
+      my_body_add_table(value = df_t1[order(df_t1$COUNT, decreasing=TRUE),], style = "Normal Table") %>%
       officer::body_add_par(" ") %>%
       officer::body_add_par(paste("Query executed in ",sprintf("%.2f", results$dataTablesResults$dataTablesCounts$duration),"secs"))
 
@@ -81,24 +81,24 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc<-doc %>% officer::body_add_break() %>%
       officer::body_add_par(value = "Distinct concepts per person", style = "heading 2") %>%
       officer::body_add_par("Table 2. Shows the number of distinct concepts per person for all data domains") %>%
-      my_body_add_table(value = results$dataTablesResults$conceptsPerPerson$result, style = "EHDEN") %>%
+      my_body_add_table(value = results$dataTablesResults$conceptsPerPerson$result, style = "Normal Table") %>%
       officer::body_add_par(" ")
 
   }
 
 
   ## Vocabulary checks section
-  doc <- doc %>%
-    officer::body_add_par(value = "Vocabulary Mapping", style = "heading 1") %>%
+  doc<-doc %>%
+    officer::body_add_par(value = "Vocabulary Mapping", style = "heading 1")
 
   vocabResults <-results$vocabularyResults
   if (!is.null(vocabResults)) {
     #vocabularies table
-    doc <- doc %>%
+    doc<-doc %>%
       officer::body_add_par(value = "Vocabularies", style = "heading 2") %>%
       officer::body_add_par(paste0("Vocabulary version: ",results$vocabularyResults$version)) %>%
       officer::body_add_par("Table 3. The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard") %>%
-      my_body_add_table(value = vocabResults$conceptCounts$result, style = "EHDEN") %>%
+      my_body_add_table(value = vocabResults$conceptCounts$result, style = "Normal Table") %>%
       officer::body_add_par(" ") %>%
       officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$conceptCounts$duration),"secs"))
 
@@ -107,7 +107,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc <- doc %>%
       officer::body_add_par(value = "Table counts", style = "heading 2") %>%
       officer::body_add_par("Table 4. Shows the number of records in all vocabulary tables") %>%
-      my_body_add_table(value = vocabResults$vocabularyCounts$result, style = "EHDEN") %>%
+      my_body_add_table(value = vocabResults$vocabularyCounts$result, style = "Normal Table") %>%
       officer::body_add_par(" ") %>%
       officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$vocabularyCounts$duration),"secs"))
 
@@ -118,7 +118,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc<-doc %>%
       officer::body_add_par(value = "Mapping Completeness", style = "heading 2") %>%
       officer::body_add_par("Table 5. Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records.") %>%
-      my_body_add_table(value = vocabResults$mappingCompleteness$result, style = "EHDEN", alignment = c('l', rep('r',6))) %>%
+      my_body_add_table(value = vocabResults$mappingCompleteness$result, style = "Normal Table", alignment = c('l', rep('r',6))) %>%
       officer::body_add_par(" ") %>%
       officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$mappingCompleteness$duration),"secs")) %>%
       officer::body_add_break()
@@ -127,7 +127,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc<-doc %>%
       officer::body_add_par(value = "Drug Mappings", style = "heading 2") %>%
       officer::body_add_par("Table 6. The level of the drug mappings") %>%
-      my_body_add_table(value = vocabResults$drugMapping$result, style = "EHDEN") %>%
+      my_body_add_table(value = vocabResults$drugMapping$result, style = "Normal Table") %>%
       officer::body_add_par(" ") %>%
       officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$drugMapping$duration),"secs"))
 
@@ -155,19 +155,19 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc<-doc %>%
       officer::body_add_par(value = "Source to concept map", style = "heading 2") %>%
       officer::body_add_par("Table 19. Source to concept map breakdown") %>%
-      my_body_add_table(value = vocabResults$sourceConceptFrequency$result, style = "EHDEN") %>%
+      my_body_add_table(value = vocabResults$sourceConceptFrequency$result, style = "Normal Table") %>%
       officer::body_add_par(" ") %>%
       officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$sourceConceptFrequency$duration),"secs")) %>%
-      officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style="Highlight")
+      officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style="Drafting Notes (Agency)")
 
   } else {
     doc<-doc %>%
-    officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style="Highlight") %>%
+    officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style="Drafting Notes (Agency)") %>%
     officer::body_add_break()
   }
 
   doc<-doc %>%
-    officer::body_add_par(value = "Technical Infrastructure", style = "heading 1") %>%
+    officer::body_add_par(value = "Technical Infrastructure", style = "heading 1")
 
   if (!is.null(results$dataTablesResults)) {
     # cdm source
@@ -178,7 +178,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc<-doc %>%
       officer::body_add_par(value = "CDM Source Table", style = "heading 2") %>%
       officer::body_add_par("Table 20. cdm_source table content") %>%
-      my_body_add_table(value =t_cdmSource, style = "EHDEN")
+      my_body_add_table(value =t_cdmSource, style = "Normal Table")
   }
 
   if (!is.null(results$performanceResults)) {
@@ -186,7 +186,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc<-doc %>%
       officer::body_add_par(value = "HADES packages", style = "heading 2") %>%
       officer::body_add_par("Table 21. Versions of all installed HADES R packages") %>%
-      my_body_add_table(value = results$hadesPackageVersions, style = "EHDEN")
+      my_body_add_table(value = results$hadesPackageVersions, style = "Normal Table")
 
     if (results$missingPackage=="") {
       doc<-doc %>%
@@ -220,22 +220,23 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
 
     if (!is.null(results$performanceResults$achillesTiming$result)) {
       doc<-doc %>%
-        my_body_add_table(value =results$performanceResults$achillesTiming$result, style = "EHDEN") %>%
+        my_body_add_table(value =results$performanceResults$achillesTiming$result, style = "Normal Table") %>%
         officer::body_add_par(" ") %>%
         officer::body_add_par(paste("Query executed in ",sprintf("%.2f", results$performanceResults$achillesTiming$duration)," secs"))
     } else {
       doc<-doc %>%
-        officer::body_add_par("Query did not return results ", style="Highlight")
+        officer::body_add_par("Query did not return results ", style="Drafting Notes (Agency)")
     }
   } else {
     doc<-doc %>%
-      officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style="Highlight") %>%
+      officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style="Drafting Notes (Agency)") %>%
       body_add_break()
   }
 
   ## save the doc as a word file
-  writeLines(paste0("Saving doc to ",outputFolder,"/",results$databaseId,"-results.docx"))
-  print(doc, target = paste(outputFolder,"/",results$databaseId,"-results.docx",sep = ""))
+  outputFile <- file.path(outputFolder, paste0("CdmOnboarding-results-", results$databaseId, ".docx"))
+  writeLines(paste("Saving doc to", outputFile))
+  print(doc, target = outputFile)
 }
 
 
