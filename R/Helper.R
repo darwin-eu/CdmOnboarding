@@ -55,14 +55,13 @@ executeQuery <- function(outputFolder,sqlFileName, successMessage, connectionDet
 
   return(list(result=result,duration=duration))
 }
+
 prettyHr <- function(x) {
   result <- sprintf("%.2f", x)
   result[is.na(x)] <- "NA"
   result <- suppressWarnings(format(as.numeric(result), big.mark=",")) # add thousands separator
   return(result)
 }
-
-
 
 my_body_add_table <- function (x, value, style = NULL, pos = "after", header = TRUE,
           alignment = NULL, stylenames = table_stylenames(), first_row = TRUE,
@@ -95,31 +94,31 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
   officer::body_add_xml(x = x, str = xml_elt, pos = pos)
 }
 
-my_source_value_count_section <- function (x, data, table_number, domain, kind, smallCellCount) {
+my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
   n <- nrow(data$result)
 
   msg <- paste0("Counts are rounded up to the nearest hundred. Values with a record count <=",smallCellCount," are omitted.")
   if (n == 0) {
-    officer::body_add_par(x,paste0("Table ", table_number, " omitted because no ", kind, " ", domain, " were found."))
+    officer::body_add_par(x,paste0("Omitted because no ", kind, " ", domain, " were found."), style = pkg.env$styles$tableCaption)
   } else if (n < 25) {
-    officer::body_add_par(x,paste0("Table ", table_number, ". All ", n, " ", kind, " ", domain, ". ", msg))
+    officer::body_add_par(x,paste0("All ", n, " ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
   } else {
-    officer::body_add_par(x,paste0("Table ", table_number, ". Top 25 of ", kind, " ", domain, ". ", msg))
+    officer::body_add_par(x,paste0("Top 25 of ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
   }
 
   if (n>0) {
-    my_body_add_table(x, value = data$result, style = "Normal Table")
+    my_body_add_table(x, value = data$result, style = pkg.env$styles$table)
   }
 
-  officer::body_add_par(x, paste0("Query executed in ", sprintf("%.2f", data$duration), " secs"))
+  officer::body_add_par(x, paste0("Query executed in ", sprintf("%.2f", data$duration), " secs"), style = pkg.env$styles$footnote)
 }
 
-my_unmapped_section <- function(x, data, table_number, domain, smallCellCount) {
-  my_source_value_count_section(x, data, table_number, domain, "unmapped", smallCellCount)
+my_unmapped_section <- function(x, data, domain, smallCellCount) {
+  my_source_value_count_section(x, data, domain, "unmapped", smallCellCount)
 }
 
-my_mapped_section <- function(x, data, table_number, domain, smallCellCount) {
-  my_source_value_count_section(x, data, table_number, domain, "mapped", smallCellCount)
+my_mapped_section <- function(x, data, domain, smallCellCount) {
+  my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
 }
 
 
