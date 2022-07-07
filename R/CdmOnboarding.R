@@ -21,13 +21,13 @@
 # @author Maxim Moinat
 
 
-#' The main CDM Onboarding analyses (for v5.x)
+#' The main CDM Onboarding method (for v5.x)
 #'
 #' @description
-#' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
+#' \code{cdmOnboarding} runs the CDM Onboarding procedure. Executing the checks and outputing a results document
 #'
 #' @details
-#' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
+#' \code{cdmOnboarding} runs the CDM Onboarding procedure. Executing the checks and outputing a results document
 #'
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
@@ -38,42 +38,104 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
 #' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.
+#' @param authors                          List of author names to be added in the document
 #' @param databaseId                       ID of your database, this will be used as subfolder for the results.
 #' @param databaseName		                 String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.
 #' @param databaseDescription              Provide a short description of the database.
-#' @param analysisIds                      Analyses to run
-#' @param smallCellCount                   To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.
 #' @param runVocabularyChecks              Boolean to determine if vocabulary checks need to be run. Default = TRUE
 #' @param runDataTablesChecks              Boolean to determine if table checks need to be run. Default = TRUE
 #' @param runWebAPIChecks                  Boolean to determine if WebAPI checks need to be run. Default = TRUE
-#' @param baseUrl                          WebAPI url, example: http://server.org:80/WebAPI
 #' @param runPerformanceChecks             Boolean to determine if performance checks need to be run. Default = TRUE
+#' @param smallCellCount                   To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)
+#' @param baseUrl                          WebAPI url, example: http://server.org:80/WebAPI
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
-cdmOnboarding <- function (connectionDetails,
-                           cdmDatabaseSchema,
+cdmOnboarding <- function(connectionDetails,
+                          cdmDatabaseSchema,
                           resultsDatabaseSchema = cdmDatabaseSchema,
                           scratchDatabaseSchema = resultsDatabaseSchema,
                           vocabDatabaseSchema = cdmDatabaseSchema,
                           oracleTempSchema = resultsDatabaseSchema,
-                          databaseName = "",
+                          authors = "",
                           databaseId = "",
+                          databaseName = "",
                           databaseDescription = "",
-                          analysisIds = "",
-                          smallCellCount = 5,
                           runVocabularyChecks = TRUE,
                           runDataTablesChecks = TRUE,
                           runPerformanceChecks = TRUE,
                           runWebAPIChecks = TRUE,
-                          baseUrl,
+                          smallCellCount = 5,
+                          baseUrl = "",
                           sqlOnly = FALSE,
                           outputFolder = "output",
                           verboseMode = TRUE) {
+  results <- .execute(
+    connectionDetails = connectionDetails,
+    cdmDatabaseSchema = cdmDatabaseSchema,
+    resultsDatabaseSchema = resultsDatabaseSchema,
+    scratchDatabaseSchema = scratchDatabaseSchema,
+    vocabDatabaseSchema = vocabDatabaseSchema,
+    oracleTempSchema = oracleTempSchema,
+    databaseId = databaseId,
+    databaseName = databaseName,
+    databaseDescription = databaseDescription,
+    runVocabularyChecks = runVocabularyChecks,
+    runDataTablesChecks = runDataTablesChecks,
+    runPerformanceChecks = runPerformanceChecks,
+    runWebAPIChecks = runWebAPIChecks,
+    smallCellCount = smallCellCount,
+    baseUrl = baseUrl,
+    sqlOnly = sqlOnly,
+    outputFolder = outputFolder,
+    verboseMode = verboseMode
+  )
 
+  tryCatch({
+    generateResultsDocument(
+      results = results,
+      outputFolder = outputFolder,
+      authors = authors,
+      databaseId = databaseId,
+      databaseName = databaseName,
+      databaseDescription = databaseDescription,
+      smallCellCount = smallCellCount
+    )},
+    error = function (e) {
+      ParallelLogger::logError("Could not generate results document, results from analysis are returned.", e)
+  })
 
+  return(results)
+}
+
+#' The main CDM Onboarding analyses (for v5.x)
+#'
+#' @description
+#' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
+#'
+#' @details
+#' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
+.execute <- function (
+    connectionDetails,
+    cdmDatabaseSchema,
+    resultsDatabaseSchema = cdmDatabaseSchema,
+    scratchDatabaseSchema = resultsDatabaseSchema,
+    vocabDatabaseSchema = cdmDatabaseSchema,
+    oracleTempSchema = resultsDatabaseSchema,
+    databaseId = "",
+    databaseName = "",
+    databaseDescription = "",
+    runVocabularyChecks = TRUE,
+    runDataTablesChecks = TRUE,
+    runPerformanceChecks = TRUE,
+    runWebAPIChecks = TRUE,
+    smallCellCount = 5,
+    baseUrl,
+    sqlOnly = FALSE,
+    outputFolder = "output",
+    verboseMode = TRUE) {
   # Log execution -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if(!dir.exists(outputFolder)){dir.create(outputFolder,recursive=T)}
@@ -96,150 +158,141 @@ cdmOnboarding <- function (connectionDetails,
 
   start_time <- Sys.time()
 
-  cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
-
-  cdmVersion <- as.character(cdmVersion)
 
   # Check CDM version is valid ---------------------------------------------------------------------------------------------------
+  cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
+  cdmVersion <- as.character(cdmVersion)
+
   if (compareVersion(a = as.character(cdmVersion), b = "5") < 0) {
     ParallelLogger::logError("Not possible to execute the check, this function is only for v5 and above.")
     ParallelLogger::logError("Is the CDM version available in the cdm_source table?")
-  } else {
-    # Establish folder paths --------------------------------------------------------------------------------------------------------
-
-    if (!dir.exists(outputFolder)) {
-      dir.create(path = outputFolder, recursive = TRUE)
-    }
-
-    # Get source name if none provided ----------------------------------------------------------------------------------------------
-
-    if (missing(databaseName) & !sqlOnly) {
-      databaseName <- .getDatabaseName(connectionDetails, cdmDatabaseSchema)
-    }
-
-    # Logging
-    ParallelLogger::logInfo(paste0("CDM Onboarding of database ",databaseName, " started (cdm_version=",cdmVersion,")"))
-
-    # run all the checks ------------------------------------------------------------------------------------------------------------
-    dataTablesResults <- NULL
-    cdmSource<-NULL
-
-    if (runDataTablesChecks) {
-      ParallelLogger::logInfo(paste0("Running Data Table Checks"))
-      dataTablesResults <- dataTablesChecks(connectionDetails = connectionDetails,
-                                    cdmDatabaseSchema = cdmDatabaseSchema,
-                                    resultsDatabaseSchema = resultsDatabaseSchema,
-                                    outputFolder = outputFolder,
-                                    sqlOnly = sqlOnly)
-      cdmSource<- .getCdmSource(connectionDetails, cdmDatabaseSchema,sqlOnly,outputFolder)
-      temp <- cdmSource
-      temp$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
-      temp$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
-      cdmSource <- temp
-    }
-
-
-    vocabularyResults <- NULL
-    if (runVocabularyChecks) {
-      ParallelLogger::logInfo(paste0("Running Vocabulary Checks"))
-      vocabularyResults<-vocabularyChecks(connectionDetails = connectionDetails,
-                       cdmDatabaseSchema = cdmDatabaseSchema,
-                       vocabDatabaseSchema = vocabDatabaseSchema,
-                       resultsDatabaseSchema = resultsDatabaseSchema,
-                       smallCellCount = smallCellCount,
-                       oracleTempSchema = oracleTempSchema,
-                       sqlOnly = sqlOnly,
-                       outputFolder = outputFolder)
-    }
-    packinfo <- NULL
-    sys_details <- NULL
-    hadesPackageVersions <- NULL
-    performanceResults <- NULL
-    missingPackages <- NULL
-    if (runPerformanceChecks) {
-
-      ParallelLogger::logInfo(paste0("Check installed R Packages"))
-      packages <- c("SqlRender", "DatabaseConnector", "DatabaseConnectorJars", "PatientLevelPrediction", "CohortDiagnostics", "CohortMethod", "Cyclops","ParallelLogger","FeatureExtraction","Andromeda",
-                    "ROhdsiWebApi","OhdsiSharing","Hydra","Eunomia","EmpiricalCalibration","MethodEvaluation","EvidenceSynthesis","SelfControlledCaseSeries","SelfControlledCohort")
-      diffPackages <- setdiff(packages, rownames(installed.packages()))
-      missingPackages <- paste(diffPackages, collapse=', ')
-
-      if (length(diffPackages)>0){
-        ParallelLogger::logInfo(paste0("Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information"))
-        ParallelLogger::logInfo(paste0("Missing:", missingPackages))
-      } else
-        ParallelLogger::logInfo(paste0("> All HADES packages are installed"))
-
-      packinfo <- installed.packages(fields = c("Package", "Version"))
-      hades<-packinfo[,c("Package", "Version")]
-      hadesPackageVersions <- as.data.frame(hades[row.names(hades) %in% packages,])
-
-      sys_details <- benchmarkme::get_sys_details(sys_info=FALSE)
-      ParallelLogger::logInfo(paste0("Running Performance Checks on ", sys_details$cpu$model_name, " cpu with ", sys_details$cpu$no_of_cores, " cores, and ", prettyunits::pretty_bytes(as.numeric(sys_details$ram)), " ram."))
-     # benchmark <- benchmark_std()
-
-      ParallelLogger::logInfo(paste0("Running Performance Checks SQL"))
-      performanceResults <- performanceChecks(connectionDetails = connectionDetails,
-                        cdmDatabaseSchema = cdmDatabaseSchema,
-                        resultsDatabaseSchema = resultsDatabaseSchema,
-                        oracleTempSchema = oracleTempSchema,
-                        sqlOnly = sqlOnly,
-                        outputFolder = outputFolder)
-
-
-
-    }
-
-    webAPIversion <- "unknown"
-    if (runWebAPIChecks){
-      ParallelLogger::logInfo(paste0("Running WebAPIChecks"))
-
-      tryCatch({
-        webAPIversion <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
-        ParallelLogger::logInfo(sprintf("> Connected successfully to %s", baseUrl))
-        ParallelLogger::logInfo(sprintf("> WebAPI version: %s", webAPIversion))},
-               error = function (e) {
-                 ParallelLogger::logError(paste0("Could not connect to the WebAPI: ", baseUrl))
-                 webAPIversion <- "Failed"
-        })
-    }
-
-
-    ParallelLogger::logInfo(paste0("Done."))
-
-    duration <- as.numeric(difftime(Sys.time(),start_time), units="mins")
-    ParallelLogger::logInfo(paste("Complete cdmOnboarding took ", sprintf("%.2f", duration)," minutes"))
-    # save results  ------------------------------------------------------------------------------------------------------------
-
-    results<-list(executionDate = date(),
-                  executionDuration = as.numeric(difftime(Sys.time(),start_time), units="secs"),
-                  databaseName = databaseName,
-                  databaseId = databaseId,
-                  databaseDescription = databaseDescription,
-                  vocabularyResults = vocabularyResults,
-                  dataTablesResults = dataTablesResults,
-                  packinfo=packinfo,
-                  hadesPackageVersions = hadesPackageVersions,
-                  missingPackages = missingPackages,
-                  performanceResults = performanceResults,
-                  sys_details= sys_details,
-                  webAPIversion = webAPIversion,
-                  cdmSource = cdmSource,
-                  dms=connectionDetails$dbms)
-
-
-
-    saveRDS(results, file.path(outputFolder, "onboarding_results.rds"))
-    ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
-    bundledResultsLocation <- bundleResults(outputFolder, databaseId)
-    ParallelLogger::logInfo(paste("All CDM Onboarding results are bundled for sharing at: ", bundledResultsLocation))
-
-    duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
-    ParallelLogger::logInfo(paste("CdmOnboarding run took", sprintf("%.2f", duration),"secs"))
-    return(results)
-
+    return(NULL)
   }
 
+  # Establish folder paths --------------------------------------------------------------------------------------------------------
+  if (!dir.exists(outputFolder)) {
+    dir.create(path = outputFolder, recursive = TRUE)
+  }
+
+  # Get source name if none provided ----------------------------------------------------------------------------------------------
+  if (missing(databaseName) & !sqlOnly) {
+    databaseName <- .getDatabaseName(connectionDetails, cdmDatabaseSchema)
+  }
+
+  ParallelLogger::logInfo(paste0("CDM Onboarding of database ", databaseName, " started (cdm_version=",cdmVersion,")"))
+
+  # data table checks ------------------------------------------------------------------------------------------------------------
+  dataTablesResults <- NULL
+  cdmSource<-NULL
+  if (runDataTablesChecks) {
+    ParallelLogger::logInfo(paste0("Running Data Table Checks"))
+    dataTablesResults <- dataTablesChecks(connectionDetails = connectionDetails,
+                                  cdmDatabaseSchema = cdmDatabaseSchema,
+                                  resultsDatabaseSchema = resultsDatabaseSchema,
+                                  outputFolder = outputFolder,
+                                  sqlOnly = sqlOnly)
+    cdmSource<- .getCdmSource(connectionDetails, cdmDatabaseSchema,sqlOnly,outputFolder)
+    temp <- cdmSource
+    temp$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
+    temp$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
+    cdmSource <- temp
+  }
+
+  # vocabulary checks ------------------------------------------------------------------------------------------------------------
+  vocabularyResults <- NULL
+  if (runVocabularyChecks) {
+    ParallelLogger::logInfo(paste0("Running Vocabulary Checks"))
+    vocabularyResults<-vocabularyChecks(connectionDetails = connectionDetails,
+                     cdmDatabaseSchema = cdmDatabaseSchema,
+                     vocabDatabaseSchema = vocabDatabaseSchema,
+                     resultsDatabaseSchema = resultsDatabaseSchema,
+                     smallCellCount = smallCellCount,
+                     oracleTempSchema = oracleTempSchema,
+                     sqlOnly = sqlOnly,
+                     outputFolder = outputFolder)
+  }
+
+  # performance checks ------------------------------------------------------------------------------------------------------------
+  packinfo <- NULL
+  sys_details <- NULL
+  hadesPackageVersions <- NULL
+  performanceResults <- NULL
+  missingPackages <- NULL
+  if (runPerformanceChecks) {
+    ParallelLogger::logInfo(paste0("Check installed R Packages"))
+    packages <- c("SqlRender", "DatabaseConnector", "DatabaseConnectorJars", "PatientLevelPrediction", "CohortDiagnostics", "CohortMethod", "Cyclops","ParallelLogger","FeatureExtraction","Andromeda",
+                  "ROhdsiWebApi","OhdsiSharing","Hydra","Eunomia","EmpiricalCalibration","MethodEvaluation","EvidenceSynthesis","SelfControlledCaseSeries","SelfControlledCohort")
+    diffPackages <- setdiff(packages, rownames(installed.packages()))
+    missingPackages <- paste(diffPackages, collapse=', ')
+
+    if (length(diffPackages)>0){
+      ParallelLogger::logInfo(paste0("Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information"))
+      ParallelLogger::logInfo(paste0("Missing:", missingPackages))
+    } else {
+      ParallelLogger::logInfo(paste0("> All HADES packages are installed"))
+    }
+
+    packinfo <- installed.packages(fields = c("Package", "Version"))
+    hades<-packinfo[,c("Package", "Version")]
+    hadesPackageVersions <- as.data.frame(hades[row.names(hades) %in% packages,])
+
+    sys_details <- benchmarkme::get_sys_details(sys_info=FALSE)
+    ParallelLogger::logInfo(paste0("Running Performance Checks on ", sys_details$cpu$model_name, " cpu with ", sys_details$cpu$no_of_cores, " cores, and ", prettyunits::pretty_bytes(as.numeric(sys_details$ram)), " ram."))
+
+    ParallelLogger::logInfo(paste0("Running Performance Checks SQL"))
+    performanceResults <- performanceChecks(connectionDetails = connectionDetails,
+                      cdmDatabaseSchema = cdmDatabaseSchema,
+                      resultsDatabaseSchema = resultsDatabaseSchema,
+                      oracleTempSchema = oracleTempSchema,
+                      sqlOnly = sqlOnly,
+                      outputFolder = outputFolder)
+  }
+
+  webAPIversion <- "unknown"
+  if (runWebAPIChecks && baseUrl != ""){
+    ParallelLogger::logInfo(paste0("Running WebAPIChecks"))
+
+    tryCatch({
+      webAPIversion <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
+      ParallelLogger::logInfo(sprintf("> Connected successfully to %s", baseUrl))
+      ParallelLogger::logInfo(sprintf("> WebAPI version: %s", webAPIversion))},
+             error = function (e) {
+               ParallelLogger::logError(paste0("Could not connect to the WebAPI: ", baseUrl))
+               webAPIversion <- "Failed"
+      })
+  }
+
+  ParallelLogger::logInfo(paste0("Done."))
+
+  duration <- as.numeric(difftime(Sys.time(),start_time), units="mins")
+  ParallelLogger::logInfo(paste("Complete cdmOnboarding took ", sprintf("%.2f", duration)," minutes"))
+
+  # save results  ------------------------------------------------------------------------------------------------------------
+  results<-list(executionDate = date(),
+                executionDuration = as.numeric(difftime(Sys.time(),start_time), units="secs"),
+                databaseName = databaseName,
+                databaseId = databaseId,
+                databaseDescription = databaseDescription,
+                vocabularyResults = vocabularyResults,
+                dataTablesResults = dataTablesResults,
+                packinfo=packinfo,
+                hadesPackageVersions = hadesPackageVersions,
+                missingPackages = missingPackages,
+                performanceResults = performanceResults,
+                sys_details= sys_details,
+                webAPIversion = webAPIversion,
+                cdmSource = cdmSource,
+                dms=connectionDetails$dbms)
+
+  saveRDS(results, file.path(outputFolder, "onboarding_results.rds"))
+  ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
+  bundledResultsLocation <- bundleResults(outputFolder, databaseId)
+  ParallelLogger::logInfo(paste("All CDM Onboarding results are bundled for sharing at: ", bundledResultsLocation))
+
+  duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
+  ParallelLogger::logInfo(paste("CdmOnboarding run took", sprintf("%.2f", duration),"secs"))
+
+  results
 }
 
 .getDatabaseName <- function(connectionDetails,

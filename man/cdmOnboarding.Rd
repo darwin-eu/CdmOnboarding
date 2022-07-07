@@ -2,7 +2,7 @@
 % Please edit documentation in R/CdmOnboarding.R
 \name{cdmOnboarding}
 \alias{cdmOnboarding}
-\title{The main CDM Onboarding analyses (for v5.x)}
+\title{The main CDM Onboarding method (for v5.x)}
 \usage{
 cdmOnboarding(
   connectionDetails,
@@ -11,16 +11,16 @@ cdmOnboarding(
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema,
   oracleTempSchema = resultsDatabaseSchema,
-  databaseName = "",
+  authors = "",
   databaseId = "",
+  databaseName = "",
   databaseDescription = "",
-  analysisIds = "",
-  smallCellCount = 5,
   runVocabularyChecks = TRUE,
   runDataTablesChecks = TRUE,
   runPerformanceChecks = TRUE,
   runWebAPIChecks = TRUE,
-  baseUrl,
+  smallCellCount = 5,
+  baseUrl = "",
   sqlOnly = FALSE,
   outputFolder = "output",
   verboseMode = TRUE
@@ -42,15 +42,13 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 
 \item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
 
-\item{databaseName}{String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.}
+\item{authors}{List of author names to be added in the document}
 
 \item{databaseId}{ID of your database, this will be used as subfolder for the results.}
 
+\item{databaseName}{String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.}
+
 \item{databaseDescription}{Provide a short description of the database.}
-
-\item{analysisIds}{Analyses to run}
-
-\item{smallCellCount}{To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.}
 
 \item{runVocabularyChecks}{Boolean to determine if vocabulary checks need to be run. Default = TRUE}
 
@@ -59,6 +57,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{runPerformanceChecks}{Boolean to determine if performance checks need to be run. Default = TRUE}
 
 \item{runWebAPIChecks}{Boolean to determine if WebAPI checks need to be run. Default = TRUE}
+
+\item{smallCellCount}{To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)}
 
 \item{baseUrl}{WebAPI url, example: http://server.org:80/WebAPI}
 
@@ -73,8 +73,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 }
 }
 \description{
-\code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
+\code{cdmOnboarding} runs the CDM Onboarding procedure. Executing the checks and outputing a results document
 }
 \details{
-\code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
+\code{cdmOnboarding} runs the CDM Onboarding procedure. Executing the checks and outputing a results document
 }

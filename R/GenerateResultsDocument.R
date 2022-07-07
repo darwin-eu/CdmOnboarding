@@ -20,6 +20,19 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
+# Makes styles globally available, also for helper functions
+pkg.env <- new.env(parent = emptyenv())
+pkg.env$styles <- list(
+  title="Doc title (Agency)",
+  subTitle="Doc subtitle (Agency)",
+  heading1="Heading 1 (Agency)",
+  heading2="Heading 2 (Agency)",
+  table="Table grid (Agency)",
+  tableCaption="Table heading (Agency)",
+  figureCaption="Figure heading (Agency)",
+  highlight="Drafting Notes (Agency)",
+  footnote="Footnote text (Agency)"
+)
 
 #' Generates the Results Document
 #'
@@ -28,29 +41,15 @@
 #' @param results             Results object from \code{cdmOnboarding}
 #' @param outputFolder        Folder to store the results
 #' @param authors             List of author names to be added in the document
-#' @param databaseDescription Description of the database
-#' @param databaseName        Name of the database
 #' @param databaseId          Id of the database
+#' @param databaseName        Name of the database
+#' @param databaseDescription Description of the database
 #' @param smallCellCount      Date with less than this number of patients are removed
 #' @param silent              Flag to not create output in the terminal (default = FALSE)
 #' @export
-generateResultsDocument<- function(results, outputFolder, authors = "Author Names", databaseDescription, databaseName, databaseId, smallCellCount, silent=FALSE) {
+generateResultsDocument<- function(results, outputFolder, authors = "Author Names", databaseId, databaseName, databaseDescription, smallCellCount, silent=FALSE) {
   docTemplate <- system.file("templates", "Template-DarwinEU.docx", package="CdmOnboarding")
   logo <- system.file("templates", "img", "darwin-logo.jpg", package="CdmOnboarding")
-
-  # Makes styles globally available, also for helper functions
-  pkg.env <- new.env(parent = emptyenv())
-  pkg.env$styles <- list(
-    title="Doc title (Agency)",
-    subTitle="Doc subtitle (Agency)",
-    heading1="Heading 1 (Agency)",
-    heading2="Heading 2 (Agency)",
-    table="Table grid (Agency)",
-    tableCaption="Table heading (Agency)",
-    figureCaption="Figure heading (Agency)",
-    highlight="Drafting Notes (Agency)",
-    footnote="Footnote text (Agency)"
-  )
 
   ## open a new doc from the doctemplate
   doc<-officer::read_docx(path = docTemplate)
@@ -73,9 +72,9 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
   if (!is.null(results$dataTablesResults)) {
     df_t1 <- results$dataTablesResults$dataTablesCounts$result
     doc<-doc %>%
-      officer::body_add_par(value = "Record counts", style = pkg.env$styles$heading1) %>%
-      officer::body_add_par(value = "Record counts per CDM table", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par("Shows the number of records in all clinical data tables", style = pkg.env$styles$tableCaption) %>%
+      officer::body_add_par(value = "Clinical data", style = pkg.env$styles$heading1) %>%
+      officer::body_add_par(value = "Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par("The number of records in all clinical data tables", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = df_t1[order(df_t1$COUNT, decreasing=TRUE),], style = pkg.env$styles$table) %>%
       officer::body_add_par(paste("Query executed in ",sprintf("%.2f", results$dataTablesResults$dataTablesCounts$duration),"secs"), style = pkg.env$styles$footnote)
 
@@ -83,20 +82,19 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     doc<-doc %>% officer::body_add_break() %>%
       officer::body_add_par(value = "Data density plots", style = pkg.env$styles$heading2) %>%
       officer::body_add_gg(plot, height=4) %>%
-      officer::body_add_par("Total record count over time per data domain", style = pkg.env$styles$figureCaption)
+      officer::body_add_par("Total record count over time per OMOP data domain", style = pkg.env$styles$figureCaption)
 
     plot <- recordsCountPlot(as.data.frame(results$dataTablesResults$recordsPerPerson$result))
     doc<-doc %>%
       officer::body_add_gg(plot, height=4) %>%
-      officer::body_add_par("Number of records per person over time per data domain", style = pkg.env$styles$figureCaption)
+      officer::body_add_par("Number of records per person over time per OMOP data domain", style = pkg.env$styles$figureCaption)
 
     colnames(results$dataTablesResults$conceptsPerPerson$result) <- c("Domain", "Min", "P10", "P25", "MEDIAN", "P75", "P90", "Max")
     doc<-doc %>% officer::body_add_break() %>%
       officer::body_add_par(value = "Distinct concepts per person", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par("Shows the number of distinct concepts per person for all data domains", style = pkg.env$styles$tableCaption) %>%
+      officer::body_add_par("The number of distinct concepts per person for all OMOP data domains", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = results$dataTablesResults$conceptsPerPerson$result, style = pkg.env$styles$table) %>%
       officer::body_add_par(" ")
-
   }
 
 
@@ -130,8 +128,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
       officer::body_add_par(value = "Mapping Completeness", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records.", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = vocabResults$mappingCompleteness$result, style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
-      officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$mappingCompleteness$duration),"secs"), style = pkg.env$styles$footnote) %>%
-      officer::body_add_break()
+      officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$mappingCompleteness$duration),"secs"), style = pkg.env$styles$footnote)
 
     ## add Drug Level Mappings
     doc<-doc %>%
@@ -185,7 +182,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     t_cdmSource <- cbind(field, t_cdmSource)
     doc<-doc %>%
       officer::body_add_par(value = "CDM Source Table", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par("cdm_source table content", style = pkg.env$styles$tableCaption) %>%
+      officer::body_add_par("Content of the OMOP cdm_source table", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value =t_cdmSource, style = pkg.env$styles$table)
   }
 
@@ -193,15 +190,15 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     #installed packages
     doc<-doc %>%
       officer::body_add_par(value = "HADES packages", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par("Versions of all installed HADES R packages", style = pkg.env$styles$tableCaption) %>%
+      officer::body_add_par("Versions of all installed R packages that are relevant for DARWIN EU studies", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = results$hadesPackageVersions, style = pkg.env$styles$table)
 
     if (results$missingPackage=="") {
       doc<-doc %>%
-      officer::body_add_par("All HADES packages were available")
+      officer::body_add_par("All R packages were available")
     } else {
       doc<-doc %>%
-      officer::body_add_par(paste0("Missing HADES packages: ",results$missingPackages))
+      officer::body_add_par(paste0("Missing R packages: ",results$missingPackages))
     }
 
     #system detail
@@ -215,7 +212,6 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
       officer::body_add_par(paste0("DBMS: ", results$dms)) %>%
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par(" ")
-
 
     doc<-doc %>%
       officer::body_add_par(value = "Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
@@ -236,8 +232,7 @@ generateResultsDocument<- function(results, outputFolder, authors = "Author Name
     }
   } else {
     doc<-doc %>%
-      officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style = pkg.env$styles$highlight) %>%
-      body_add_break()
+      officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style = pkg.env$styles$highlight)
   }
 
   ## save the doc as a word file

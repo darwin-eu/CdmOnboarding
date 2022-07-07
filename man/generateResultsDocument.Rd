@@ -8,9 +8,9 @@ generateResultsDocument(
   results,
   outputFolder,
   authors = "Author Names",
-  databaseDescription,
-  databaseName,
   databaseId,
+  databaseName,
+  databaseDescription,
   smallCellCount,
   silent = FALSE
 )
@@ -22,11 +22,11 @@ generateResultsDocument(
 
 \item{authors}{List of author names to be added in the document}
 
-\item{databaseDescription}{Description of the database}
+\item{databaseId}{Id of the database}
 
 \item{databaseName}{Name of the database}
 
-\item{databaseId}{Id of the database}
+\item{databaseDescription}{Description of the database}
 
 \item{smallCellCount}{Date with less than this number of patients are removed}
 
