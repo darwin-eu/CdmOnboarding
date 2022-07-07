@@ -4,31 +4,12 @@
 \alias{generateResultsDocument}
 \title{Generates the Results Document}
 \usage{
-generateResultsDocument(
-  results,
-  outputFolder,
-  authors = "Author Names",
-  databaseId,
-  databaseName,
-  databaseDescription,
-  smallCellCount,
-  silent = FALSE
-)
+generateResultsDocument(results, outputFolder, silent = FALSE)
 }
 \arguments{
 \item{results}{Results object from \code{cdmOnboarding}}
 
 \item{outputFolder}{Folder to store the results}
-
-\item{authors}{List of author names to be added in the document}
-
-\item{databaseId}{Id of the database}
-
-\item{databaseName}{Name of the database}
-
-\item{databaseDescription}{Description of the database}
-
-\item{smallCellCount}{Date with less than this number of patients are removed}
 
 \item{silent}{Flag to not create output in the terminal (default = FALSE)}
 }
