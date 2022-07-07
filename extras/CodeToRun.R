@@ -121,7 +121,6 @@ results <- cdmOnboarding(
   resultsDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = vocabDatabaseSchema,
   oracleTempSchema = oracleTempSchema,
-  authors=authors,
   databaseName = databaseName,
   runVocabularyChecks = TRUE,
   runDataTablesChecks = TRUE,
@@ -136,11 +135,6 @@ results <- cdmOnboarding(
 
 # generateResultsDocument(
 #   results,
-#   outputFolder,
-#   authors=authors,
-#   databaseDescription = databaseDescription,
-#   databaseName = databaseName,
-#   databaseId = databaseId,
-#   smallCellCount = smallCellCount
+#   outputFolder
 # )
 

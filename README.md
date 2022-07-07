@@ -6,7 +6,7 @@ The DARWIN EU Coordination Center (CC) is resposonsible for building a data netw
 
 The goal of the onboarding report is to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the EHDEN and OHDSI data networks and participate in research studies. Additional procedural steps can be added before the data sources is added to the the data network. 
 
-An example of an onboarding report for the Synpuf database can be found here: [link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/SYNPUF-results.docx).
+An example of an onboarding report for a OMOP Synthea database can be found in [extras/CdmOnbaording-Synthea.docx](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding-Synthea.docx).
 
 The CdmOnboarding R Package performs the following checks on top of the required [Data Quality Dashboard](https://github.com/OHDSI/DataQualityDashboard) step:
 
@@ -69,7 +69,7 @@ Make sure that Achilles has run in the results schema you select when calling th
 PDF versions of the documentation are available:
 * Package manual: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding.pdf)
 * CodeToRun Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CodeToRun.R)
-* Report Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/SYNPUF-results.docx)
+* Report Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding-Synthea.docx)
 
 Support
 =======

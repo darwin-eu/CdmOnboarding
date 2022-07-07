@@ -86,7 +86,6 @@ cdmOnboarding <- function(connectionDetails,
     runDataTablesChecks = runDataTablesChecks,
     runPerformanceChecks = runPerformanceChecks,
     runWebAPIChecks = runWebAPIChecks,
-    smallCellCount = smallCellCount,
     baseUrl = baseUrl,
     sqlOnly = sqlOnly,
     outputFolder = outputFolder,
@@ -96,15 +95,10 @@ cdmOnboarding <- function(connectionDetails,
   tryCatch({
     generateResultsDocument(
       results = results,
-      outputFolder = outputFolder,
-      authors = authors,
-      databaseId = databaseId,
-      databaseName = databaseName,
-      databaseDescription = databaseDescription,
-      smallCellCount = smallCellCount
+      outputFolder = outputFolder
     )},
     error = function (e) {
-      ParallelLogger::logError("Could not generate results document, results from analysis are returned.", e)
+      ParallelLogger::logError("Could not generate results document, results from analysis are returned as an object. ", e)
   })
 
   return(results)
@@ -282,7 +276,8 @@ cdmOnboarding <- function(connectionDetails,
                 sys_details= sys_details,
                 webAPIversion = webAPIversion,
                 cdmSource = cdmSource,
-                dms=connectionDetails$dbms)
+                dms=connectionDetails$dbms,
+                smallCellCount=smallCellCount)
 
   saveRDS(results, file.path(outputFolder, "onboarding_results.rds"))
   ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
