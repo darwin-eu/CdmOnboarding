@@ -97,13 +97,18 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
 my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
   n <- nrow(data$result)
 
-  msg <- paste0("Counts are rounded up to the nearest hundred. Values with a record count <=",smallCellCount," are omitted.")
-  if (n == 0) {
-    officer::body_add_par(x,paste0("Omitted because no ", kind, " ", domain, " were found."), style = pkg.env$styles$tableCaption)
-  } else if (n < 25) {
-    officer::body_add_par(x,paste0("All ", n, " ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
+  if (is.null(smallCellCount)) {
+    msg <- paste0("Counts are rounded up to the nearest hundred. Values with a record count <=",smallCellCount," are omitted.")
   } else {
-    officer::body_add_par(x,paste0("Top 25 of ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
+    msg <- "Counts are rounded up to the nearest hundred."
+  }
+
+  if (n == 0) {
+    officer::body_add_par(x, paste0("Omitted because no ", kind, " ", domain, " were found."), style = pkg.env$styles$tableCaption)
+  } else if (n < 25) {
+    officer::body_add_par(x, paste0("All ", n, " ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
+  } else {
+    officer::body_add_par(x, paste0("Top 25 of ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
   }
 
   if (n>0) {
