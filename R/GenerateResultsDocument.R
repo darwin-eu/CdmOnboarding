@@ -160,6 +160,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
     my_unmapped_section(doc, vocabResults$unmappedProcedures, "procedures", results$smallCellCount)
     my_unmapped_section(doc, vocabResults$unmappedDevices, "devices", results$smallCellCount)
     my_unmapped_section(doc, vocabResults$unmappedVisits, "visits", results$smallCellCount)
+    my_unmapped_section(doc, vocabResults$unmappedUnits, "units", results$smallCellCount)
 
     ## add top 25 mapped codes
     doc<-doc %>%
@@ -171,6 +172,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
     my_mapped_section(doc, vocabResults$mappedProcedures, "procedures", results$smallCellCount)
     my_mapped_section(doc, vocabResults$mappedDevices, "devices", results$smallCellCount)
     my_mapped_section(doc, vocabResults$mappedVisits, "visits", results$smallCellCount)
+    my_mapped_section(doc, vocabResults$mappedUnits, "units", results$smallCellCount)
 
     ## add source_to_concept_map breakdown
     doc<-doc %>%
