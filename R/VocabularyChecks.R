@@ -56,7 +56,9 @@ vocabularyChecks <- function (connectionDetails,
 
   ## run all queries
   mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
-  colnames(mappingCompleteness$result) <- c("Domain","#Codes Source","#Codes Mapped","%Codes Mapped","#Records Source","#Records Mapped","%Records Mapped")
+  if (!sqlOnly) {
+    colnames(mappingCompleteness$result) <- c("Domain","#Codes Source","#Codes Mapped","%Codes Mapped","#Records Source","#Records Mapped","%Records Mapped")
+  }
 
   drugMapping  <- executeQuery(outputFolder,"mapping_levels_drugs.sql", "Drug Level Mapping query executed successfully", connectionDetails, sqlOnly,  cdmDatabaseSchema, vocabDatabaseSchema)
 
@@ -94,12 +96,16 @@ vocabularyChecks <- function (connectionDetails,
                   unmappedObservations=unmappedObservations,
                   unmappedProcedures=unmappedProcedures,
                   unmappedDevices=unmappedDevices,
+                  unmappedVisits=unmappedVisits,
+                  unmappedUnits=unmappedUnits,
                   mappedDrugs=mappedDrugs,
                   mappedConditions=mappedConditions,
                   mappedMeasurements=mappedMeasurements,
                   mappedObservations=mappedObservations,
                   mappedProcedures=mappedProcedures,
                   mappedDevices=mappedDevices,
+                  mappedVisits=mappedVisits,
+                  mappedUnits=mappedUnits,
                   conceptCounts=conceptCounts,
                   vocabularyCounts=vocabularyCounts,
                   sourceConceptFrequency=sourceConceptFrequency,

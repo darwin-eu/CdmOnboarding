@@ -12,7 +12,7 @@ FROM (
     union
     select 'measurement' as source_table, unit_source_value, unit_concept_id
     from @cdmDatabaseSchema.measurement
-  )
+  ) C
   where unit_concept_id = 0
   group by source_table, unit_source_value
   having count_big(*)>@smallCellCount

@@ -93,13 +93,18 @@ cdmOnboarding <- function(connectionDetails,
     verboseMode = verboseMode
   )
 
+  if (sqlOnly || is.null(results)) {
+    return(results)
+  }
+
   tryCatch({
     generateResultsDocument(
       results = results,
       outputFolder = outputFolder
     )},
     error = function (e) {
-      ParallelLogger::logError("Could not generate results document, results from analysis are returned as an object. ", e)
+      ParallelLogger::logError("Could not generate results document: ", e)
+      ParallelLogger::logInfo("Results from the checks have been saved as an RDS object to the output folder.")
   })
 
   return(results)
@@ -153,7 +158,6 @@ cdmOnboarding <- function(connectionDetails,
 
   start_time <- Sys.time()
 
-
   # Check CDM version is valid ---------------------------------------------------------------------------------------------------
   cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
   cdmVersion <- as.character(cdmVersion)
@@ -166,7 +170,7 @@ cdmOnboarding <- function(connectionDetails,
 
   # Check whether Achilles output is available
   if (!sqlOnly && !.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
-    ParallelLogger::logError(paste("The output from Achilles is required. Please run Achilles first and make sure the result tables are in the", resultsDatabaseSchema, "schema"))
+    ParallelLogger::logError(paste0("The output from the Achilles analyses is required.\nPlease run Achilles first and make sure the resulting Achilles tables are in the given results schema ('", resultsDatabaseSchema, "')."))
     return(NULL)
   }
 
@@ -343,6 +347,7 @@ cdmOnboarding <- function(connectionDetails,
                                            cdmDatabaseSchema = cdmDatabaseSchema)
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, "get_cdm_source_table.sql"))
+    return(NULL)
   } else {
     tryCatch({
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -355,8 +360,8 @@ cdmOnboarding <- function(connectionDetails,
       DatabaseConnector::disconnect(connection = connection)
       rm(connection)
     })
+    return(cdmSource)
   }
-  cdmSource
 }
 
 .checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema) {
@@ -383,7 +388,7 @@ cdmOnboarding <- function(connectionDetails,
     TRUE
   },
   error = function (e) {
-    ParallelLogger::logWarn("Achilles Tables have not been found.")
+    ParallelLogger::logWarn("The Achilles tables have not been found (", required_achilles_tables, ")")
     FALSE
   },
   finally = {
