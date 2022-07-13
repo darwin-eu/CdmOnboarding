@@ -33,6 +33,7 @@
 #' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema.
+#'                                         The Achilles results are read from this table.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param scratchDatabaseSchema            Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
@@ -92,13 +93,18 @@ cdmOnboarding <- function(connectionDetails,
     verboseMode = verboseMode
   )
 
+  if (sqlOnly || is.null(results)) {
+    return(results)
+  }
+
   tryCatch({
     generateResultsDocument(
       results = results,
       outputFolder = outputFolder
     )},
     error = function (e) {
-      ParallelLogger::logError("Could not generate results document, results from analysis are returned as an object. ", e)
+      ParallelLogger::logError("Could not generate results document: ", e)
+      ParallelLogger::logInfo("Results from the checks have been saved as an RDS object to the output folder.")
   })
 
   return(results)
@@ -152,7 +158,6 @@ cdmOnboarding <- function(connectionDetails,
 
   start_time <- Sys.time()
 
-
   # Check CDM version is valid ---------------------------------------------------------------------------------------------------
   cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
   cdmVersion <- as.character(cdmVersion)
@@ -160,6 +165,12 @@ cdmOnboarding <- function(connectionDetails,
   if (compareVersion(a = as.character(cdmVersion), b = "5") < 0) {
     ParallelLogger::logError("Not possible to execute the check, this function is only for v5 and above.")
     ParallelLogger::logError("Is the CDM version available in the cdm_source table?")
+    return(NULL)
+  }
+
+  # Check whether Achilles output is available
+  if (!sqlOnly && !.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
+    ParallelLogger::logError(paste0("The output from the Achilles analyses is required.\nPlease run Achilles first and make sure the resulting Achilles tables are in the given results schema ('", resultsDatabaseSchema, "')."))
     return(NULL)
   }
 
@@ -336,6 +347,7 @@ cdmOnboarding <- function(connectionDetails,
                                            cdmDatabaseSchema = cdmDatabaseSchema)
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, "get_cdm_source_table.sql"))
+    return(NULL)
   } else {
     tryCatch({
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -348,6 +360,40 @@ cdmOnboarding <- function(connectionDetails,
       DatabaseConnector::disconnect(connection = connection)
       rm(connection)
     })
+    return(cdmSource)
   }
-  cdmSource
+}
+
+.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema) {
+  required_achilles_tables <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
+  achilles_tables_exist <- tryCatch({
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    for(x in required_achilles_tables) {
+      sql <- SqlRender::translate(
+               SqlRender::render(
+                 "SELECT * FROM @resultsDatabaseSchema.@table",
+                 resultsDatabaseSchema=resultsDatabaseSchema,
+                 table=x
+               ),
+               targetDialect = 'postgresql'
+             )
+      DatabaseConnector::executeSql(
+        connection = connection,
+        sql = sql,
+        progressBar = F,
+        reportOverallTime = F,
+        errorReportFile = "errorAchillesExistsSql.txt"
+      )
+    }
+    TRUE
+  },
+  error = function (e) {
+    ParallelLogger::logWarn("The Achilles tables have not been found (", required_achilles_tables, ")")
+    FALSE
+  },
+  finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
+  return(achilles_tables_exist)
 }

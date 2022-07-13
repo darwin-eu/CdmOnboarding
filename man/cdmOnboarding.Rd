@@ -33,6 +33,7 @@ cdmOnboarding(
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
 
 \item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema.
+The Achilles results are read from this table.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
 
 \item{scratchDatabaseSchema}{Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.

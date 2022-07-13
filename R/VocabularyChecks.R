@@ -56,21 +56,30 @@ vocabularyChecks <- function (connectionDetails,
 
   ## run all queries
   mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
-  colnames(mappingCompleteness$result) <- c("Domain","#Codes Source","#Codes Mapped","%Codes Mapped","#Records Source","#Records Mapped","%Records Mapped")
+  if (!sqlOnly) {
+    colnames(mappingCompleteness$result) <- c("Domain","#Codes Source","#Codes Mapped","%Codes Mapped","#Records Source","#Records Mapped","%Records Mapped")
+  }
 
   drugMapping  <- executeQuery(outputFolder,"mapping_levels_drugs.sql", "Drug Level Mapping query executed successfully", connectionDetails, sqlOnly,  cdmDatabaseSchema, vocabDatabaseSchema)
+
   unmappedDrugs<- executeQuery(outputFolder,"unmapped_drugs.sql", "Unmapped drugs query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   unmappedConditions<- executeQuery(outputFolder,"unmapped_conditions.sql", "Unmapped conditions query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   unmappedMeasurements<- executeQuery(outputFolder,"unmapped_measurements.sql", "Unmapped measurements query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   unmappedObservations<- executeQuery(outputFolder,"unmapped_observations.sql", "Unmapped observations query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   unmappedProcedures<- executeQuery(outputFolder,"unmapped_procedures.sql", "Unmapped procedures query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   unmappedDevices<- executeQuery(outputFolder,"unmapped_devices.sql", "Unmapped devices query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
+  unmappedVisits<- executeQuery(outputFolder,"unmapped_visits.sql", "Unmapped visits query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
+  unmappedUnits<- executeQuery(outputFolder,"unmapped_units.sql", "Unmapped units query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
+
   mappedDrugs<- executeQuery(outputFolder,"mapped_drugs.sql", "Mapped drugs query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   mappedConditions<- executeQuery(outputFolder,"mapped_conditions.sql", "Mapped conditions query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   mappedMeasurements<- executeQuery(outputFolder,"mapped_measurements.sql", "Mapped measurements query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   mappedObservations<- executeQuery(outputFolder,"mapped_observations.sql", "Mapped observations query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   mappedProcedures<- executeQuery(outputFolder,"mapped_procedures.sql", "Mapped procedures query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
   mappedDevices<- executeQuery(outputFolder,"mapped_devices.sql", "Mapped devices query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
+  mappedVisits<- executeQuery(outputFolder,"mapped_visits.sql", "Mapped visits query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
+  mappedUnits<- executeQuery(outputFolder,"mapped_units.sql", "Mapped units query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
+
   conceptCounts <- executeQuery(outputFolder,"concept_counts_by_vocabulary.sql", "Concept counts by vocabulary query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
   vocabularyCounts <- executeQuery(outputFolder,"vocabulary_tables_count.sql", "Count on vocabulary tables query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
   sourceConceptFrequency <- executeQuery(outputFolder,"source_to_concept_map_frequency.sql", "Source to concept map breakdown query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
@@ -87,12 +96,16 @@ vocabularyChecks <- function (connectionDetails,
                   unmappedObservations=unmappedObservations,
                   unmappedProcedures=unmappedProcedures,
                   unmappedDevices=unmappedDevices,
+                  unmappedVisits=unmappedVisits,
+                  unmappedUnits=unmappedUnits,
                   mappedDrugs=mappedDrugs,
                   mappedConditions=mappedConditions,
                   mappedMeasurements=mappedMeasurements,
                   mappedObservations=mappedObservations,
                   mappedProcedures=mappedProcedures,
                   mappedDevices=mappedDevices,
+                  mappedVisits=mappedVisits,
+                  mappedUnits=mappedUnits,
                   conceptCounts=conceptCounts,
                   vocabularyCounts=vocabularyCounts,
                   sourceConceptFrequency=sourceConceptFrequency,
