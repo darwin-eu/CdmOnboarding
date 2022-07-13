@@ -33,6 +33,7 @@
 #' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema.
+#'                                         The Achilles results are read from this table.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param scratchDatabaseSchema            Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
@@ -160,6 +161,12 @@ cdmOnboarding <- function(connectionDetails,
   if (compareVersion(a = as.character(cdmVersion), b = "5") < 0) {
     ParallelLogger::logError("Not possible to execute the check, this function is only for v5 and above.")
     ParallelLogger::logError("Is the CDM version available in the cdm_source table?")
+    return(NULL)
+  }
+
+  # Check whether Achilles output is available
+  if (!sqlOnly && !.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
+    ParallelLogger::logError(paste("The output from Achilles is required. Please run Achilles first and make sure the result tables are in the", resultsDatabaseSchema, "schema"))
     return(NULL)
   }
 
@@ -350,4 +357,38 @@ cdmOnboarding <- function(connectionDetails,
     })
   }
   cdmSource
+}
+
+.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema) {
+  required_achilles_tables <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
+  achilles_tables_exist <- tryCatch({
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    for(x in required_achilles_tables) {
+      sql <- SqlRender::translate(
+               SqlRender::render(
+                 "SELECT * FROM @resultsDatabaseSchema.@table",
+                 resultsDatabaseSchema=resultsDatabaseSchema,
+                 table=x
+               ),
+               targetDialect = 'postgresql'
+             )
+      DatabaseConnector::executeSql(
+        connection = connection,
+        sql = sql,
+        progressBar = F,
+        reportOverallTime = F,
+        errorReportFile = "errorAchillesExistsSql.txt"
+      )
+    }
+    TRUE
+  },
+  error = function (e) {
+    ParallelLogger::logWarn("Achilles Tables have not been found.")
+    FALSE
+  },
+  finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
+  return(achilles_tables_exist)
 }
