@@ -107,6 +107,15 @@ cdmOnboarding <- function(connectionDetails,
       ParallelLogger::logInfo("Results from the checks have been saved as an RDS object to the output folder.")
   })
 
+  tryCatch({
+      bundledResultsLocation <- bundleResults(outputFolder, databaseId)
+      ParallelLogger::logInfo(sprintf("All generated CDM Onboarding results are bundled for sharing at: %s", bundledResultsLocation))
+    },
+    error = function (e) {
+      ParallelLogger::logWarn(sprintf("Failed to bundle CDM Onboarding results, no zip bundle has been created: %s", e))
+    }
+  )
+
   return(results)
 }
 
@@ -117,6 +126,7 @@ cdmOnboarding <- function(connectionDetails,
 #'
 #' @details
 #' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
+#' Results are returned and stored as an .rds object.
 .execute <- function (
     connectionDetails,
     cdmDatabaseSchema,
@@ -270,7 +280,7 @@ cdmOnboarding <- function(connectionDetails,
   ParallelLogger::logInfo(paste0("Done."))
 
   duration <- as.numeric(difftime(Sys.time(),start_time), units="mins")
-  ParallelLogger::logInfo(paste("Complete cdmOnboarding took ", sprintf("%.2f", duration)," minutes"))
+  ParallelLogger::logInfo(paste("Complete CdmOnboarding took ", sprintf("%.2f", duration)," minutes"))
 
   # save results  ------------------------------------------------------------------------------------------------------------
   results<-list(executionDate = date(),
@@ -290,15 +300,16 @@ cdmOnboarding <- function(connectionDetails,
                 dms=connectionDetails$dbms,
                 smallCellCount=smallCellCount)
 
-  saveRDS(results, file.path(outputFolder, "onboarding_results.rds"))
-  ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
-  bundledResultsLocation <- bundleResults(outputFolder, databaseId)
-  ParallelLogger::logInfo(paste("All CDM Onboarding results are bundled for sharing at: ", bundledResultsLocation))
+  tryCatch({
+      saveRDS(results, file.path(outputFolder, "onboarding_results.rds"))
+      ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
+    },
+    error = function (e) {
+      ParallelLogger::logWarn(sprintf("Failed to export CDM Onboarding results object, no rds file has been created: %s", e))
+    }
+  )
 
-  duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
-  ParallelLogger::logInfo(paste("CdmOnboarding run took", sprintf("%.2f", duration),"secs"))
-
-  results
+  return(results)
 }
 
 .getDatabaseName <- function(connectionDetails,
