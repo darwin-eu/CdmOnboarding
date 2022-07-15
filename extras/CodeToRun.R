@@ -73,6 +73,7 @@ user <- if (Sys.getenv("DB_USER") == "") NULL else Sys.getenv("DB_USER")
 password <- if (Sys.getenv("DB_PASSWORD") == "") NULL else Sys.getenv("DB_PASSWORD")
 server = Sys.getenv("DB_SERVER")
 port = Sys.getenv("DB_PORT")
+pathToDriver <- "" # path to your database driver. To download driver for your database use DatabaseConnector::downloadJdbcDrivers()
 
 # connectionString is optional
 # if specified, the server, port fields are ignored. If user and password are not specified, they are assumed to already be included in the connection string.
@@ -112,7 +113,8 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   server = server,
   user = user,
   password = password,
-  connectionString = connectionString
+  connectionString = connectionString,
+  pathToDriver = pathToDriver
 )
 
 results <- cdmOnboarding(
@@ -121,7 +123,10 @@ results <- cdmOnboarding(
   resultsDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = vocabDatabaseSchema,
   oracleTempSchema = oracleTempSchema,
+  databaseId = databaseId,
   databaseName = databaseName,
+  databaseDescription = databaseDescription,
+  authors = authors,
   runVocabularyChecks = TRUE,
   runDataTablesChecks = TRUE,
   runPerformanceChecks = TRUE,

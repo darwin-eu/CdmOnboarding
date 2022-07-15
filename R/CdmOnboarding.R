@@ -380,7 +380,7 @@ cdmOnboarding <- function(connectionDetails,
     for(x in required_achilles_tables) {
       sql <- SqlRender::translate(
                SqlRender::render(
-                 "SELECT * FROM @resultsDatabaseSchema.@table",
+                 "SELECT COUNT(*) FROM @resultsDatabaseSchema.@table",
                  resultsDatabaseSchema=resultsDatabaseSchema,
                  table=x
                ),
@@ -397,7 +397,7 @@ cdmOnboarding <- function(connectionDetails,
     TRUE
   },
   error = function (e) {
-    ParallelLogger::logWarn("The Achilles tables have not been found (", required_achilles_tables, ")")
+    ParallelLogger::logWarn("The Achilles tables have not been found (", required_achilles_tables, ")", "Please see error report in errorAchillesExistsSql.txt")
     FALSE
   },
   finally = {
