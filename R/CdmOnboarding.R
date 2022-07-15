@@ -93,19 +93,17 @@ cdmOnboarding <- function(connectionDetails,
     verboseMode = verboseMode
   )
 
-  if (sqlOnly || is.null(results)) {
-    return(results)
+  if (!(sqlOnly || is.null(results))) {
+    tryCatch({
+      generateResultsDocument(
+        results = results,
+        outputFolder = outputFolder
+      )},
+      error = function (e) {
+        ParallelLogger::logError("Could not generate results document: ", e)
+        ParallelLogger::logInfo("Results from the checks have been saved as an RDS object to the output folder.")
+    })
   }
-
-  tryCatch({
-    generateResultsDocument(
-      results = results,
-      outputFolder = outputFolder
-    )},
-    error = function (e) {
-      ParallelLogger::logError("Could not generate results document: ", e)
-      ParallelLogger::logInfo("Results from the checks have been saved as an RDS object to the output folder.")
-  })
 
   tryCatch({
       bundledResultsLocation <- bundleResults(outputFolder, databaseId)
