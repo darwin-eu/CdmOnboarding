@@ -97,10 +97,9 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
 my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
   n <- nrow(data$result)
 
-  if (is.null(smallCellCount)) {
-    msg <- paste0("Counts are rounded up to the nearest hundred. Values with a record count <=",smallCellCount," are omitted.")
-  } else {
-    msg <- "Counts are rounded up to the nearest hundred."
+  msg <- "Counts are rounded up to the nearest hundred."
+  if (!is.null(smallCellCount)) {
+    msg <- sprintf("%s Values with a record count <=%d are omitted.", msg, smallCellCount)
   }
 
   if (n == 0) {
