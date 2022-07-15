@@ -39,10 +39,10 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
 #' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.
-#' @param authors                          List of author names to be added in the document
 #' @param databaseId                       ID of your database, this will be used as subfolder for the results.
 #' @param databaseName		                 String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.
 #' @param databaseDescription              Provide a short description of the database.
+#' @param authors                          List of author names to be added in the document
 #' @param runVocabularyChecks              Boolean to determine if vocabulary checks need to be run. Default = TRUE
 #' @param runDataTablesChecks              Boolean to determine if table checks need to be run. Default = TRUE
 #' @param runWebAPIChecks                  Boolean to determine if WebAPI checks need to be run. Default = TRUE
@@ -60,10 +60,10 @@ cdmOnboarding <- function(connectionDetails,
                           scratchDatabaseSchema = resultsDatabaseSchema,
                           vocabDatabaseSchema = cdmDatabaseSchema,
                           oracleTempSchema = resultsDatabaseSchema,
-                          authors = "",
-                          databaseId = "",
+                          databaseId,
                           databaseName = "",
                           databaseDescription = "",
+                          authors = "",
                           runVocabularyChecks = TRUE,
                           runDataTablesChecks = TRUE,
                           runPerformanceChecks = TRUE,
@@ -132,7 +132,7 @@ cdmOnboarding <- function(connectionDetails,
     scratchDatabaseSchema = resultsDatabaseSchema,
     vocabDatabaseSchema = cdmDatabaseSchema,
     oracleTempSchema = resultsDatabaseSchema,
-    databaseId = "",
+    databaseId,
     databaseName = "",
     databaseDescription = "",
     runVocabularyChecks = TRUE,
