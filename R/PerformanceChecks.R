@@ -30,32 +30,23 @@
 #' \code{PerformanceChecks} runs a list of performance checks as part of the CDM Onboarding procedure
 #'
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
-#' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
-#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
-#' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema.
+#' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
-#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
-#' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.
-#' @param sourceName		                   String name of the data source name. If blank, CDM_SOURCE table will be queried to try to obtain this.
+#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
-#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 performanceChecks <- function (connectionDetails,
-                              cdmDatabaseSchema,
-                              resultsDatabaseSchema = cdmDatabaseSchema,
+                              resultsDatabaseSchema,
                               vocabDatabaseSchema = cdmDatabaseSchema,
-                              oracleTempSchema = resultsDatabaseSchema,
-                              sourceName = "",
                               sqlOnly = FALSE,
-                              outputFolder = "output",
-                              verboseMode = TRUE) {
-  achillesTiming <- executeQuery(outputFolder,"achilles_timing.sql", "Retrieving duration of Achilles queries", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema,resultsDatabaseSchema)
-  performanceBenchmark <- executeQuery(outputFolder,"performance_benchmark.sql", "Executing vocabulary query benchmark", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema,resultsDatabaseSchema)
+                              outputFolder = "output") {
+  achillesTiming <- executeQuery(outputFolder, "achilles_timing.sql", "Retrieving duration of Achilles queries", connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
+  performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark", connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
   results <- list(achillesTiming=achillesTiming,
                   performanceBenchmark=performanceBenchmark)
-
   return(results)
 }
 

@@ -183,9 +183,7 @@ cdmOnboarding <- function(connectionDetails,
     ParallelLogger::logError("A populated cdm_source table is required for CdmOnboarding to run.")
     return(NULL)
   }
-  cdmSource$CDM_VERSION <- as.character(cdmSource$CDM_VERSION)
-  cdmSource$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
-  cdmSource$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
+  cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
 
   # Get source name and id from cdm_source if none provided ----------------------------------------------------------------------------------------------
   if (missing(databaseId) & !sqlOnly) {
@@ -196,8 +194,8 @@ cdmOnboarding <- function(connectionDetails,
   }
 
   # Check version -----------------------------------
-  if (compareVersion(a = gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION), b = "5") < 0) {
-    ParallelLogger::logError("Not possible to execute the check, this function is only for v5 and above. '", cdmSource$CDM_VERSION, "' was found in the cdm_source table.")
+  if (compareVersion(a = cdmVersion, b = "5") < 0) {
+    ParallelLogger::logError("Not possible to execute the check, this function is only for v5 and above. 'v", cdmVersion, "' was found in the cdm_source table.")
     return(NULL)
   }
 
@@ -212,32 +210,34 @@ cdmOnboarding <- function(connectionDetails,
     dir.create(path = outputFolder, recursive = TRUE)
   }
 
-  ParallelLogger::logInfo(paste0("CDM Onboarding of database ", databaseName, " started (cdm_version=",cdmSource$CDM_VERSION,")"))
+  ParallelLogger::logInfo(sprintf("CDM Onboarding of database %s started (cdm_version=v%s)", databaseName, cdmVersion))
 
   # data table checks ------------------------------------------------------------------------------------------------------------
   dataTablesResults <- NULL
   if (runDataTablesChecks) {
     ParallelLogger::logInfo(paste0("Running Data Table Checks"))
-    dataTablesResults <- dataTablesChecks(connectionDetails = connectionDetails,
-                                  cdmDatabaseSchema = cdmDatabaseSchema,
-                                  resultsDatabaseSchema = resultsDatabaseSchema,
-                                  cdmVersion = cdmSource$CDM_VERSION,
-                                  outputFolder = outputFolder,
-                                  sqlOnly = sqlOnly)
+    dataTablesResults <- dataTablesChecks(
+      connectionDetails = connectionDetails,
+      cdmDatabaseSchema = cdmDatabaseSchema,
+      resultsDatabaseSchema = resultsDatabaseSchema,
+      cdmVersion = cdmVersion,
+      outputFolder = outputFolder,
+      sqlOnly = sqlOnly
+    )
   }
 
   # vocabulary checks ------------------------------------------------------------------------------------------------------------
   vocabularyResults <- NULL
   if (runVocabularyChecks) {
     ParallelLogger::logInfo(paste0("Running Vocabulary Checks"))
-    vocabularyResults<-vocabularyChecks(connectionDetails = connectionDetails,
-                     cdmDatabaseSchema = cdmDatabaseSchema,
-                     vocabDatabaseSchema = vocabDatabaseSchema,
-                     resultsDatabaseSchema = resultsDatabaseSchema,
-                     smallCellCount = smallCellCount,
-                     oracleTempSchema = oracleTempSchema,
-                     sqlOnly = sqlOnly,
-                     outputFolder = outputFolder)
+    vocabularyResults <- vocabularyChecks(
+      connectionDetails = connectionDetails,
+      cdmDatabaseSchema = cdmDatabaseSchema,
+      vocabDatabaseSchema = vocabDatabaseSchema,
+      smallCellCount = smallCellCount,
+      sqlOnly = sqlOnly,
+      outputFolder = outputFolder
+    )
   }
 
   # performance checks ------------------------------------------------------------------------------------------------------------
@@ -268,12 +268,13 @@ cdmOnboarding <- function(connectionDetails,
     ParallelLogger::logInfo(paste0("Running Performance Checks on ", sys_details$cpu$model_name, " cpu with ", sys_details$cpu$no_of_cores, " cores, and ", prettyunits::pretty_bytes(as.numeric(sys_details$ram)), " ram."))
 
     ParallelLogger::logInfo(paste0("Running Performance Checks SQL"))
-    performanceResults <- performanceChecks(connectionDetails = connectionDetails,
-                      cdmDatabaseSchema = cdmDatabaseSchema,
-                      resultsDatabaseSchema = resultsDatabaseSchema,
-                      oracleTempSchema = oracleTempSchema,
-                      sqlOnly = sqlOnly,
-                      outputFolder = outputFolder)
+    performanceResults <- performanceChecks(
+      connectionDetails = connectionDetails,
+      vocabDatabaseSchema = vocabDatabaseSchema,
+      resultsDatabaseSchema = resultsDatabaseSchema,
+      sqlOnly = sqlOnly,
+      outputFolder = outputFolder
+    )
   }
 
   webAPIversion <- "unknown"
