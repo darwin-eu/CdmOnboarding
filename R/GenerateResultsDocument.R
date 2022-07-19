@@ -130,18 +130,17 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
     doc <- doc %>%
       officer::body_add_par(value = "Table counts", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Shows the number of records in all vocabulary tables", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df_vc[order(df_vc$COUNT, descending=TRUE),], style = pkg.env$styles$table) %>%
+      my_body_add_table(value = df_vc[order(df_vc$COUNT, decreasing=TRUE),], style = pkg.env$styles$table) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$vocabularyCounts$duration), style = pkg.env$styles$footnote)
 
     ## add Mapping Completeness
-    vocabResults$mappingCompleteness$result$`%Codes Mapped` <- prettyHr(vocabResults$mappingCompleteness$result$`%Codes Mapped`)
-    vocabResults$mappingCompleteness$result$`%Records Mapped` <- prettyHr(vocabResults$mappingCompleteness$result$`%Records Mapped`)
-
     df_mc <- vocabResults$mappingCompleteness$result
+    df_mc$`%CODES MAPPED` <- prettyHr(df_mc$`%CODES MAPPED`)
+    df_mc$`%RECORDS MAPPED` <- prettyHr(df_mc$`%RECORDS MAPPED`)
     doc<-doc %>%
       officer::body_add_par(value = "Mapping Completeness", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records.", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df_mc[order(df_mc$Domain),], style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
+      my_body_add_table(value = df_mc[order(df_mc$DOMAIN),], style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$mappingCompleteness$duration), style = pkg.env$styles$footnote)
 
     ## add Drug Level Mappings
@@ -182,6 +181,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
       officer::body_add_par("Source to concept map breakdown", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = vocabResults$sourceConceptFrequency$result, style = pkg.env$styles$table) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$sourceConceptFrequency$duration), style = pkg.env$styles$footnote) %>%
+      officer::body_add_par(" ") %>%
       officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style="Drafting Notes (Agency)")
 
   } else {
@@ -220,22 +220,25 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par(" ")
 
+    n_relations <- results$performanceResults$performanceBenchmark$result$COUNT
+    benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
     doc<-doc %>%
       officer::body_add_par(value = "Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(paste0("The number of 'Maps To' relations is equal to ", results$performanceResults$performanceBenchmark$result,
-                                   ". This query was executed in ",sprintf("%.2f", results$performanceResults$performanceBenchmark$duration)," seconds"))
+      officer::body_add_par(sprintf("The number of 'Maps To' relations is equal to %d and the join query was executed in %.2f seconds (%g s/#).",
+                                    n_relations, benchmark_query_time, benchmark_query_time/n_relations))
 
     doc<-doc %>%
       officer::body_add_par(value = "Achilles Query Performance", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Execution time of queries of the Achilles R-Package", style = pkg.env$styles$tableCaption)
 
     if (!is.null(results$performanceResults$achillesTiming$result)) {
+      results$performanceResults$achillesTiming$result$ID <- as.character(results$performanceResults$achillesTiming$result$ID)
       doc<-doc %>%
-        my_body_add_table(value =results$performanceResults$achillesTiming$result, style = pkg.env$styles$table) %>%
-        officer::body_add_par(sprintf("Query executed in %.2f seconds", results$performanceResults$achillesTiming$duration)," seconds"), style = pkg.env$styles$footnote)
+        my_body_add_table(value = results$performanceResults$achillesTiming$result, style = pkg.env$styles$table) %>%
+        officer::body_add_par(sprintf("Query executed in %.2f seconds", results$performanceResults$achillesTiming$duration), style = pkg.env$styles$footnote)
     } else {
       doc<-doc %>%
-        officer::body_add_par("Query did not return results ", style = pkg.env$styles$highlight)
+        officer::body_add_par("Query did not return results", style = pkg.env$styles$highlight)
     }
   } else {
     doc<-doc %>%

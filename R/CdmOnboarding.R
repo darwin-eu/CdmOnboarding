@@ -130,14 +130,8 @@ cdmOnboarding <- function(connectionDetails,
   return(results)
 }
 
-#' The main CDM Onboarding analyses (for v5.x)
-#'
-#' @description
-#' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
-#'
-#' @details
-#' \code{cdmOnboarding} runs a list of checks as part of the CDM Onboarding procedure
-#' Results are returned and stored as an .rds object.
+# The main execution of CDM Onboarding analyses (for v5.x)
+# Results are returned as list, and stored as an .rds object in the provided output folder
 .execute <- function (
     connectionDetails,
     cdmDatabaseSchema,

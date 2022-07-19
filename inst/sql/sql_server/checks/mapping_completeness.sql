@@ -230,7 +230,7 @@ select 'Condition status', count_big(*),
 from
 (
    select condition_status_source_value, case when condition_status_concept_id > 0 then 1 else 0 end as is_mapped, count_big(*) as num_records
-   from @cdmDatabaseSchema.condition
+   from @cdmDatabaseSchema.condition_occurrence
    where condition_status_concept_id IS NOT NULL
    group by condition_status_source_value, case when condition_status_concept_id > 0 then 1 else 0 end
 ) T
