@@ -9,7 +9,7 @@ SELECT
     WHEN 1003 THEN 'Condition era'
     WHEN 1803 THEN 'Measurement'
     ELSE ''
-  END AS             AS category,
+  END                AS category,
   min_Value          AS min_Value,
   p10_Value          AS p10_Value,
   p25_Value          AS p25_Value,
