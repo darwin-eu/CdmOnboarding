@@ -148,7 +148,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
     doc<-doc %>%
       officer::body_add_par(value = "Drug Mappings", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("The level of the drug mappings", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df_dm[order(df_dm$'#Records', decreasing=TRUE),], style = pkg.env$styles$table) %>%
+      my_body_add_table(value = df_dm[order(df_dm$`#RECORDS`, decreasing=TRUE),], style = pkg.env$styles$table) %>%
       officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$drugMapping$duration),"seconds"), style = pkg.env$styles$footnote)
 
     ## add Top 25 missing mappings
