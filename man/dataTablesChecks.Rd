@@ -2,18 +2,16 @@
 % Please edit documentation in R/DataTablesChecks.R
 \name{dataTablesChecks}
 \alias{dataTablesChecks}
-\title{The vocabulary checks (for v5.x)}
+\title{The Data Tables checks (for v5.x)}
 \usage{
 dataTablesChecks(
   connectionDetails,
   cdmDatabaseSchema,
-  resultsDatabaseSchema = cdmDatabaseSchema,
+  resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema,
-  oracleTempSchema = resultsDatabaseSchema,
-  sourceName = "",
+  cdmVersion,
   sqlOnly = FALSE,
-  outputFolder = "output",
-  verboseMode = TRUE
+  outputFolder = "output"
 )
 }
 \arguments{
@@ -22,28 +20,25 @@ dataTablesChecks(
 \item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM schema.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
 
-\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema.
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
 
 \item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
-\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
-
-\item{sourceName}{String name of the data source name. If blank, CDM_SOURCE table will be queried to try to obtain this.}
+\item{cdmVersion}{Define the OMOP CDM version used: currently supports v5 and above.
+Use major release number or minor number only (e.g. 5, 5.3)}
 
 \item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 
 \item{outputFolder}{Path to store logs and SQL files}
-
-\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 }
 \value{
 \preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
 }
 }
 \description{
-\code{CdmOnboarding} runs a list of checks on the vocabulary as part of the CDM Onboarding procedure
+\code{dataTablesChecks} runs a list of checks on the clinical data tables as part of the CDM Onboarding procedure
 }
 \details{
-\code{CdmOnboarding} runs a list of checks on the vocabulary as part of the CDM Onboarding procedure
+\code{dataTablesChecks} runs a list of checks on the clinical data tables as part of the CDM Onboarding procedure
 }

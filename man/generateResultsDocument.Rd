@@ -4,12 +4,14 @@
 \alias{generateResultsDocument}
 \title{Generates the Results Document}
 \usage{
-generateResultsDocument(results, outputFolder, silent = FALSE)
+generateResultsDocument(results, outputFolder, authors, silent = FALSE)
 }
 \arguments{
 \item{results}{Results object from \code{cdmOnboarding}}
 
 \item{outputFolder}{Folder to store the results}
+
+\item{authors}{List of author names to be added in the document}
 
 \item{silent}{Flag to not create output in the terminal (default = FALSE)}
 }
