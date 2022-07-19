@@ -100,18 +100,18 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   }
 
   if (n == 0) {
-    officer::body_add_par(x, paste0("Omitted because no ", kind, " ", domain, " were found."), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("Omitted because no %s %s were found", kind, domain), style = pkg.env$styles$tableCaption)
   } else if (n < 25) {
-    officer::body_add_par(x, paste0("All ", n, " ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("All %d %s %s. %s", n, kind, domain, msg), style = pkg.env$styles$tableCaption)
   } else {
-    officer::body_add_par(x, paste0("Top 25 of ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("Top 25 of %s %s. %s", kind, domain, msg), style = pkg.env$styles$tableCaption)
   }
 
   if (n>0) {
     my_body_add_table(x, value = data$result, style = pkg.env$styles$table)
   }
 
-  officer::body_add_par(x, paste0("Query executed in ", sprintf("%.2f", data$duration), " secs"), style = pkg.env$styles$footnote)
+  officer::body_add_par(x, sprintf("Query executed in ", sprintf("%.2f", data$duration), " secs"), style = pkg.env$styles$footnote)
 }
 
 my_unmapped_section <- function(x, data, domain, smallCellCount) {

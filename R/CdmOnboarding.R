@@ -98,17 +98,19 @@ cdmOnboarding <- function(connectionDetails,
     return(NULL)
   }
 
-  documentGenerationError <- FALSE
+  documentGenerated <- NULL
   if (!sqlOnly) {
-    tryCatch({
-      generateResultsDocument(
-        results = results,
-        outputFolder = outputFolder
-      )},
+    documentGenerated <- tryCatch({
+        generateResultsDocument(
+          results = results,
+          outputFolder = outputFolder
+        )
+        TRUE
+      },
       error = function (e) {
         ParallelLogger::logError("Could not generate results document: ", e)
         ParallelLogger::logInfo("Results from the checks have been saved as an RDS object to the output folder.")
-        documentGenerationError <- TRUE
+        FALSE
     })
   }
 
@@ -121,7 +123,7 @@ cdmOnboarding <- function(connectionDetails,
     }
   )
 
-  if (documentGenerationError) {
+  if (!(is.null(documentGenerated) || documentGenerated)) {
     logError("!! CdmOnboarding document generation failed. Please fix any issues or reach out to the DARWIN-EU Coordination Centre.")
   }
 

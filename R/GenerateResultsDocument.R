@@ -52,7 +52,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
   # add Title Page
   doc<- doc %>%
     officer::body_add_img(logo, width = 5.00, height = 2.39, style = pkg.env$styles$title) %>%
-    officer::body_add_par(value = paste("CDM Onboarding report for the", results$databaseName, "database"), style = pkg.env$styles$title) %>%
+    officer::body_add_par(value = sprintf("CDM Onboarding report for the %s database", results$databaseName), style = pkg.env$styles$title) %>%
     officer::body_add_break()
 
   # add Table of content
@@ -64,7 +64,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
   # Execution details
   execution_details <- data.frame(
     Detail=c("CdmOnboarding package Version", "CDM version", "Execution date", "Execution duration", "Document Generation date"),
-    Value=c(as.character(packageVersion("CdmOnboarding")), results$cdmSource$CDM_VERSION, results$executionDate, paste(round(results$executionDuration,2), "seconds"), date())
+    Value=c(as.character(packageVersion("CdmOnboarding")), results$cdmSource$CDM_VERSION, results$executionDate, sprintf("%.2f seconds", results$executionDuration), date())
   )
   doc<-doc %>%
     officer::body_add_par(value = "Execution details", style = pkg.env$styles$heading1) %>%
@@ -89,7 +89,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
       officer::body_add_par(value = "Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("The number of records in all clinical data tables", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = df_t1[order(df_t1$COUNT, decreasing=TRUE),], style = pkg.env$styles$table) %>%
-      officer::body_add_par(paste("Query executed in ",sprintf("%.2f", results$dataTablesResults$dataTablesCounts$duration),"seconds"), style = pkg.env$styles$footnote)
+      officer::body_add_par(sprintf("Query executed in %.2f seconds", results$dataTablesResults$dataTablesCounts$duration), style = pkg.env$styles$footnote)
 
     plot <- recordsCountPlot(as.data.frame(results$dataTablesResults$totalRecords$result))
     doc<-doc %>% officer::body_add_break() %>%
@@ -123,25 +123,25 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
       officer::body_add_par(paste0("Vocabulary version: ",results$vocabularyResults$version)) %>%
       officer::body_add_par("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = vocabResults$conceptCounts$result, style = pkg.env$styles$table) %>%
-      officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$conceptCounts$duration),"seconds"), style = pkg.env$styles$footnote)
+      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$conceptCounts$duration), style = pkg.env$styles$footnote)
 
     ## add vocabulary table counts
-
+    df_vc <- vocabResults$vocabularyCounts$result
     doc <- doc %>%
       officer::body_add_par(value = "Table counts", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Shows the number of records in all vocabulary tables", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = vocabResults$vocabularyCounts$result, style = pkg.env$styles$table) %>%
-      officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$vocabularyCounts$duration),"seconds"), style = pkg.env$styles$footnote)
+      my_body_add_table(value = df_vc[order(df_vc$COUNT, descending=TRUE),], style = pkg.env$styles$table) %>%
+      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$vocabularyCounts$duration), style = pkg.env$styles$footnote)
 
     ## add Mapping Completeness
-    vocabResults$mappingCompleteness$result$'%Codes Mapped' <- prettyHr(vocabResults$mappingCompleteness$result$'%Codes Mapped')
-    vocabResults$mappingCompleteness$result$'%Records Mapped' <- prettyHr(vocabResults$mappingCompleteness$result$'%Records Mapped')
+    vocabResults$mappingCompleteness$result$`%Codes Mapped` <- prettyHr(vocabResults$mappingCompleteness$result$`%Codes Mapped`)
+    vocabResults$mappingCompleteness$result$`%Records Mapped` <- prettyHr(vocabResults$mappingCompleteness$result$`%Records Mapped`)
 
     doc<-doc %>%
       officer::body_add_par(value = "Mapping Completeness", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records.", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = vocabResults$mappingCompleteness$result, style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
-      officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$mappingCompleteness$duration),"seconds"), style = pkg.env$styles$footnote)
+      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$mappingCompleteness$duration), style = pkg.env$styles$footnote)
 
     ## add Drug Level Mappings
     df_dm <- vocabResults$drugMapping$result
@@ -149,7 +149,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
       officer::body_add_par(value = "Drug Mappings", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("The level of the drug mappings", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = df_dm[order(df_dm$`#RECORDS`, decreasing=TRUE),], style = pkg.env$styles$table) %>%
-      officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$drugMapping$duration),"seconds"), style = pkg.env$styles$footnote)
+      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$drugMapping$duration), style = pkg.env$styles$footnote)
 
     ## add Top 25 missing mappings
     doc<-doc %>%
@@ -180,7 +180,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
       officer::body_add_par(value = "Source to concept map", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Source to concept map breakdown", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = vocabResults$sourceConceptFrequency$result, style = pkg.env$styles$table) %>%
-      officer::body_add_par(paste("Query executed in ",sprintf("%.2f", vocabResults$sourceConceptFrequency$duration),"seconds"), style = pkg.env$styles$footnote) %>%
+      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$sourceConceptFrequency$duration), style = pkg.env$styles$footnote) %>%
       officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style="Drafting Notes (Agency)")
 
   } else {
@@ -231,7 +231,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
     if (!is.null(results$performanceResults$achillesTiming$result)) {
       doc<-doc %>%
         my_body_add_table(value =results$performanceResults$achillesTiming$result, style = pkg.env$styles$table) %>%
-        officer::body_add_par(paste("Query executed in ",sprintf("%.2f", results$performanceResults$achillesTiming$duration)," seconds"), style = pkg.env$styles$footnote)
+        officer::body_add_par(sprintf("Query executed in %.2f seconds", results$performanceResults$achillesTiming$duration)," seconds"), style = pkg.env$styles$footnote)
     } else {
       doc<-doc %>%
         officer::body_add_par("Query did not return results ", style = pkg.env$styles$highlight)
