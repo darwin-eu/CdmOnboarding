@@ -93,7 +93,11 @@ cdmOnboarding <- function(connectionDetails,
     verboseMode = verboseMode
   )
 
-  if (!(sqlOnly || is.null(results))) {
+  if(is.null(results)) {
+    return(NULL)
+  }
+
+  if (!sqlOnly) {
     tryCatch({
       generateResultsDocument(
         results = results,
@@ -398,7 +402,7 @@ cdmOnboarding <- function(connectionDetails,
     TRUE
   },
   error = function (e) {
-    ParallelLogger::logWarn("The Achilles tables have not been found (", required_achilles_tables, ")", "Please see error report in errorAchillesExistsSql.txt")
+    ParallelLogger::logWarn("The Achilles tables have not been found (", required_achilles_tables, "). Please see error report in errorAchillesExistsSql.txt")
     FALSE
   },
   finally = {
