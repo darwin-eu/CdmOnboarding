@@ -202,6 +202,7 @@ cdmOnboarding <- function(connectionDetails,
     dataTablesResults <- dataTablesChecks(connectionDetails = connectionDetails,
                                   cdmDatabaseSchema = cdmDatabaseSchema,
                                   resultsDatabaseSchema = resultsDatabaseSchema,
+                                  cdmVersion = cdmVersion,
                                   outputFolder = outputFolder,
                                   sqlOnly = sqlOnly)
     cdmSource<- .getCdmSource(connectionDetails, cdmDatabaseSchema,sqlOnly,outputFolder)

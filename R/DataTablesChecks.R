@@ -47,13 +47,12 @@ dataTablesChecks <- function (connectionDetails,
                               resultsDatabaseSchema = cdmDatabaseSchema,
                               vocabDatabaseSchema = cdmDatabaseSchema,
                               oracleTempSchema = resultsDatabaseSchema,
+                              cdmVersion = "5.3",
                               sourceName = "",
                               sqlOnly = FALSE,
                               outputFolder = "output",
                               verboseMode = TRUE) {
-
-  ## run all queries
-  dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
   totalRecords <- executeQuery(outputFolder,"totalrecords.sql", "Total number of records over time query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
   recordsPerPerson <- executeQuery(outputFolder,"recordsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
   conceptsPerPerson <- executeQuery(outputFolder,"conceptsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
@@ -64,6 +63,3 @@ dataTablesChecks <- function (connectionDetails,
                   conceptsPerPerson=conceptsPerPerson)
   return(results)
 }
-
-
-
