@@ -20,7 +20,7 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-executeQuery <- function(outputFolder,sqlFileName, successMessage, connectionDetails, sqlOnly, cdmDatabaseSchema=NULL, vocabDatabaseSchema=NULL, resultsDatabaseSchema=NULL, smallCellCount = 5){
+executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails, sqlOnly, cdmDatabaseSchema=NULL, vocabDatabaseSchema=NULL, resultsDatabaseSchema=NULL, smallCellCount = 5){
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks",sqlFileName),
                                            packageName = "CdmOnboarding",
                                            dbms = connectionDetails$dbms,
@@ -29,31 +29,28 @@ executeQuery <- function(outputFolder,sqlFileName, successMessage, connectionDet
                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
                                            smallCellCount = smallCellCount)
-
   duration = -1
   result = NULL
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, sqlFileName))
   } else {
-
+    errorReportFile <- file.path(outputFolder, sprintf("%sErr.txt", tools::file_path_sans_ext(sqlFileName)))
     tryCatch({
       start_time <- Sys.time()
-      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails,)
-      result<- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = file.path(outputFolder, paste0(tools::file_path_sans_ext(sqlFileName),"Err.txt")))
+      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      result <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
       duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
-      ParallelLogger::logInfo(paste("> ",successMessage, "in", sprintf("%.2f", duration),"secs"))
+      ParallelLogger::logInfo(sprintf("> %s in %.2f secs", successMessage, duration))
     },
     error = function (e) {
-      ParallelLogger::logError(paste0("> Failed see ",file.path(outputFolder,paste0(tools::file_path_sans_ext(sqlFileName),"Err.txt"))," for more details"))
-    }, finally = {
+      ParallelLogger::logError(sprintf("> Query failed. See '%s' for more details", errorReportFile))
+    },
+    finally = {
       DatabaseConnector::disconnect(connection = connection)
       rm(connection)
     })
-
   }
-
-
-  return(list(result=result,duration=duration))
+  return(list(result=result, duration=duration))
 }
 
 prettyHr <- function(x) {

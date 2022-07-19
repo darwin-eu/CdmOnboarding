@@ -180,9 +180,11 @@ cdmOnboarding <- function(connectionDetails,
   # CDM Source ------------------------------------------
   cdmSource <- .getCdmSource(connectionDetails, cdmDatabaseSchema, sqlOnly, outputFolder)
   if (is.null(cdmSource)) {
-    ParallelLogger::logError("A populated cdm_source table is required for CdmOnboarding to run.")
+    ParallelLogger::logError(sprintf("A populated cdm_source table is required for CdmOnboarding to run. Are your CDM tables in the '%s' schema?", cdmDatabaseSchema))
     return(NULL)
   }
+  cdmSource$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
+  cdmSource$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
   cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
 
   # Get source name and id from cdm_source if none provided ----------------------------------------------------------------------------------------------
