@@ -201,7 +201,8 @@ cdmOnboarding <- function(connectionDetails,
 
   # Check whether Achilles output is available ---------------------------------------
   if (!sqlOnly && !.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
-    ParallelLogger::logError(paste0("The output from the Achilles analyses is required.\nPlease run Achilles first and make sure the resulting Achilles tables are in the given results schema ('", resultsDatabaseSchema, "')."))
+    ParallelLogger::logError("The output from the Achilles analyses is required.")
+    ParallelLogger::logError(sprintf("Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').", resultsDatabaseSchema))
     return(NULL)
   }
 
@@ -215,7 +216,7 @@ cdmOnboarding <- function(connectionDetails,
   # data table checks ------------------------------------------------------------------------------------------------------------
   dataTablesResults <- NULL
   if (runDataTablesChecks) {
-    ParallelLogger::logInfo(paste0("Running Data Table Checks"))
+    ParallelLogger::logInfo("Running Data Table Checks")
     dataTablesResults <- dataTablesChecks(
       connectionDetails = connectionDetails,
       cdmDatabaseSchema = cdmDatabaseSchema,
@@ -229,7 +230,7 @@ cdmOnboarding <- function(connectionDetails,
   # vocabulary checks ------------------------------------------------------------------------------------------------------------
   vocabularyResults <- NULL
   if (runVocabularyChecks) {
-    ParallelLogger::logInfo(paste0("Running Vocabulary Checks"))
+    ParallelLogger::logInfo("Running Vocabulary Checks")
     vocabularyResults <- vocabularyChecks(
       connectionDetails = connectionDetails,
       cdmDatabaseSchema = cdmDatabaseSchema,
@@ -247,7 +248,7 @@ cdmOnboarding <- function(connectionDetails,
   performanceResults <- NULL
   missingPackages <- NULL
   if (runPerformanceChecks) {
-    ParallelLogger::logInfo(paste0("Check installed R Packages"))
+    ParallelLogger::logInfo("Check installed R Packages")
     # packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv"
     # hadesPackageList <- read.table(packageListUrl, sep = ",", header = TRUE)
     # packages <- hadesPackageList$name
@@ -262,10 +263,10 @@ cdmOnboarding <- function(connectionDetails,
     missingPackages <- paste(diffPackages, collapse=', ')
 
     if (length(diffPackages)>0){
-      ParallelLogger::logInfo(paste0("Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information"))
-      ParallelLogger::logInfo(paste0("Missing:", missingPackages))
+      ParallelLogger::logInfo("Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information")
+      ParallelLogger::logInfo(sprintf("Missing: %s", missingPackages))
     } else {
-      ParallelLogger::logInfo(paste0("> All HADES packages are installed"))
+      ParallelLogger::logInfo("> All HADES packages are installed")
     }
 
     packinfo <- installed.packages(fields = c("Package", "Version"))
@@ -273,9 +274,9 @@ cdmOnboarding <- function(connectionDetails,
     hadesPackageVersions <- as.data.frame(hades[row.names(hades) %in% packages,])
 
     sys_details <- benchmarkme::get_sys_details(sys_info=FALSE)
-    ParallelLogger::logInfo(paste0("Running Performance Checks on ", sys_details$cpu$model_name, " cpu with ", sys_details$cpu$no_of_cores, " cores, and ", prettyunits::pretty_bytes(as.numeric(sys_details$ram)), " ram."))
+    ParallelLogger::logInfo(sprintf("Running Performance Checks on %s cpu with %s cores, and %s ram.", sys_details$cpu$model_name, sys_details$cpu$no_of_cores, prettyunits::pretty_bytes(as.numeric(sys_details$ram))))
 
-    ParallelLogger::logInfo(paste0("Running Performance Checks SQL"))
+    ParallelLogger::logInfo("Running Performance Checks SQL")
     performanceResults <- performanceChecks(
       connectionDetails = connectionDetails,
       vocabDatabaseSchema = vocabDatabaseSchema,
@@ -287,22 +288,21 @@ cdmOnboarding <- function(connectionDetails,
 
   webAPIversion <- "unknown"
   if (runWebAPIChecks && baseUrl != ""){
-    ParallelLogger::logInfo(paste0("Running WebAPIChecks"))
+    ParallelLogger::logInfo("Running WebAPIChecks")
 
     tryCatch({
       webAPIversion <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
-      ParallelLogger::logInfo(sprintf("> Connected successfully to %s", baseUrl))
+      ParallelLogger::logInfo(sprintf("> Connected successfully to '%s'", baseUrl))
       ParallelLogger::logInfo(sprintf("> WebAPI version: %s", webAPIversion))},
              error = function (e) {
-               ParallelLogger::logError(paste0("Could not connect to the WebAPI: ", baseUrl))
+               ParallelLogger::logError(sprintf("Could not connect to the WebAPI on '%s'", baseUrl))
                webAPIversion <- "Failed"
       })
   }
 
-  ParallelLogger::logInfo(paste0("Done."))
+  ParallelLogger::logInfo("Done.")
 
-  duration <- as.numeric(difftime(Sys.time(),start_time), units="mins")
-  ParallelLogger::logInfo(paste("Complete CdmOnboarding took ", sprintf("%.2f", duration)," minutes"))
+  ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes", as.numeric(difftime(Sys.time(),start_time), units="mins")))
 
   # save results  ------------------------------------------------------------------------------------------------------------
   results<-list(executionDate = date(),
@@ -360,7 +360,7 @@ cdmOnboarding <- function(connectionDetails,
       cdmSource
     },
     error = function (e) {
-      ParallelLogger::logError(paste0("> CDM Source table could not be extracted, see ", file.path(outputFolder,"cdmSourceError.txt"), " for more details"))
+      ParallelLogger::logError(sprintf("> CDM Source table could not be extracted, see %s for more details", file.path(outputFolder, "cdmSourceError.txt")))
       NULL
     },
     finally = {
