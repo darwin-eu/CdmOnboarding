@@ -112,7 +112,7 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
     my_body_add_table(x, value = data$result, style = pkg.env$styles$table)
   }
 
-  officer::body_add_par(x, sprintf("Query executed in ", sprintf("%.2f", data$duration), " secs"), style = pkg.env$styles$footnote)
+  officer::body_add_par(x, sprintf("Query executed in %.2f seconds", data$duration), style = pkg.env$styles$footnote)
 }
 
 my_unmapped_section <- function(x, data, domain, smallCellCount) {
