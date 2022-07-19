@@ -45,9 +45,6 @@ vocabularyChecks <- function (connectionDetails,
                            sqlOnly = FALSE,
                            outputFolder = "output") {
   mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
-  if (!sqlOnly) {
-    colnames(mappingCompleteness$result) <- c("Domain","#Codes Source","#Codes Mapped","%Codes Mapped","#Records Source","#Records Mapped","%Records Mapped")
-  }
 
   drugMapping  <- executeQuery(outputFolder,"mapping_levels_drugs.sql", "Drug Level Mapping query executed successfully", connectionDetails, sqlOnly,  cdmDatabaseSchema, vocabDatabaseSchema)
 

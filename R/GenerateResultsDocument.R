@@ -137,10 +137,11 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
     vocabResults$mappingCompleteness$result$`%Codes Mapped` <- prettyHr(vocabResults$mappingCompleteness$result$`%Codes Mapped`)
     vocabResults$mappingCompleteness$result$`%Records Mapped` <- prettyHr(vocabResults$mappingCompleteness$result$`%Records Mapped`)
 
+    df_mc <- vocabResults$mappingCompleteness$result
     doc<-doc %>%
       officer::body_add_par(value = "Mapping Completeness", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records.", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = vocabResults$mappingCompleteness$result, style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
+      my_body_add_table(value = df_mc[order(df_mc$Domain),], style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$mappingCompleteness$duration), style = pkg.env$styles$footnote)
 
     ## add Drug Level Mappings
