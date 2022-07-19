@@ -224,7 +224,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
     benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
     doc<-doc %>%
       officer::body_add_par(value = "Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(sprintf("The number of 'Maps To' relations is equal to %d and the join query was executed in %.2f seconds (%g s/#).",
+      officer::body_add_par(sprintf("The number of 'Maps To' relations is equal to %d, queried in %.2f seconds (%g s/#).",
                                     n_relations, benchmark_query_time, benchmark_query_time/n_relations))
 
     doc<-doc %>%

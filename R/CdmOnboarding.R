@@ -39,9 +39,9 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
 #' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.
-#' @param databaseId                       ID of your database, this will be used as subfolder for the results. If blank, CDM_SOURCE table will be queried to try to obtain this.
+#' @param databaseId                       ID of your database, this will be used as subfolder for the results and naming of the report
 #' @param databaseName		                 String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.
-#' @param databaseDescription              Provide a short description of the database.
+#' @param databaseDescription              Provide a short description of the database. If blank, CDM_SOURCE table will be queried to try to obtain this.
 #' @param authors                          List of author names to be added in the document
 #' @param runVocabularyChecks              Boolean to determine if vocabulary checks need to be run. Default = TRUE
 #' @param runDataTablesChecks              Boolean to determine if table checks need to be run. Default = TRUE
@@ -60,7 +60,7 @@ cdmOnboarding <- function(connectionDetails,
                           scratchDatabaseSchema = resultsDatabaseSchema,
                           vocabDatabaseSchema = cdmDatabaseSchema,
                           oracleTempSchema = resultsDatabaseSchema,
-                          databaseId = "",
+                          databaseId,
                           databaseName = "",
                           databaseDescription = "",
                           authors = "",
@@ -183,12 +183,12 @@ cdmOnboarding <- function(connectionDetails,
   cdmSource$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
   cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
 
-  # Get source name and id from cdm_source if none provided ----------------------------------------------------------------------------------------------
-  if (missing(databaseId) & !sqlOnly) {
-    databaseId <- cdmSource$CDM_SOURCE_ABBREVIATION
-  }
+  # Get source name from cdm_source if none provided ----------------------------------------------------------------------------------------------
   if (missing(databaseName) & !sqlOnly) {
     databaseName <- cdmSource$CDM_SOURCE_NAME
+  }
+  if (missing(databaseDescription) & !sqlOnly) {
+    databaseDescription <- cdmSource$SOURCE_DESCRIPTION
   }
 
   # Check version -----------------------------------
@@ -305,8 +305,8 @@ cdmOnboarding <- function(connectionDetails,
   # save results  ------------------------------------------------------------------------------------------------------------
   results<-list(executionDate = date(),
                 executionDuration = as.numeric(difftime(Sys.time(),start_time), units="secs"),
-                databaseName = databaseName,
                 databaseId = databaseId,
+                databaseName = databaseName,
                 databaseDescription = databaseDescription,
                 vocabularyResults = vocabularyResults,
                 dataTablesResults = dataTablesResults,
@@ -393,7 +393,7 @@ cdmOnboarding <- function(connectionDetails,
     TRUE
   },
   error = function (e) {
-    ParallelLogger::logWarn("The Achilles tables have not been found (", required_achilles_tables, "). Please see error report in errorAchillesExistsSql.txt")
+    ParallelLogger::logWarn("The Achilles tables have not been found (", paste(required_achilles_tables, collapse = ', '), "). Please see error report in errorAchillesExistsSql.txt")
     FALSE
   },
   finally = {
