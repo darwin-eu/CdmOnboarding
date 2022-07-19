@@ -20,7 +20,7 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-executeQuery <- function(outputFolder,sqlFileName, successMessage, connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema=NULL, resultsDatabaseSchema=NULL, smallCellCount = 5){
+executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails, sqlOnly, cdmDatabaseSchema=NULL, vocabDatabaseSchema=NULL, resultsDatabaseSchema=NULL, smallCellCount=5, cdmVersion='5.3'){
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks",sqlFileName),
                                            packageName = "CdmOnboarding",
                                            dbms = connectionDetails$dbms,
@@ -28,32 +28,30 @@ executeQuery <- function(outputFolder,sqlFileName, successMessage, connectionDet
                                            vocabDatabaseSchema = vocabDatabaseSchema,
                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
-                                           smallCellCount = smallCellCount)
-
+                                           smallCellCount = smallCellCount,
+                                           cdmVersion = cdmVersion)
   duration = -1
   result = NULL
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, sqlFileName))
   } else {
-
+    errorReportFile <- file.path(outputFolder, sprintf("%sErr.txt", tools::file_path_sans_ext(sqlFileName)))
     tryCatch({
       start_time <- Sys.time()
-      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails,)
-      result<- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = file.path(outputFolder, paste0(tools::file_path_sans_ext(sqlFileName),"Err.txt")))
+      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      result <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
       duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
-      ParallelLogger::logInfo(paste("> ",successMessage, "in", sprintf("%.2f", duration),"secs"))
+      ParallelLogger::logInfo(sprintf("> %s in %.2f secs", successMessage, duration))
     },
     error = function (e) {
-      ParallelLogger::logError(paste0("> Failed see ",file.path(outputFolder,paste0(tools::file_path_sans_ext(sqlFileName),"Err.txt"))," for more details"))
-    }, finally = {
+      ParallelLogger::logError(sprintf("> Query failed. See '%s' for more details", errorReportFile))
+    },
+    finally = {
       DatabaseConnector::disconnect(connection = connection)
       rm(connection)
     })
-
   }
-
-
-  return(list(result=result,duration=duration))
+  return(list(result=result, duration=duration))
 }
 
 prettyHr <- function(x) {
@@ -97,25 +95,24 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
 my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
   n <- nrow(data$result)
 
-  if (is.null(smallCellCount)) {
-    msg <- paste0("Counts are rounded up to the nearest hundred. Values with a record count <=",smallCellCount," are omitted.")
-  } else {
-    msg <- "Counts are rounded up to the nearest hundred."
+  msg <- "Counts are rounded up to the nearest hundred."
+  if (!is.null(smallCellCount)) {
+    msg <- sprintf("%s Values with a record count <=%d are omitted.", msg, smallCellCount)
   }
 
   if (n == 0) {
-    officer::body_add_par(x, paste0("Omitted because no ", kind, " ", domain, " were found."), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("Omitted because no %s %s were found", kind, domain), style = pkg.env$styles$tableCaption)
   } else if (n < 25) {
-    officer::body_add_par(x, paste0("All ", n, " ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("All %d %s %s. %s", n, kind, domain, msg), style = pkg.env$styles$tableCaption)
   } else {
-    officer::body_add_par(x, paste0("Top 25 of ", kind, " ", domain, ". ", msg), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("Top 25 of %s %s. %s", kind, domain, msg), style = pkg.env$styles$tableCaption)
   }
 
   if (n>0) {
     my_body_add_table(x, value = data$result, style = pkg.env$styles$table)
   }
 
-  officer::body_add_par(x, paste0("Query executed in ", sprintf("%.2f", data$duration), " secs"), style = pkg.env$styles$footnote)
+  officer::body_add_par(x, sprintf("Query executed in ", sprintf("%.2f", data$duration), " secs"), style = pkg.env$styles$footnote)
 }
 
 my_unmapped_section <- function(x, data, domain, smallCellCount) {

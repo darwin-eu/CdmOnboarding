@@ -40,5 +40,9 @@ vignettes/*.pdf
 
 # Mac
 .DS_Store
+
+# Repo-specific
 results/
+output/
 errorReport*.txt
+extras/CodeToRun_local.R

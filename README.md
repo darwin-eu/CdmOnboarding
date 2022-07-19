@@ -64,7 +64,9 @@ User Documentation
 
 You should run the CdmOnboarding package ideally on the same machine you will perform actual anlyses so we can test its performance.
 
-Make sure that Achilles has run in the results schema you select when calling the cdmOnboarding function.
+Make sure that Achilles has run in the results schema you select when calling the `cdmOnboarding` function.
+Ideally, all Achilles analyses are run before running CdmOnboarding. However, the following Achilles analyses are required for CdmOnboarding to create a complete report:
+`analysisIds = c(111, 117, 220, 420, 502, 620, 720, 820, 920, 1020, 1820, 2120, 203, 403, 603, 703, 803, 903, 1003, 1803)`
 
 PDF versions of the documentation are available:
 * Package manual: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding.pdf)

@@ -41,3 +41,9 @@ UNION
 select 'visit_detail' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.visit_detail
 UNION
 select 'visit_occurrence' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.visit_occurrence
+{@cdmVersion in ('5.4', '5.4.0')} ? {
+UNION
+select 'episode' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.episode
+UNION
+select 'episode_event' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.episode_event
+}
