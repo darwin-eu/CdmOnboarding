@@ -40,9 +40,10 @@ pkg.env$styles <- list(
 #' \code{generateResultsDocument} creates a word document with results based on a template
 #' @param results             Results object from \code{cdmOnboarding}
 #' @param outputFolder        Folder to store the results
+#' @param authors             List of author names to be added in the document
 #' @param silent              Flag to not create output in the terminal (default = FALSE)
 #' @export
-generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
+generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE) {
   docTemplate <- system.file("templates", "Template-DarwinEU.docx", package="CdmOnboarding")
   logo <- system.file("templates", "img", "darwin-logo.jpg", package="CdmOnboarding")
 
@@ -53,6 +54,7 @@ generateResultsDocument<- function(results, outputFolder, silent=FALSE) {
   doc<- doc %>%
     officer::body_add_img(logo, width = 5.00, height = 2.39, style = pkg.env$styles$title) %>%
     officer::body_add_par(value = sprintf("CDM Onboarding report for the %s database", results$databaseName), style = pkg.env$styles$title) %>%
+    officer::body_add_par(value = paste(authors, collapse = ","), style = pkg.env$styles$subTitle) %>%
     officer::body_add_break()
 
   # add Table of content

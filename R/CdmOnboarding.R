@@ -61,8 +61,8 @@ cdmOnboarding <- function(connectionDetails,
                           vocabDatabaseSchema = cdmDatabaseSchema,
                           oracleTempSchema = resultsDatabaseSchema,
                           databaseId,
-                          databaseName = "",
-                          databaseDescription = "",
+                          databaseName,
+                          databaseDescription,
                           authors = "",
                           runVocabularyChecks = TRUE,
                           runDataTablesChecks = TRUE,
@@ -73,6 +73,10 @@ cdmOnboarding <- function(connectionDetails,
                           sqlOnly = FALSE,
                           outputFolder = "output",
                           verboseMode = TRUE) {
+  if(missing(databaseId)) {
+    stop("Argument databaseId is missing")
+  }
+
   results <- .execute(
     connectionDetails = connectionDetails,
     cdmDatabaseSchema = cdmDatabaseSchema,
@@ -103,7 +107,8 @@ cdmOnboarding <- function(connectionDetails,
     documentGenerated <- tryCatch({
         generateResultsDocument(
           results = results,
-          outputFolder = outputFolder
+          outputFolder = outputFolder,
+          authors = authors
         )
         TRUE
       },

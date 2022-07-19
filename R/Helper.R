@@ -20,7 +20,7 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails, sqlOnly, cdmDatabaseSchema=NULL, vocabDatabaseSchema=NULL, resultsDatabaseSchema=NULL, smallCellCount = 5){
+executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails, sqlOnly, cdmDatabaseSchema=NULL, vocabDatabaseSchema=NULL, resultsDatabaseSchema=NULL, smallCellCount=5, cdmVersion='5.3'){
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks",sqlFileName),
                                            packageName = "CdmOnboarding",
                                            dbms = connectionDetails$dbms,
@@ -28,7 +28,8 @@ executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDe
                                            vocabDatabaseSchema = vocabDatabaseSchema,
                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
-                                           smallCellCount = smallCellCount)
+                                           smallCellCount = smallCellCount,
+                                           cdmVersion = cdmVersion)
   duration = -1
   result = NULL
   if (sqlOnly) {
