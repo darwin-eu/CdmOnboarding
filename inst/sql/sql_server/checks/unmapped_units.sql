@@ -9,7 +9,7 @@ FROM (
   from (
     select 'observation' as source_table, unit_source_value, unit_concept_id
     from @cdmDatabaseSchema.observation
-    union
+    union all
     select 'measurement' as source_table, unit_source_value, unit_concept_id
     from @cdmDatabaseSchema.measurement
   ) C
