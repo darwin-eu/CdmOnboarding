@@ -56,74 +56,18 @@ remotes::install_github("OHDSI/ROhdsiWebApi")
 remotes::install_github("darwin-eu/CdmOnboarding")
 ```
 
-# User Documentation
-You should run the CdmOnboarding package ideally on the same machine you will perform actual anlyses so we can test its performance.
+# Execution instructions
+Performing the checks and exporting the CdmOnboarding results is done by executing the `cdmOnboarding(...)` function.
+Ideally, run the CdmOnboarding package on the same machine you will perform actual analyses so we can test its performance.
 
 Make sure that Achilles has run in the results schema you select when calling the `cdmOnboarding` function.
-Ideally, all Achilles analyses are run before running CdmOnboarding. However, the following Achilles analyses are required for CdmOnboarding to create a complete report:
-
+Ideally, all Achilles analyses are run before running CdmOnboarding. 
+However, the following Achilles analyses are required for CdmOnboarding to create a complete report: 
 `analysisIds = c(111, 117, 220, 420, 502, 620, 720, 820, 920, 1020, 1820, 2120, 203, 403, 603, 703, 803, 903, 1003, 1803)`
 
-```R
-library(CdmOnboarding)
+For a template execution script, see [extras/CodeToRun.R](extras/CodeToRun.R).
 
-# Details for connecting to the server
-dbms <- ''
-user <- ''
-password <- ''
-server <- ''
-port <- 
-pathToDriver <- ''  # Driver can be installed with DatabaseConnector::downloadJdbcDrivers(dbms, pathToDriver)
-
-# Details for connecting to the CDM and storing the results
-outputFolder <- file.path(getwd(), 'output', databaseId)
-cdmDatabaseSchema <- ''
-resultsDatabaseSchema <- ''
-vocabDatabaseSchema <- cdmDatabaseSchema
-oracleTempSchema <- NULL  # For Oracle: define a schema that can be used to emulate temp tables
-
-# An id and name that unique identifies the database
-databaseId <- '<requried_database_id>'
-databaseName <- '<optional_database_name>'
-databaseDescription <- '<optional_description>'
-authors <- c('', '')
-webApiBaseUrl <- ''  # URL to your OHDSI WebAPI that Atlas uses, e.g. http://localhost:8080/WebAPI
-
-# Other settings
-smallCellCount <- 5
-verboseMode <- TRUE
-
-# Connecting
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = dbms,
-                                                                server = server,
-                                                                user = user,
-                                                                password = password,
-                                                                port = port,
-                                                                pathToDriver = pathToDriver)
-
-results <- CdmOnboarding::cdmOnboarding(
- connectionDetails = connectionDetails,
- cdmDatabaseSchema = cdmDatabaseSchema,
- resultsDatabaseSchema = resultsDatabaseSchema,
- vocabDatabaseSchema = vocabDatabaseSchema,
- oracleTempSchema = oracleTempSchema,
- databaseId = databaseId,
- databaseName = databaseName,
- databaseDescription = databaseDescription,
- authors = authors,
- runVocabularyChecks = TRUE,
- runDataTablesChecks = TRUE,
- runPerformanceChecks = TRUE,
- runWebAPIChecks = TRUE,
- smallCellCount = smallCellCount,
- baseUrl = webApiBaseUrl,
- sqlOnly = FALSE,
- outputFolder = outputFolder,
- verboseMode = verboseMode
-)
-```
-
-
+# User documentation
 PDF versions of the documentation are available:
 * Package manual: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding.pdf)
 * CodeToRun Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CodeToRun.R)
@@ -134,7 +78,6 @@ This package is maintained by the Darwin EU Coordination Centre as part of its q
 We use the <a href="https://github.com/darwin-eu/CdmOnbording/issues">GitHub issue tracker</a> for all bugs/issues/enhancements/questions/feedback
 Additions are welcome through pull requests. 
 We suggest to first create an issue and discuss with the maintainer before implementing additional functionality.
-
 
 # License
 CdmOnboarding is licensed under Apache License 2.0
