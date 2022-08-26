@@ -310,6 +310,7 @@ cdmOnboarding <- function(connectionDetails,
   # save results  ------------------------------------------------------------------------------------------------------------
   results<-list(executionDate = date(),
                 executionDuration = as.numeric(difftime(Sys.time(),start_time), units="secs"),
+                cdmOnboardingVersion = packageVersion("CdmOnboarding"),
                 databaseId = databaseId,
                 databaseName = databaseName,
                 databaseDescription = databaseDescription,
