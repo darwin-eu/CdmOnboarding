@@ -105,7 +105,7 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   } else if (n < 25) {
     officer::body_add_par(x, sprintf("All %d %s %s. %s", n, kind, domain, msg), style = pkg.env$styles$tableCaption)
   } else {
-    officer::body_add_par(x, sprintf("Top 25 of %s %s. %s", kind, domain, msg), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("Top 25 %s %s. %s", kind, domain, msg), style = pkg.env$styles$tableCaption)
   }
 
   if (n>0) {
