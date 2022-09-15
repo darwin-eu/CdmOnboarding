@@ -47,8 +47,13 @@ dataTablesChecks <- function (connectionDetails,
                               vocabDatabaseSchema = cdmDatabaseSchema,
                               cdmVersion,
                               sqlOnly = FALSE,
-                              outputFolder = "output") {
-  dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
+                              outputFolder = "output",
+                              optimize = FALSE) {
+  if (optimize && connectionDetails$dbms == "postgresql" ) {
+    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_postgres.sql", "Data tables (postgres estimate) count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
+  } else {
+    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
+  }
   totalRecords <- executeQuery(outputFolder,"totalrecords.sql", "Total number of records over time query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
   recordsPerPerson <- executeQuery(outputFolder,"recordsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
   conceptsPerPerson <- executeQuery(outputFolder,"conceptsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)

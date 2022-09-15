@@ -52,6 +52,7 @@
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
+#' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 cdmOnboarding <- function(connectionDetails,
@@ -72,7 +73,8 @@ cdmOnboarding <- function(connectionDetails,
                           baseUrl = "",
                           sqlOnly = FALSE,
                           outputFolder = "output",
-                          verboseMode = TRUE) {
+                          verboseMode = TRUE,
+                          optimize = FALSE) {
   if(missing(databaseId)) {
     stop("Argument databaseId is missing")
   }
@@ -95,7 +97,8 @@ cdmOnboarding <- function(connectionDetails,
     baseUrl = baseUrl,
     sqlOnly = sqlOnly,
     outputFolder = outputFolder,
-    verboseMode = verboseMode
+    verboseMode = verboseMode,
+    optimize = optimize
   )
 
   if(is.null(results)) {
@@ -155,7 +158,8 @@ cdmOnboarding <- function(connectionDetails,
     baseUrl,
     sqlOnly,
     outputFolder,
-    verboseMode) {
+    verboseMode,
+    optimize) {
   # Log execution -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if(!dir.exists(outputFolder)){dir.create(outputFolder,recursive=T)}
@@ -226,7 +230,8 @@ cdmOnboarding <- function(connectionDetails,
       resultsDatabaseSchema = resultsDatabaseSchema,
       cdmVersion = cdmVersion,
       outputFolder = outputFolder,
-      sqlOnly = sqlOnly
+      sqlOnly = sqlOnly,
+      optimize = optimize
     )
   }
 
