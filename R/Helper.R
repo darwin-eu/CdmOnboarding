@@ -44,6 +44,7 @@ executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDe
       ParallelLogger::logInfo(sprintf("> %s in %.2f secs", successMessage, duration))
     },
     error = function (e) {
+      ParallelLogger::logError(sprintf("%s", e))
       ParallelLogger::logError(sprintf("> Query failed. See '%s' for more details", errorReportFile))
     },
     finally = {
