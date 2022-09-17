@@ -314,6 +314,16 @@ cdmOnboarding <- function(connectionDetails,
       })
   }
 
+  dqdResults <- NULL
+  if (!is.null(dqdJsonPath)) {
+    results <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = T)
+    dqdResults <- list(
+      percentPassed = round(results$Overview$countPassed / results$Overview$countTotal * 100, 2),
+      countOverallFailed = results$Overview$countOverallFailed,
+      countTotal = results$Overview$countTotal
+    )
+  }
+
   ParallelLogger::logInfo("Done.")
 
   ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes", as.numeric(difftime(Sys.time(),start_time), units="mins")))
@@ -334,9 +344,10 @@ cdmOnboarding <- function(connectionDetails,
                 sys_details= sys_details,
                 webAPIversion = webAPIversion,
                 cdmSource = cdmSource,
-                dms=connectionDetails$dbms,
-                smallCellCount=smallCellCount,
-                runWithOptimizedQueries=optimize)
+                dms = connectionDetails$dbms,
+                smallCellCount = smallCellCount,
+                runWithOptimizedQueries = optimize,
+                dqdResults = dqdResults)
 
   tryCatch({
       saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s.rds", databaseId)))

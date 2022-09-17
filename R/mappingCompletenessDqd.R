@@ -21,8 +21,9 @@
 
 mappingCompletenessDqd <- function(dqdJsonPath) {
   start_time = Sys.time()
+  dqdResult <- jsonlite::fromJSON(dqdJsonPath)
 
-  coverage_results <- jsonlite::fromJSON(dqdJsonPath) %>%
+  mappingCoverages <- dqdResult$CheckResults %>%
     # standardConceptRecordCompleteness = Record Coverage,
     # sourceValueCompleteness = Term Coverage
     dplyr::filter(CHECK_NAME %in% c("standardConceptRecordCompleteness", "sourceValueCompleteness")) %>%
