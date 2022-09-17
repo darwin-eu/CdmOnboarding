@@ -36,6 +36,8 @@
 #' @param smallCellCount                   To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
+#' @param dqdJsonPath                      Path to the json of the DQD
+#' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 vocabularyChecks <- function (connectionDetails,
@@ -43,8 +45,14 @@ vocabularyChecks <- function (connectionDetails,
                            vocabDatabaseSchema = cdmDatabaseSchema,
                            smallCellCount = 5,
                            sqlOnly = FALSE,
-                           outputFolder = "output") {
-  mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
+                           outputFolder = "output",
+                           dqdJsonPath = NULL,
+                           optimize = FALSE) {
+  if (optimize && !is.null(dqdJsonPath)) {
+    mappingCompleteness <- mappingCompletenessDqd(dqdJsonPath)
+  } else {
+    mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
+  }
 
   drugMapping  <- executeQuery(outputFolder,"mapping_levels_drugs.sql", "Drug Level Mapping query executed successfully", connectionDetails, sqlOnly,  cdmDatabaseSchema, vocabDatabaseSchema)
 

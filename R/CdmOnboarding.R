@@ -52,7 +52,8 @@
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
-#' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Default = FALSE
+#' @param dqdJsonPath                      Path to the json of the DQD
+#' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 cdmOnboarding <- function(connectionDetails,
@@ -74,6 +75,7 @@ cdmOnboarding <- function(connectionDetails,
                           sqlOnly = FALSE,
                           outputFolder = "output",
                           verboseMode = TRUE,
+                          dqdJsonPath = NULL,
                           optimize = FALSE) {
   if(missing(databaseId)) {
     stop("Argument databaseId is missing")
@@ -98,6 +100,7 @@ cdmOnboarding <- function(connectionDetails,
     sqlOnly = sqlOnly,
     outputFolder = outputFolder,
     verboseMode = verboseMode,
+    dqdJsonPath = dqdJsonPath,
     optimize = optimize
   )
 
@@ -159,6 +162,7 @@ cdmOnboarding <- function(connectionDetails,
     sqlOnly,
     outputFolder,
     verboseMode,
+    dqdJsonPath,
     optimize) {
   # Log execution -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
@@ -245,7 +249,9 @@ cdmOnboarding <- function(connectionDetails,
       vocabDatabaseSchema = vocabDatabaseSchema,
       smallCellCount = smallCellCount,
       sqlOnly = sqlOnly,
-      outputFolder = outputFolder
+      outputFolder = outputFolder,
+      optimize = optimize,
+      dqdJsonPath = dqdJsonPath
     )
   }
 
@@ -329,7 +335,8 @@ cdmOnboarding <- function(connectionDetails,
                 webAPIversion = webAPIversion,
                 cdmSource = cdmSource,
                 dms=connectionDetails$dbms,
-                smallCellCount=smallCellCount)
+                smallCellCount=smallCellCount,
+                runWithOptimizedQueries=optimize)
 
   tryCatch({
       saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s.rds", databaseId)))
