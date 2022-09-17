@@ -21,23 +21,16 @@
 
 mappingCompletenessDqd <- function(dqdJsonPath) {
   start_time = Sys.time()
-  result <- jsonlite::fromJSON(dqdJsonPath)
-  check_results <- result$CheckResults %>%
-    select(CHECK_NAME, CDM_TABLE_NAME, CDM_FIELD_NAME,
-           NUM_VIOLATED_ROWS, NUM_DENOMINATOR_ROWS, PCT_VIOLATED_ROWS)
 
-  coverage_results <- check_results %>%
+  coverage_results <- jsonlite::fromJSON(dqdJsonPath) %>%
+    # standardConceptRecordCompleteness = Record Coverage,
+    # sourceValueCompleteness = Term Coverage
     dplyr::filter(CHECK_NAME %in% c("standardConceptRecordCompleteness", "sourceValueCompleteness")) %>%
     # Not interested in era's as these are all derived
     dplyr::filter(!(CDM_TABLE_NAME %in% c("DRUG_ERA", "DOSE_ERA", "CONDITION_ERA"))) %>%
+    # Create new variable for domain field
     dplyr::mutate(
       CDM_FIELD_NAME = toupper(CDM_FIELD_NAME),
-      # First check is over all records, second over the unique source terms
-      coverageType = recode(CHECK_NAME,
-                            standardConceptRecordCompleteness = "Records",
-                            sourceValueCompleteness = "Terms"),
-      # Coverage is rows not failing
-      coveragePct = 1 - PCT_VIOLATED_ROWS,
       # Naming of domains
       domain = gsub("_(OCC\\w+|EXP\\w+|PLAN.+)$", "", CDM_TABLE_NAME),
       variable = ifelse(CHECK_NAME=="standardConceptRecordCompleteness",
@@ -56,35 +49,32 @@ mappingCompletenessDqd <- function(dqdJsonPath) {
                            domain,
                            paste0(domain_abbrev,"-",variable)
       )
-    )
-
-  # Mapping coverage table
-  mappingCoverages <- coverage_results %>%
+    ) %>%
     # To keep things simple, we only look at the six main domains and units
     dplyr::filter(domainField %in% c("VISIT", "PROCEDURE", "DRUG", "CONDITION", "MEASUREMENT",
                               "OBSERVATION", "MEAS-UNIT", "OBS-UNIT", "PROVIDER-SPECIALTY",
-                              "COND-CONDITION_STATUS", "SPECIMEN", "DEVICE")
-                            #"DEATH-CAUSE", "MEAS-VALUE", "OBS-VALUE",
+                              "COND-CONDITION_STATUS", "SPECIMEN", "DEVICE", "DEATH-CAUSE")
+                            # DQD does not report standard concept completeness on  "MEAS-VALUE" and "OBS-VALUE"
     ) %>%
     dplyr::transmute(
+      CHECK_NAME,
       domainField,
-      coverageType,
-      mapped = NUM_DENOMINATOR_ROWS - NUM_VIOLATED_ROWS,
       total = NUM_DENOMINATOR_ROWS,
-      coveragePct = (1 - PCT_VIOLATED_ROWS) * 100
+      mapped = NUM_DENOMINATOR_ROWS - NUM_VIOLATED_ROWS,
+      coveragePct = (1 - PCT_VIOLATED_ROWS) * 100,
     ) %>%
     tidyr::pivot_wider(
-      names_from = coverageType,
+      names_from = CHECK_NAME,
       values_from = c(mapped, total, coveragePct)
     ) %>%
     dplyr::select(
       DOMAIN = domainField,
-      '#CODES SOURCE' = total_Terms,
-      '#CODES MAPPED' = mapped_Terms,
-      '%CODES MAPPED' = coveragePct_Terms,
-      '#RECORDS SOURCE' = total_Records,
-      '#RECORDS MAPPED' = mapped_Records,
-      '%RECORDS MAPPED' = coveragePct_Records,
+      '#CODES SOURCE' = total_sourceValueCompleteness,
+      '#CODES MAPPED' = mapped_sourceValueCompleteness,
+      '%CODES MAPPED' = coveragePct_sourceValueCompleteness,
+      '#RECORDS SOURCE' = total_standardConceptRecordCompleteness,
+      '#RECORDS MAPPED' = mapped_standardConceptRecordCompleteness,
+      '%RECORDS MAPPED' = coveragePct_standardConceptRecordCompleteness,
     ) %>%
     dplyr::arrange(
       DOMAIN
