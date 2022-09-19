@@ -104,6 +104,9 @@ smallCellCount <- 5
 
 verboseMode <- TRUE
 
+dqdJsonPath <- ''  # Path to your DQD results file, to be used for deriving mapping completeness
+optimize <- TRUE  # For postgresql only, for efficient data tables count estimates.
+
 # *******************************************************
 # SECTION 3: Run the package
 # *******************************************************
@@ -135,7 +138,9 @@ results <- cdmOnboarding(
   baseUrl = baseUrl,
   sqlOnly = FALSE,
   outputFolder = outputFolder,
-  verboseMode = verboseMode
+  verboseMode = verboseMode,
+  dqdJsonPath = dqdJsonPath,
+  optimize = optimize
 )
 
 # generateResultsDocument(
