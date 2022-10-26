@@ -49,16 +49,20 @@ dataTablesChecks <- function (connectionDetails,
                               sqlOnly = FALSE,
                               outputFolder = "output") {
   dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
-  totalRecords <- executeQuery(outputFolder,"totalrecords.sql", "Total number of records over time query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  recordsPerPerson <- executeQuery(outputFolder,"recordsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  conceptsPerPerson <- executeQuery(outputFolder,"conceptsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  observationPeriodLength <- executeQuery(outputFolder,"observation_period_length.sql", "Observation Period length query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  totalRecords <- executeQuery(outputFolder,"totalrecords.sql", "Achilles: Total number of records over time query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  recordsPerPerson <- executeQuery(outputFolder,"recordsperperson.sql", "Achilles: Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  conceptsPerPerson <- executeQuery(outputFolder,"conceptsperperson.sql", "Achilles: Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  observationPeriodLength <- executeQuery(outputFolder,"observation_period_length.sql", "Achilles: Observation Period length query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  activePersons <- executeQuery(outputFolder,"active_persons.sql", "Active persons query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  observedByMonth <- executeQuery(outputFolder,"observed_by_month.sql", "Achilles: Observed by month query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
 
   list(
     dataTablesCounts=dataTablesCounts,
     totalRecords=totalRecords,
     recordsPerPerson=recordsPerPerson,
     conceptsPerPerson=conceptsPerPerson,
-    observationPeriodLength=observationPeriodLength
+    observationPeriodLength=observationPeriodLength,
+    activePersons=activePersons,
+    observedByMonth=observedByMonth
   )
 }
