@@ -129,6 +129,18 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_gg(plot, height=4) %>%
       officer::body_add_par("Persons with continuous observation by month", style = pkg.env$styles$figureCaption)
 
+    df_type_concept <- df$typeConcepts$result %>%
+                        tidyr::pivot_wider(
+                          id_cols=TYPE_CONCEPT_NAME,
+                          names_from=DOMAIN,
+                          values_from=COUNT,
+                          values_fill=0)
+
+    doc <- doc %>%
+      officer::body_add_par(value = "Type Concepts", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par("Number of type concepts by domain. Counts are rounded up to the nearest hundred", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(value = df_type_concept, style = pkg.env$styles$table)
+
     doc <- doc %>% officer::body_add_break()
   }
 
