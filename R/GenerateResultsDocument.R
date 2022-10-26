@@ -184,11 +184,11 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       my_body_add_table(value = vocabResults$sourceConceptFrequency$result, style = pkg.env$styles$table) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$sourceConceptFrequency$duration), style = pkg.env$styles$footnote) %>%
       officer::body_add_par(" ") %>%
-      officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style="Drafting Notes (Agency)")
+      officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style = pkg.env$styles$highlight)
 
   } else {
     doc<-doc %>%
-    officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style="Drafting Notes (Agency)") %>%
+    officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style = pkg.env$styles$highlight) %>%
     officer::body_add_break()
   }
 
