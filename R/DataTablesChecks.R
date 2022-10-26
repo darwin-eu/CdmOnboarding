@@ -52,10 +52,13 @@ dataTablesChecks <- function (connectionDetails,
   totalRecords <- executeQuery(outputFolder,"totalrecords.sql", "Total number of records over time query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
   recordsPerPerson <- executeQuery(outputFolder,"recordsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
   conceptsPerPerson <- executeQuery(outputFolder,"conceptsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  observationPeriodLength <- executeQuery(outputFolder,"observation_period_length.sql", "Observation Period length query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
 
-  results <- list(dataTablesCounts=dataTablesCounts,
-                  totalRecords=totalRecords,
-                  recordsPerPerson=recordsPerPerson,
-                  conceptsPerPerson=conceptsPerPerson)
-  return(results)
+  list(
+    dataTablesCounts=dataTablesCounts,
+    totalRecords=totalRecords,
+    recordsPerPerson=recordsPerPerson,
+    conceptsPerPerson=conceptsPerPerson,
+    observationPeriodLength=observationPeriodLength
+  )
 }

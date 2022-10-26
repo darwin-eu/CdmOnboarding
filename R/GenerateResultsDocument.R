@@ -86,7 +86,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
   ## add Concept counts
   if (!is.null(results$dataTablesResults)) {
     df_t1 <- results$dataTablesResults$dataTablesCounts$result
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par(value = "Clinical data", style = pkg.env$styles$heading1) %>%
       officer::body_add_par(value = "Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("The number of records in all clinical data tables", style = pkg.env$styles$tableCaption) %>%
@@ -94,21 +94,28 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_par(sprintf("Query executed in %.2f seconds", results$dataTablesResults$dataTablesCounts$duration), style = pkg.env$styles$footnote)
 
     plot <- recordsCountPlot(as.data.frame(results$dataTablesResults$totalRecords$result))
-    doc<-doc %>% officer::body_add_break() %>%
+    doc<-doc %>%
+      officer::body_add_break() %>%
       officer::body_add_par(value = "Data density plots", style = pkg.env$styles$heading2) %>%
       officer::body_add_gg(plot, height=4) %>%
       officer::body_add_par("Total record count over time per OMOP data domain", style = pkg.env$styles$figureCaption)
 
     plot <- recordsCountPlot(as.data.frame(results$dataTablesResults$recordsPerPerson$result))
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_gg(plot, height=4) %>%
       officer::body_add_par("Number of records per person over time per OMOP data domain", style = pkg.env$styles$figureCaption)
 
-    colnames(results$dataTablesResults$conceptsPerPerson$result) <- c("Domain", "Min", "P10", "P25", "MEDIAN", "P75", "P90", "Max")
-    doc<-doc %>% officer::body_add_break() %>%
+    doc <- doc %>%
+      officer::body_add_break() %>%
       officer::body_add_par(value = "Distinct concepts per person", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("The number of distinct concepts per person for all OMOP data domains", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = results$dataTablesResults$conceptsPerPerson$result, style = pkg.env$styles$table) %>%
+
+    doc <- doc %>%
+      officer::body_add_break() %>%
+      officer::body_add_par(value = "Observation Period", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par("Length of first observation period (days)", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(value = results$dataTablesResults$observationPeriodLength$result, style = pkg.env$styles$table) %>%
       officer::body_add_par(" ")
   }
 
