@@ -62,6 +62,9 @@ prettyHr <- function(x) {
 }
 
 prettyPc <- function(x) {
+  if (x==100) {
+    return(sprintf("%.0f%%", x))
+  }
   result <- sprintf("%.1f%%", x)
   result[is.na(x)] <- "NA"
   return(result)
@@ -120,12 +123,13 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   }
 
   if (n>0) {
+    names(data$result)[1] <- "#"
     data$result$`%RECORDS` <- prettyPc(data$result$`#RECORDS` / totalRecords * 100)
     my_body_add_table(
       x,
       value = data$result,
       style = pkg.env$styles$table,
-      alignment =  c('r','l','r','r','r')
+      alignment =  c('r',rep('l', ncol(data$result)-4),'r','r','r')  # unit (un)mapped has an extra 'table' column that should be left aligned
     )
   }
 

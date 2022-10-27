@@ -192,6 +192,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       my_body_add_table(value = df_mc[order(df_mc$DOMAIN),], style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$mappingCompleteness$duration), style = pkg.env$styles$footnote)
 
+    # Denominators for (un)mapped record %
     tableCounts <- vocabResults$mappingCompleteness$result %>%
       dplyr::select(DOMAIN, `#RECORDS SOURCE`) %>%
       tidyr::pivot_wider(names_from=DOMAIN, values_from=`#RECORDS SOURCE`)
