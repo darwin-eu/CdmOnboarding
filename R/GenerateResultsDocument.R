@@ -153,7 +153,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par(value = "Date Range", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Minimum and maximum date in each table, floored to the nearest month", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df$tableDateRange$result, style = pkg.env$styles$table) %>%
+      my_body_add_table(value = df$tableDateRange$result, auto_format = FALSE, style = pkg.env$styles$table) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$tableDateRange$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>% officer::body_add_break()
@@ -184,8 +184,8 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
     ## add Mapping Completeness
     df_mc <- vocabResults$mappingCompleteness$result
-    df_mc$`%CODES MAPPED` <- prettyHr(df_mc$`%CODES MAPPED`)
-    df_mc$`%RECORDS MAPPED` <- prettyHr(df_mc$`%RECORDS MAPPED`)
+    df_mc$`%CODES MAPPED` <- prettyPc(df_mc$`%CODES MAPPED`)
+    df_mc$`%RECORDS MAPPED` <- prettyPc(df_mc$`%RECORDS MAPPED`)
     doc<-doc %>%
       officer::body_add_par(value = "Mapping Completeness", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records.", style = pkg.env$styles$tableCaption) %>%
@@ -202,7 +202,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc<-doc %>%
       officer::body_add_par(value = "Drug Mappings", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("The level of the drug mappings", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df_dm[order(df_dm$`#RECORDS`, decreasing=TRUE),], style = pkg.env$styles$table) %>%
+      my_body_add_table(value = df_dm[order(df_dm$`#RECORDS`, decreasing=TRUE),], alignment =  c('l', rep('r',4)), style = pkg.env$styles$table) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$drugMapping$duration), style = pkg.env$styles$footnote)
 
     ## add Top 25 missing mappings
