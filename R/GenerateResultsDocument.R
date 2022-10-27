@@ -117,17 +117,20 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_break() %>%
       officer::body_add_par(value = "Distinct concepts per person", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("The number of distinct concepts per person for all OMOP data domains", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df$conceptsPerPerson$result, style = pkg.env$styles$table)
+      my_body_add_table(value = df$conceptsPerPerson$result, style = pkg.env$styles$table) %>%
+      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$conceptsPerPerson$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>%
       officer::body_add_par(value = "Observation Period", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Length of first observation period (days)", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df$observationPeriodLength$result, style = pkg.env$styles$table)
+      my_body_add_table(value = df$observationPeriodLength$result, style = pkg.env$styles$table) %>%
+      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$observationPeriodLength$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>%
       officer::body_add_par(" ") %>%
       officer::body_add_par(sprintf("%d persons with active observation period in the last 6 months before source release date.",
-                                    df$activePersons$result$COUNT))
+                                    df$activePersons$result$COUNT)) %>%
+      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$activePersons$duration), style = pkg.env$styles$footnote)
 
     plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
     doc <- doc %>%
@@ -144,12 +147,14 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par(value = "Type Concepts", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Number of type concepts by domain. Counts are rounded up to the nearest hundred", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df_type_concept, style = pkg.env$styles$table)
+      my_body_add_table(value = df_type_concept, style = pkg.env$styles$table) %>%
+      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$typeConcepts$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>%
       officer::body_add_par(value = "Date Range", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Minimum and maximum date in each table, floored to the nearest month", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df$tableDateRange$result, style = pkg.env$styles$table)
+      my_body_add_table(value = df$tableDateRange$result, style = pkg.env$styles$table) %>%
+      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$tableDateRange$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>% officer::body_add_break()
   }

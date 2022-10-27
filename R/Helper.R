@@ -109,8 +109,7 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   }
 
   if (n>0) {
-    data$result$`%RECORDS` <- round(data$result$`#RECORDS` / totalRecords, 2)
-    data$result$`%CUMULATIVE` <- cumsum(data$result$`%RECORDS`)
+    data$result$`%RECORDS` <- sprintf("%.1f%%", data$result$`#RECORDS` / totalRecords * 100)
     my_body_add_table(x, value = data$result, style = pkg.env$styles$table)
   }
 
