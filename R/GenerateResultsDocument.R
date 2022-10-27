@@ -202,26 +202,26 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     ## add Top 25 missing mappings
     doc<-doc %>%
       officer::body_add_par(value = "Unmapped Codes", style = pkg.env$styles$heading2)
-    my_unmapped_section(doc, vocabResults$unmappedDrugs, "drugs", results$smallCellCount, tableCounts$DRUG)
-    my_unmapped_section(doc, vocabResults$unmappedConditions, "conditions", results$smallCellCount, tableCounts$CONDITION)
-    my_unmapped_section(doc, vocabResults$unmappedMeasurements, "measurements", results$smallCellCount, tableCounts$MEASUREMENT)
-    my_unmapped_section(doc, vocabResults$unmappedObservations, "observations",results$smallCellCount, tableCounts$OBSERVATION)
-    my_unmapped_section(doc, vocabResults$unmappedProcedures, "procedures", results$smallCellCount, tableCounts$PROCEDURE)
-    my_unmapped_section(doc, vocabResults$unmappedDevices, "devices", results$smallCellCount, tableCounts$DEVICE)
-    my_unmapped_section(doc, vocabResults$unmappedVisits, "visits", results$smallCellCount, tableCounts$VISIT)
-    my_unmapped_section(doc, vocabResults$unmappedUnits, "units", results$smallCellCount, tableCounts$`OBS-UNIT` + tableCounts$`MEAS-UNIT`)
+    my_unmapped_section(doc, vocabResults$unmappedDrugs, "drugs", results$smallCellCount, tableCounts$Drug)
+    my_unmapped_section(doc, vocabResults$unmappedConditions, "conditions", results$smallCellCount, tableCounts$Condition)
+    my_unmapped_section(doc, vocabResults$unmappedMeasurements, "measurements", results$smallCellCount, tableCounts$Measurement)
+    my_unmapped_section(doc, vocabResults$unmappedObservations, "observations",results$smallCellCount, tableCounts$Observation)
+    my_unmapped_section(doc, vocabResults$unmappedProcedures, "procedures", results$smallCellCount, tableCounts$Procedure)
+    my_unmapped_section(doc, vocabResults$unmappedDevices, "devices", results$smallCellCount, tableCounts$Device)
+    my_unmapped_section(doc, vocabResults$unmappedVisits, "visits", results$smallCellCount, tableCounts$Visit)
+    my_unmapped_section(doc, vocabResults$unmappedUnits, "units", results$smallCellCount, tableCounts$`Observation unit` + tableCounts$`Measurement unit`)
 
     ## add top 25 mapped codes
     doc<-doc %>%
       officer::body_add_par(value = "Mapped Codes", style = pkg.env$styles$heading2)
-    my_mapped_section(doc, vocabResults$mappedDrugs, "drugs", results$smallCellCount, tableCounts$DRUG)
-    my_mapped_section(doc, vocabResults$mappedConditions, "conditions", results$smallCellCount, tableCounts$CONDITION)
-    my_mapped_section(doc, vocabResults$mappedMeasurements, "measurements", results$smallCellCount, tableCounts$MEASUREMENT)
-    my_mapped_section(doc, vocabResults$mappedObservations, "observations",results$smallCellCount, tableCounts$OBSERVATION)
-    my_mapped_section(doc, vocabResults$mappedProcedures, "procedures", results$smallCellCount, tableCounts$PROCEDURE)
-    my_mapped_section(doc, vocabResults$mappedDevices, "devices", results$smallCellCount, tableCounts$DEVICE)
-    my_mapped_section(doc, vocabResults$mappedVisits, "visits", results$smallCellCount, tableCounts$VISIT)
-    my_mapped_section(doc, vocabResults$mappedUnits, "units", results$smallCellCount, tableCounts$`OBS-UNIT` + tableCounts$`MEAS-UNIT`)
+    my_mapped_section(doc, vocabResults$mappedDrugs, "drugs", results$smallCellCount, tableCounts$Drug)
+    my_mapped_section(doc, vocabResults$mappedConditions, "conditions", results$smallCellCount, tableCounts$Condition)
+    my_mapped_section(doc, vocabResults$mappedMeasurements, "measurements", results$smallCellCount, tableCounts$Measurement)
+    my_mapped_section(doc, vocabResults$mappedObservations, "observations",results$smallCellCount, tableCounts$Observation)
+    my_mapped_section(doc, vocabResults$mappedProcedures, "procedures", results$smallCellCount, tableCounts$Procedure)
+    my_mapped_section(doc, vocabResults$mappedDevices, "devices", results$smallCellCount, tableCounts$Device)
+    my_mapped_section(doc, vocabResults$mappedVisits, "visits", results$smallCellCount, tableCounts$Visit)
+    my_mapped_section(doc, vocabResults$mappedUnits, "units", results$smallCellCount, tableCounts$`Observation unit` + tableCounts$`Measurement unit`)
 
     ## add source_to_concept_map breakdown
     doc<-doc %>%

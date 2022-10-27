@@ -21,7 +21,7 @@ from (
   select 'observation' as tablename, observation_date as start_date
   from @cdmDatabaseSchema.observation
   UNION
-  select 'procedure_occurrence' as tablename, procedure_start_date as start_date
+  select 'procedure_occurrence' as tablename, procedure_date as start_date
   from @cdmDatabaseSchema.procedure_occurrence
   UNION
   select 'specimen' as tablename, specimen_date as start_date
@@ -30,7 +30,7 @@ from (
   select 'visit_detail' as tablename, visit_detail_start_date as start_date
   from @cdmDatabaseSchema.visit_detail
   UNION
-  select 'visit_occurrence' as tablename, visit_occurrence_start_date as start_date
+  select 'visit_occurrence' as tablename, visit_start_date as start_date
   from @cdmDatabaseSchema.visit_occurrence
   UNION
   select 'payer_plan_period' as tablename, payer_plan_period_start_date as start_date
