@@ -14,10 +14,7 @@
 # where you have cloned this code. For more information on setting environment variables please refer to:
 # https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRenviron.html
 #
-#
-# Below is an example .Renviron file's contents: (please remove)
-# the "#" below as these too are interpreted as comments in the .Renviron file:
-#
+# Below is an example .Renviron file's contents:
 #    DBMS = "postgresql"
 #    DB_SERVER = "database.server.com"
 #    DB_PORT = 5432
@@ -25,11 +22,7 @@
 #    DB_PASSWORD = "your_secret_password"
 #    PATH_TO_DRIVER = "/dbms/driver/folder"
 #
-# The following describes the settings
-#    DBMS, DB_SERVER, DB_PORT, DB_USER, DB_PASSWORD, PATH_TO_DRIVER := These are the details used to connect
-#    to your database server. For more information on how these are set, please refer to:
-#    http://ohdsi.github.io/DatabaseConnector/
-#
+# The settings are described in detail on http://ohdsi.github.io/DatabaseConnector/
 #
 # Once you have established an .Renviron file, you must restart your R session for R to pick up these new
 # variables.
@@ -38,7 +31,6 @@
 # down for specific instructions.
 #-----------------------------------------------------------------------------------------------
 #
-#
 # *******************************************************
 # SECTION 1: Install latest version of CdmOnboarding
 # *******************************************************
@@ -46,11 +38,7 @@
 # Prevents errors due to packages being built for other R versions:
 Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
 
-# First, it probably is best to make sure you are up-to-date on all existing packages.
-# Important: This code is best run in R, not RStudio, as RStudio may have some libraries
-# (like 'rlang') in use.
-#update.packages(ask = "graphics")
-
+# Install CdmOnboarding using remotes. Alternatively devtools can be used.
 # When asked to update packages, select '1' ('update all') (could be multiple times)
 # When asked whether to install from source, select 'No' (could be multiple times)
 if(!require(CdmOnboarding)){
@@ -70,33 +58,31 @@ server <- Sys.getenv("DB_SERVER")
 port <- Sys.getenv("DB_PORT")
 pathToDriver <- Sys.getenv("PATH_TO_DRIVER") # Driver can be installed with DatabaseConnector::downloadJdbcDrivers(dbms, pathToDriver)
 
-# Author details
-authors <-"<your_name>" # used on the title page
+# Details for connecting to the CDM and storing the results
+cdmDatabaseSchema <- "<your_cdm_schema>"
+resultsDatabaseSchema <- "<your_results_schema>" # Make sure the Achilles results are in this schema
+vocabDatabaseSchema <- "<your_vocab_schema>"
+outputFolder <- file.path(getwd(), "results", databaseId)
+
+# For Oracle: define a schema that can be used to emulate temp tables:
+oracleTempSchema <- NULL
 
 # Details specific to the database:
 databaseId <- "<your_id>" #for example SYNPUF (this will be used as results sub-folder)
 databaseName <- "<your_full_databasename>"
 databaseDescription <- "<your_description>"
-
-# For Oracle: define a schema that can be used to emulate temp tables:
-oracleTempSchema <- NULL
-
-# Details for connecting to the CDM and storing the results
-outputFolder <- file.path(getwd(), "results",databaseId)
-cdmDatabaseSchema <- "<your_cdm_schema>"
-resultsDatabaseSchema <- "<your_results_schema>" #Make sure the Achilles results are in this schema!
-vocabDatabaseSchema <- "<your_vocab_schema>"
+authors <-"<your_name>" # used on the title page
 
 # Url to check the version of your local Atlas
 baseUrl <- "<your_baseUrl>" # URL to your OHDSI WebAPI that Atlas uses, e.g. http://localhost:8080/WebAPI
 
 # All results smaller than this value are removed from the results.
 smallCellCount <- 5
-
 verboseMode <- TRUE
 
-dqdJsonPath <- ''  # (optional) Path to your DQD results file, to be used for deriving mapping completeness
+# Optimization
 optimize <- TRUE  # For postgresql only, for efficient data tables count estimates.
+dqdJsonPath <- ''  # (optional) Path to your DQD results file
 
 # *******************************************************
 # SECTION 3: Run the package
@@ -107,12 +93,12 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   server = server,
   user = user,
   password = password,
-  connectionString = connectionString,
+  port = port,
   pathToDriver = pathToDriver
 )
 
 results <- CdmOnboarding::cdmOnboarding(
-  connectionDetails,
+  connectionDetails = connectionDetails,
   cdmDatabaseSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = vocabDatabaseSchema,
@@ -140,4 +126,3 @@ results <- CdmOnboarding::cdmOnboarding(
 #   outputFolder,
 #   authors
 # )
-
