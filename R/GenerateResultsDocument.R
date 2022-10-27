@@ -135,11 +135,15 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
                           names_from=DOMAIN,
                           values_from=COUNT,
                           values_fill=0)
-
     doc <- doc %>%
       officer::body_add_par(value = "Type Concepts", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("Number of type concepts by domain. Counts are rounded up to the nearest hundred", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = df_type_concept, style = pkg.env$styles$table)
+
+    doc <- doc %>%
+      officer::body_add_par(value = "Date Range", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par("Minimum and maximum date in each table, floored to the nearest month", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(value = df$tableDateRange$result, style = pkg.env$styles$table)
 
     doc <- doc %>% officer::body_add_break()
   }
