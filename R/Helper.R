@@ -128,7 +128,9 @@ recordsCountPlot <- function(results){
   temp <- results %>%
     dplyr::rename(Date=X_CALENDAR_MONTH,Domain=SERIES_NAME, Count=Y_RECORD_COUNT) %>%
     dplyr::mutate(Date=lubridate::parse_date_time(Date, "ym"))
-  plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) + geom_line(aes(color = Domain))
+  plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) +
+    geom_line(aes(color = Domain, linetype = Domain)) +
+    scale_colour_hue(l=40)
 }
 
 #' Bundles the results in a zip file
