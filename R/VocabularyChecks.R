@@ -54,6 +54,12 @@ vocabularyChecks <- function (connectionDetails,
     mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
   }
 
+  if (optimize && connectionDetails$dbms == "postgresql" ) {
+    vocabularyCounts <- executeQuery(outputFolder,"vocabulary_tables_count_postgres.sql", "Count on vocabulary tables (postgres estimate) query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
+  } else {
+    vocabularyCounts <- executeQuery(outputFolder,"vocabulary_tables_count.sql", "Count on vocabulary tables query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
+  }
+
   drugMapping  <- executeQuery(outputFolder,"mapping_levels_drugs.sql", "Drug Level Mapping query executed successfully", connectionDetails, sqlOnly,  cdmDatabaseSchema, vocabDatabaseSchema)
 
   unmappedDrugs<- executeQuery(outputFolder,"unmapped_drugs.sql", "Unmapped drugs query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
@@ -75,7 +81,6 @@ vocabularyChecks <- function (connectionDetails,
   mappedUnits<- executeQuery(outputFolder,"mapped_units.sql", "Mapped units query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, smallCellCount)
 
   conceptCounts <- executeQuery(outputFolder,"concept_counts_by_vocabulary.sql", "Concept counts by vocabulary query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
-  vocabularyCounts <- executeQuery(outputFolder,"vocabulary_tables_count.sql", "Count on vocabulary tables query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
   sourceConceptFrequency <- executeQuery(outputFolder,"source_to_concept_map_frequency.sql", "Source to concept map breakdown query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
   sourceConceptMap <- executeQuery(outputFolder,"get_source_to_concept_map.sql", "Source to concept map query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
 
