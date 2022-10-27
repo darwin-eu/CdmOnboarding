@@ -52,6 +52,8 @@
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
+#' @param dqdJsonPath                      Path to the json of the DQD
+#' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 cdmOnboarding <- function(connectionDetails,
@@ -72,7 +74,9 @@ cdmOnboarding <- function(connectionDetails,
                           baseUrl = "",
                           sqlOnly = FALSE,
                           outputFolder = "output",
-                          verboseMode = TRUE) {
+                          verboseMode = TRUE,
+                          dqdJsonPath = NULL,
+                          optimize = FALSE) {
   if(missing(databaseId)) {
     stop("Argument databaseId is missing")
   }
@@ -95,7 +99,9 @@ cdmOnboarding <- function(connectionDetails,
     baseUrl = baseUrl,
     sqlOnly = sqlOnly,
     outputFolder = outputFolder,
-    verboseMode = verboseMode
+    verboseMode = verboseMode,
+    dqdJsonPath = dqdJsonPath,
+    optimize = optimize
   )
 
   if(is.null(results)) {
@@ -155,7 +161,9 @@ cdmOnboarding <- function(connectionDetails,
     baseUrl,
     sqlOnly,
     outputFolder,
-    verboseMode) {
+    verboseMode,
+    dqdJsonPath,
+    optimize) {
   # Log execution -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if(!dir.exists(outputFolder)){dir.create(outputFolder,recursive=T)}
@@ -226,7 +234,8 @@ cdmOnboarding <- function(connectionDetails,
       resultsDatabaseSchema = resultsDatabaseSchema,
       cdmVersion = cdmVersion,
       outputFolder = outputFolder,
-      sqlOnly = sqlOnly
+      sqlOnly = sqlOnly,
+      optimize = optimize
     )
   }
 
@@ -240,7 +249,9 @@ cdmOnboarding <- function(connectionDetails,
       vocabDatabaseSchema = vocabDatabaseSchema,
       smallCellCount = smallCellCount,
       sqlOnly = sqlOnly,
-      outputFolder = outputFolder
+      outputFolder = outputFolder,
+      optimize = optimize,
+      dqdJsonPath = dqdJsonPath
     )
   }
 
@@ -303,6 +314,16 @@ cdmOnboarding <- function(connectionDetails,
       })
   }
 
+  dqdResults <- NULL
+  if (!is.null(dqdJsonPath)) {
+    results <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = T)
+    dqdResults <- list(
+      percentPassed = round(results$Overview$countPassed / results$Overview$countTotal * 100, 2),
+      countOverallFailed = results$Overview$countOverallFailed,
+      countTotal = results$Overview$countTotal
+    )
+  }
+
   ParallelLogger::logInfo("Done.")
 
   ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes", as.numeric(difftime(Sys.time(),start_time), units="mins")))
@@ -323,8 +344,10 @@ cdmOnboarding <- function(connectionDetails,
                 sys_details= sys_details,
                 webAPIversion = webAPIversion,
                 cdmSource = cdmSource,
-                dms=connectionDetails$dbms,
-                smallCellCount=smallCellCount)
+                dms = connectionDetails$dbms,
+                smallCellCount = smallCellCount,
+                runWithOptimizedQueries = optimize,
+                dqdResults = dqdResults)
 
   tryCatch({
       saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s.rds", databaseId)))

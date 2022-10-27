@@ -279,6 +279,13 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style = pkg.env$styles$highlight)
   }
 
+  dqdResults <- results$dqdResults
+  if (!is.null(dqdResults)) {
+    doc <- doc %>%
+      officer::body_add_par(value = "Data Quality Dashboard", style = pkg.env$styles$heading1) %>%
+      officer::body_add_par(sprintf("%.2f%% DQD checks pass (%d/%d)", dqdResults$percentPassed, dqdResults$countOverallFailed, dqdResults$countTotal), style = pkg.env$styles$highlight)
+  }
+
   ## save the doc as a word file
   outputFile <- file.path(outputFolder, paste0("CdmOnboarding-", results$databaseId, ".docx"))
   writeLines(paste("Saving doc to", outputFile))

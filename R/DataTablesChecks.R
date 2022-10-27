@@ -39,6 +39,7 @@
 #'                                         Use major release number or minor number only (e.g. 5, 5.3)
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
+#' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 dataTablesChecks <- function (connectionDetails,
@@ -47,8 +48,13 @@ dataTablesChecks <- function (connectionDetails,
                               vocabDatabaseSchema = cdmDatabaseSchema,
                               cdmVersion,
                               sqlOnly = FALSE,
-                              outputFolder = "output") {
-  dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
+                              outputFolder = "output",
+                              optimize = FALSE) {
+  if (optimize && connectionDetails$dbms == "postgresql" ) {
+    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_postgres.sql", "Data tables (postgres estimate) count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
+  } else {
+    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
+  }
   totalRecords <- executeQuery(outputFolder,"totalrecords.sql", "Total number of records over time query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
   recordsPerPerson <- executeQuery(outputFolder,"recordsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
   conceptsPerPerson <- executeQuery(outputFolder,"conceptsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
