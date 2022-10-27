@@ -21,6 +21,8 @@
 #    DB_USER = "database_user_name_goes_here"
 #    DB_PASSWORD = "your_secret_password"
 #    PATH_TO_DRIVER = "/dbms/driver/folder"
+#    CDM_SCHEMA = "your_cdm_schema"
+#    RESULTS_SCHEMA = "your_achilles_results_schema"
 #
 # The settings are described in detail on http://ohdsi.github.io/DatabaseConnector/
 #
@@ -59,19 +61,21 @@ port <- Sys.getenv("DB_PORT")
 pathToDriver <- Sys.getenv("PATH_TO_DRIVER") # Driver can be installed with DatabaseConnector::downloadJdbcDrivers(dbms, pathToDriver)
 
 # Details for connecting to the CDM and storing the results
-cdmDatabaseSchema <- "<your_cdm_schema>"
-resultsDatabaseSchema <- "<your_results_schema>" # Make sure the Achilles results are in this schema
-vocabDatabaseSchema <- "<your_vocab_schema>"
-outputFolder <- file.path(getwd(), "results", databaseId)
+cdmDatabaseSchema <- Sys.getenv("CDM_SCHEMA")
+vocabDatabaseSchema <- cdmDatabaseSchema # If different from CDM schema
+resultsDatabaseSchema <- Sys.getenv("RESULTS_SCHEMA") # Make sure the Achilles results are in this schema
 
 # For Oracle: define a schema that can be used to emulate temp tables:
 oracleTempSchema <- NULL
 
 # Details specific to the database:
-databaseId <- "<your_id>" #for example SYNPUF (this will be used as results sub-folder)
-databaseName <- "<your_full_databasename>"
-databaseDescription <- "<your_description>"
-authors <-"<your_name>" # used on the title page
+databaseId <- '<required_database_id>'
+databaseName <- '<optional_database_name>'
+databaseDescription <- '<optional_description>'
+authors <- c('<author_1>', '<author_2>') # used on the title page
+
+# Output
+outputFolder <- file.path(getwd(), "results", databaseId)
 
 # Url to check the version of your local Atlas
 baseUrl <- "<your_baseUrl>" # URL to your OHDSI WebAPI that Atlas uses, e.g. http://localhost:8080/WebAPI
