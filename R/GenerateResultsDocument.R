@@ -110,7 +110,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_break() %>%
       officer::body_add_par(value = "Distinct concepts per person", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par("The number of distinct concepts per person for all OMOP data domains", style = pkg.env$styles$tableCaption) %>%
+      officer::body_add_par("The number of distinct concepts per person per OMOP data domains. Only persons with at least one record in that domain are included in the calculation.", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = df$conceptsPerPerson$result, style = pkg.env$styles$table)
 
     doc <- doc %>%
