@@ -92,7 +92,7 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
   officer::body_add_xml(x = x, str = xml_elt, pos = pos)
 }
 
-my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
+my_source_value_count_section <- function (x, data, domain, kind, smallCellCount, totalRecords) {
   n <- nrow(data$result)
 
   msg <- "Counts are rounded up to the nearest hundred."
@@ -109,18 +109,20 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   }
 
   if (n>0) {
+    data$result$`%RECORDS` <- round(data$result$`#RECORDS` / totalRecords, 2)
+    data$result$`%CUMULATIVE` <- cumsum(data$result$`%RECORDS`)
     my_body_add_table(x, value = data$result, style = pkg.env$styles$table)
   }
 
   officer::body_add_par(x, sprintf("Query executed in %.2f seconds", data$duration), style = pkg.env$styles$footnote)
 }
 
-my_unmapped_section <- function(x, data, domain, smallCellCount) {
-  my_source_value_count_section(x, data, domain, "unmapped", smallCellCount)
+my_unmapped_section <- function(x, data, domain, smallCellCount, totalRecords) {
+  my_source_value_count_section(x, data, domain, "unmapped", smallCellCount, totalRecords)
 }
 
-my_mapped_section <- function(x, data, domain, smallCellCount) {
-  my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
+my_mapped_section <- function(x, data, domain, smallCellCount, totalRecords) {
+  my_source_value_count_section(x, data, domain, "mapped", smallCellCount, totalRecords)
 }
 
 
