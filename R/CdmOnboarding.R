@@ -210,11 +210,15 @@ cdmOnboarding <- function(connectionDetails,
     return(NULL)
   }
 
-  # Check whether Achilles output is available ---------------------------------------
-  if (!sqlOnly && !.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
-    ParallelLogger::logError("The output from the Achilles analyses is required.")
-    ParallelLogger::logError(sprintf("Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').", resultsDatabaseSchema))
-    return(NULL)
+  # Check whether Achilles output is available and get Achilles run info ---------------------------------------
+  achillesMetadata <- NULL
+  if (!sqlOnly) {
+    achillesMetadata <- .getAchillesMetadata(connectionDetails, resultsDatabaseSchema)
+    if(is.null(achillesMetadata) || !.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
+      ParallelLogger::logError("The output from the Achilles analyses is required.")
+      ParallelLogger::logError(sprintf("Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').", resultsDatabaseSchema))
+      return(NULL)
+    }
   }
 
   # Establish folder paths --------------------------------------------------------------------------------------------------------
@@ -344,6 +348,7 @@ cdmOnboarding <- function(connectionDetails,
                 sys_details= sys_details,
                 webAPIversion = webAPIversion,
                 cdmSource = cdmSource,
+                achillesMetadata = achillesMetadata,
                 dms = connectionDetails$dbms,
                 smallCellCount = smallCellCount,
                 runWithOptimizedQueries = optimize,
@@ -372,10 +377,10 @@ cdmOnboarding <- function(connectionDetails,
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, "get_cdm_source_table.sql"))
     return(NULL)
   }
-
+  errorReportFile <- file.path(outputFolder, "cdmSourceError.txt")
   cdmSource <- tryCatch({
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-      cdmSource <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = file.path(outputFolder, "cdmSourceError.txt"))
+      cdmSource <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
       if (nrow(cdmSource) > 1) {
         ParallelLogger::logWarn("Multiple records found in the cdm_source table. The first record is used.")
         cdmSource <- cdmSource[1,]
@@ -387,7 +392,7 @@ cdmOnboarding <- function(connectionDetails,
       cdmSource
     },
     error = function (e) {
-      ParallelLogger::logError(sprintf("> CDM Source table could not be extracted, see %s for more details", file.path(outputFolder, "cdmSourceError.txt")))
+      ParallelLogger::logError(sprintf("> CDM Source table could not be extracted, see %s for more details", errorReportFile))
       NULL
     },
     finally = {
@@ -430,4 +435,35 @@ cdmOnboarding <- function(connectionDetails,
     rm(connection)
   })
   return(achilles_tables_exist)
+}
+
+.getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema) {
+  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks","get_achilles_metadata.sql"),
+                                           packageName = "CdmOnboarding",
+                                           dbms = connectionDetails$dbms,
+                                           warnOnMissingParameters = FALSE,
+                                           resultsDatabaseSchema = resultsDatabaseSchema)
+  errorReportFile <- file.path(outputFolder, "getAchillesMetadataError.txt")
+  cdmSource <- tryCatch({
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    achillesMetadata <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
+    if (nrow(achillesMetadata) > 1) {
+      ParallelLogger::logWarn("Multiple records found for same analysis in achilles_results table. The first record is used.")
+      cdmSource <- achillesMetadata[1,]
+    }
+    if (nrow(achillesMetadata) == 0) {
+      stop("No records found in the achilles_results table. Please run Achilles.")
+    }
+    ParallelLogger::logInfo("> Achilles metadata successfully extracted")
+    achillesMetadata
+  },
+  error = function (e) {
+    ParallelLogger::logError(sprintf("> Achilles metadata could not be extracted, see %s for more details", errorReportFile))
+    NULL
+  },
+  finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
+  return(achillesMetadata)
 }

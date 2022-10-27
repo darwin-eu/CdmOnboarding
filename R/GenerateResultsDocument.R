@@ -65,8 +65,14 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
   # Execution details
   execution_details <- data.frame(
-    Detail=c("CdmOnboarding package Version", "CDM version", "Execution date", "Execution duration", "Document Generation date"),
-    Value=c(as.character(packageVersion("CdmOnboarding")), results$cdmSource$CDM_VERSION, results$executionDate, sprintf("%.2f seconds", results$executionDuration), date())
+    Detail=c("CdmOnboarding package Version", "CDM version", "Execution date", "Execution duration", "Achilles version", "Achilles execution date"),
+    Value=c(
+      as.character(packageVersion("CdmOnboarding")),
+      results$cdmSource$CDM_VERSION,
+      results$executionDate,
+      sprintf("%.2f seconds", results$executionDuration),
+      results$achillesMetadata$ACHILLES_VERSION,
+      results$achillesMetadata$ACHILLES_EXECUTION_DATE)
   )
   doc<-doc %>%
     officer::body_add_par(value = "Execution details", style = pkg.env$styles$heading1) %>%
