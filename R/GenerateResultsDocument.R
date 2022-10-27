@@ -192,17 +192,18 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       my_body_add_table(value = df_mc[order(df_mc$DOMAIN),], style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$mappingCompleteness$duration), style = pkg.env$styles$footnote)
 
+    tableCounts <- vocabResults$mappingCompleteness$result %>%
+      dplyr::select(DOMAIN, `#RECORDS SOURCE`) %>%
+      tidyr::pivot_wider(names_from=DOMAIN, values_from=`#RECORDS SOURCE`)
+
     ## add Drug Level Mappings
     df_dm <- vocabResults$drugMapping$result
+    df_dm$`%RECORDS` <- sprintf("%.1f%%", df_dm$`#RECORDS` / tableCounts$Drug * 100)
     doc<-doc %>%
       officer::body_add_par(value = "Drug Mappings", style = pkg.env$styles$heading2) %>%
       officer::body_add_par("The level of the drug mappings", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(value = df_dm[order(df_dm$`#RECORDS`, decreasing=TRUE),], style = pkg.env$styles$table) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$drugMapping$duration), style = pkg.env$styles$footnote)
-
-    tableCounts <- vocabResults$mappingCompleteness$result %>%
-      dplyr::select(DOMAIN, `#RECORDS SOURCE`) %>%
-      tidyr::pivot_wider(names_from=DOMAIN, values_from=`#RECORDS SOURCE`)
 
     ## add Top 25 missing mappings
     doc<-doc %>%
