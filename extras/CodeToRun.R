@@ -16,22 +16,20 @@
 #
 #
 # Below is an example .Renviron file's contents: (please remove)
-# the "#" below as these too are interprted as comments in the .Renviron file:
+# the "#" below as these too are interpreted as comments in the .Renviron file:
 #
 #    DBMS = "postgresql"
 #    DB_SERVER = "database.server.com"
 #    DB_PORT = 5432
 #    DB_USER = "database_user_name_goes_here"
 #    DB_PASSWORD = "your_secret_password"
-#    FFTEMP_DIR = "E:/fftemp"
+#    PATH_TO_DRIVER = "/dbms/driver/folder"
 #
 # The following describes the settings
-#    DBMS, DB_SERVER, DB_PORT, DB_USER, DB_PASSWORD := These are the details used to connect
+#    DBMS, DB_SERVER, DB_PORT, DB_USER, DB_PASSWORD, PATH_TO_DRIVER := These are the details used to connect
 #    to your database server. For more information on how these are set, please refer to:
 #    http://ohdsi.github.io/DatabaseConnector/
 #
-#    FFTEMP_DIR = A directory where temporary files used by the FF package are stored while running.
-#.
 #
 # Once you have established an .Renviron file, you must restart your R session for R to pick up these new
 # variables.
@@ -42,12 +40,12 @@
 #
 #
 # *******************************************************
-# SECTION 1: Make sure to install all dependencies (not needed if already done) -------------------------------
+# SECTION 1: Install latest version of CdmOnboarding
 # *******************************************************
 #
 # Prevents errors due to packages being built for other R versions:
 Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
-#
+
 # First, it probably is best to make sure you are up-to-date on all existing packages.
 # Important: This code is best run in R, not RStudio, as RStudio may have some libraries
 # (like 'rlang') in use.
@@ -55,29 +53,22 @@ Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
 
 # When asked to update packages, select '1' ('update all') (could be multiple times)
 # When asked whether to install from source, select 'No' (could be multiple times)
-#install.packages("devtools")
-#devtools::install_github("Darwin-eu/CdmOnboarding.R")
+if(!require(CdmOnboarding)){
+  remotes::install_github("Darwin-eu/CdmOnboarding")
+}
 
 # *******************************************************
 # SECTION 2: Set Local Details
 # *******************************************************
 library(CdmOnboarding)
 
-# Optional: specify where the temporary files (used by the ff package) will be created:
-fftempdir <- if (Sys.getenv("FFTEMP_DIR") == "") "~/fftemp" else Sys.getenv("FFTEMP_DIR")
-options(fftempdir = fftempdir)
-
 # Details for connecting to the server:
-dbms = Sys.getenv("DBMS")
+dbms <- Sys.getenv("DBMS")
 user <- if (Sys.getenv("DB_USER") == "") NULL else Sys.getenv("DB_USER")
 password <- if (Sys.getenv("DB_PASSWORD") == "") NULL else Sys.getenv("DB_PASSWORD")
-server = Sys.getenv("DB_SERVER")
-port = Sys.getenv("DB_PORT")
-pathToDriver <- "" # path to your database driver. To download driver for your database use DatabaseConnector::downloadJdbcDrivers()
-
-# connectionString is optional
-# if specified, the server, port fields are ignored. If user and password are not specified, they are assumed to already be included in the connection string.
-connectionString = if (Sys.getenv("CONNECTION_STRING") == "") NULL else Sys.getenv("CONNECTION_STRING")
+server <- Sys.getenv("DB_SERVER")
+port <- Sys.getenv("DB_PORT")
+pathToDriver <- Sys.getenv("PATH_TO_DRIVER") # Driver can be installed with DatabaseConnector::downloadJdbcDrivers(dbms, pathToDriver)
 
 # Author details
 authors <-"<your_name>" # used on the title page
@@ -97,14 +88,14 @@ resultsDatabaseSchema <- "<your_results_schema>" #Make sure the Achilles results
 vocabDatabaseSchema <- "<your_vocab_schema>"
 
 # Url to check the version of your local Atlas
-baseUrl <- "<your_baseUrl>" # example: "http://atlas-demo.ohdsi.org/WebAPI"
+baseUrl <- "<your_baseUrl>" # URL to your OHDSI WebAPI that Atlas uses, e.g. http://localhost:8080/WebAPI
 
 # All results smaller than this value are removed from the results.
 smallCellCount <- 5
 
 verboseMode <- TRUE
 
-dqdJsonPath <- ''  # Path to your DQD results file, to be used for deriving mapping completeness
+dqdJsonPath <- ''  # (optional) Path to your DQD results file, to be used for deriving mapping completeness
 optimize <- TRUE  # For postgresql only, for efficient data tables count estimates.
 
 # *******************************************************
@@ -120,7 +111,7 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   pathToDriver = pathToDriver
 )
 
-results <- cdmOnboarding(
+results <- CdmOnboarding::cdmOnboarding(
   connectionDetails,
   cdmDatabaseSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = resultsDatabaseSchema,
@@ -143,8 +134,10 @@ results <- cdmOnboarding(
   optimize = optimize
 )
 
-# generateResultsDocument(
+# The results document should already have been generated. Use this to regenerate upon error in cdmOnboarding
+# CdmOnboarding::generateResultsDocument(
 #   results,
-#   outputFolder
+#   outputFolder,
+#   authors
 # )
 

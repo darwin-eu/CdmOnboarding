@@ -1,4 +1,4 @@
--- Estimate of cdm table counts
+-- Estimate of vocabulary table counts
 SELECT
     c.relname AS tablename,
     c.reltuples::bigint as count
