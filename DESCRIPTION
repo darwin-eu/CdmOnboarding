@@ -41,3 +41,5 @@ Imports: parallel,
     knitr,
     devtools,
     tidyr
+Remotes:
+    OHDSI/ROhdsiWebApi
