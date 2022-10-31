@@ -10,6 +10,7 @@ SELECT
     WHEN 1803 THEN 'Measurement'
     ELSE ''
   END                AS "Domain",
+  count_value        AS "N_persons",
   min_value          AS "Min",
   p10_value          AS "P10",
   p25_value          AS "P25",
