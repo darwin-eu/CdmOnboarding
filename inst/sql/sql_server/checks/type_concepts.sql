@@ -1,8 +1,9 @@
+-- TODO: test performance. Inidividual counts might be better
 select
   domain,
   type_concept_id as type_concept_id,
-  concept_name + '(' + cast(type_concept_id as varchar) + ')'  as type_concept_name,
-  floor((count_big(*)+99)/100)*100 AS "count"
+  concept_name + '(' + cast(type_concept_id as varchar) + ')' as type_concept_name,
+  floor((count_big(*)+99)/100)*100 as "count"
 from (
   select 'Observation Period' as domain, period_type_concept_id AS type_concept_id
   from @cdmDatabaseSchema.observation_period
