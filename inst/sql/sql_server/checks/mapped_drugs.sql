@@ -1,4 +1,4 @@
--- top 25 mapped devices
+-- top 25 mapped drugs
 
 SELECT *
 FROM (
