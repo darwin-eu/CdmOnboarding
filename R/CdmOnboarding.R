@@ -138,7 +138,7 @@ cdmOnboarding <- function(connectionDetails,
     logError("!! CdmOnboarding document generation failed. Please fix any issues or reach out to the DARWIN-EU Coordination Centre.")
   }
 
-  return(results)
+  invisible(results)
 }
 
 # The main execution of CDM Onboarding analyses (for v5.x)
