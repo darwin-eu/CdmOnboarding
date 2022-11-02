@@ -56,6 +56,8 @@ vocabularyChecks <- function (connectionDetails,
 
   if (optimize && connectionDetails$dbms == "postgresql" ) {
     vocabularyCounts <- executeQuery(outputFolder,"vocabulary_tables_count_postgres.sql", "Count on vocabulary tables (postgres estimate) query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
+  } else if (optimize && connectionDetails$dbms == "sql server" ) {
+    vocabularyCounts <- executeQuery(outputFolder,"vocabulary_tables_count_sql_server.sql", "Count on vocabulary tables (sql server estimate) query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
   } else {
     vocabularyCounts <- executeQuery(outputFolder,"vocabulary_tables_count.sql", "Count on vocabulary tables query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema)
   }
