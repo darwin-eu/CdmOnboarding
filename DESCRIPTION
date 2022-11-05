@@ -39,4 +39,7 @@ Imports: parallel,
     lubridate,
     ggplot2,
     knitr,
-    devtools
+    devtools,
+    tidyr
+Remotes:
+    OHDSI/ROhdsiWebApi

@@ -62,10 +62,19 @@ prettyHr <- function(x) {
   return(result)
 }
 
+prettyPc <- function(x) {
+  if (x==100) {
+    return(sprintf("%.0f%%", x))
+  }
+  result <- sprintf("%.1f%%", x)
+  result[is.na(x)] <- "NA"
+  return(result)
+}
+
 my_body_add_table <- function (x, value, style = NULL, pos = "after", header = TRUE,
           alignment = NULL, stylenames = table_stylenames(), first_row = TRUE,
           first_column = FALSE, last_row = FALSE, last_column = FALSE,
-          no_hband = FALSE, no_vband = TRUE, align = "left")
+          no_hband = FALSE, no_vband = TRUE, align = "left", auto_format = TRUE)
 {
   pt <- officer::prop_table(style = style, layout = table_layout(),
                    width = table_width(), stylenames = stylenames,
@@ -74,16 +83,18 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
                                                       last_column = last_column, no_hband = no_hband, no_vband = no_vband),
                    align = align)
 
-  # Align left if no alignment is given
-  if (is.null(alignment)) {
-    alignment <- rep('l', ncol(value))
-  }
+  if (auto_format) {
+    # Align left if no alignment is given
+    if (is.null(alignment)) {
+      alignment <- rep('l', ncol(value))
+    }
 
-  # Formatting numeric columns: align right and add thousands separator.
-  for (i in 1:ncol(value)) {
-    if (is.numeric(value[,i])) {
-      value[,i] <- format(value[,i], big.mark=",")
-      alignment[i] <- 'r'
+    # Formatting numeric columns: align right and add thousands separator.
+    for (i in 1:ncol(value)) {
+      if (is.numeric(value[,i])) {
+        value[,i] <- format(value[,i], big.mark=",")
+        alignment[i] <- 'r'
+      }
     }
   }
 
@@ -93,7 +104,7 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
   officer::body_add_xml(x = x, str = xml_elt, pos = pos)
 }
 
-my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
+my_source_value_count_section <- function (x, data, domain, kind, smallCellCount, totalRecords) {
   n <- nrow(data$result)
 
   msg <- "Counts are rounded up to the nearest hundred."
@@ -102,26 +113,36 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   }
 
   if (n == 0) {
-    officer::body_add_par(x, sprintf("Omitted because no %s %s were found", kind, domain), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("Omitted because no %s %s were found with a count >%d", kind, domain, smallCellCount),
+                          style = pkg.env$styles$tableCaption)
   } else if (n < 25) {
-    officer::body_add_par(x, sprintf("All %d %s %s. %s", n, kind, domain, msg), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("All %d %s %s. %s", n, kind, domain, msg),
+                          style = pkg.env$styles$tableCaption)
   } else {
-    officer::body_add_par(x, sprintf("Top 25 %s %s. %s", kind, domain, msg), style = pkg.env$styles$tableCaption)
+    officer::body_add_par(x, sprintf("Top 25 %s %s. %s", kind, domain, msg),
+                          style = pkg.env$styles$tableCaption)
   }
 
   if (n>0) {
-    my_body_add_table(x, value = data$result, style = pkg.env$styles$table)
+    names(data$result)[1] <- "#"
+    data$result$`%RECORDS` <- prettyPc(data$result$`#RECORDS` / totalRecords * 100)
+    my_body_add_table(
+      x,
+      value = data$result,
+      style = pkg.env$styles$table,
+      alignment =  c('r',rep('l', ncol(data$result)-4),'r','r','r')  # unit (un)mapped has an extra 'table' column that should be left aligned
+    )
   }
 
   officer::body_add_par(x, sprintf("Query executed in %.2f seconds", data$duration), style = pkg.env$styles$footnote)
 }
 
-my_unmapped_section <- function(x, data, domain, smallCellCount) {
-  my_source_value_count_section(x, data, domain, "unmapped", smallCellCount)
+my_unmapped_section <- function(x, data, domain, smallCellCount, totalRecords) {
+  my_source_value_count_section(x, data, domain, "unmapped", smallCellCount, totalRecords)
 }
 
-my_mapped_section <- function(x, data, domain, smallCellCount) {
-  my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
+my_mapped_section <- function(x, data, domain, smallCellCount, totalRecords) {
+  my_source_value_count_section(x, data, domain, "mapped", smallCellCount, totalRecords)
 }
 
 
@@ -129,7 +150,9 @@ recordsCountPlot <- function(results){
   temp <- results %>%
     dplyr::rename(Date=X_CALENDAR_MONTH,Domain=SERIES_NAME, Count=Y_RECORD_COUNT) %>%
     dplyr::mutate(Date=lubridate::parse_date_time(Date, "ym"))
-  plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) + geom_line(aes(color = Domain))
+  plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) +
+    geom_line(aes(color = Domain, linetype = Domain)) +
+    scale_colour_hue(l=40)
 }
 
 #' Bundles the results in a zip file

@@ -197,4 +197,3 @@ from (
 ) T
 group by domain
 ;
-
