@@ -43,10 +43,15 @@ performanceChecks <- function (connectionDetails,
                               vocabDatabaseSchema = cdmDatabaseSchema,
                               sqlOnly = FALSE,
                               outputFolder = "output") {
-  achillesTiming <- executeQuery(outputFolder, "achilles_timing.sql", "Retrieving duration of Achilles queries", connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
-  performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark", connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
-  results <- list(achillesTiming=achillesTiming,
-                  performanceBenchmark=performanceBenchmark)
-  return(results)
+  achillesTiming <- executeQuery(outputFolder, "achilles_timing.sql", "Retrieving duration of Achilles queries",
+                                 connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
+
+  performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
+                                       connectionDetails, sqlOnly, vocabDatabaseSchema=vocabDatabaseSchema)
+
+  list(
+    achillesTiming=achillesTiming,
+    performanceBenchmark=performanceBenchmark
+  )
 }
 
