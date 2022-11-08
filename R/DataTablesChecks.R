@@ -75,6 +75,8 @@ dataTablesChecks <- function (connectionDetails,
                                   connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
   typeConcepts <- executeQuery(outputFolder,"type_concepts.sql", "Type concept query executed successfully",
                                connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+  tableDateRange <- executeQuery(outputFolder,"data_tables_date_range.sql", "Date range query executed successfully",
+                                 connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
 
   list(
     dataTablesCounts=dataTablesCounts,
@@ -84,6 +86,7 @@ dataTablesChecks <- function (connectionDetails,
     observationPeriodLength=observationPeriodLength,
     activePersons=activePersons,
     observedByMonth=observedByMonth,
-    typeConcepts=typeConcepts
+    typeConcepts=typeConcepts,
+    tableDateRange=tableDateRange
   )
 }

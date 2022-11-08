@@ -75,7 +75,6 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     ),
     Value=c(
       paste0(as.character(packageVersion("CdmOnboarding")), if(results$runWithOptimizedQueries) ' (optimized=TRUE)' else ''),
-      results$runWithOptimizedQueries,
       results$cdmSource$CDM_VERSION,
       results$executionDate,
       sprintf("%.2f seconds", results$executionDuration),
