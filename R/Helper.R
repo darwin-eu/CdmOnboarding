@@ -20,8 +20,14 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-.loadSql <- function(sqlFileName, dbms, ...){
-  do.call(
+executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails=NULL, sqlOnly, activeConnection=NULL, useExecuteSql=FALSE, ...){
+  if (!is.null(connectionDetails)) {
+    dbms <- connectionDetails$dbms
+  } else {
+    dbms <- activeConnection@dbms
+  }
+
+  sql <-   do.call(
     SqlRender::loadRenderTranslateSql,
     c(
       sqlFilename = file.path("checks", sqlFileName),
@@ -30,20 +36,6 @@
       warnOnMissingParameters = FALSE,
       list(...)
     )
-  )
-}
-
-executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails=NULL, sqlOnly, activeConnection=NULL, useExecuteSql=FALSE, ...){
-  if (!is.null(connectionDetails)) {
-    dbms <- connectionDetails$dbms
-  } else {
-    dbms <- activeConnection@dbms
-  }
-
-  sql <- .loadSql(
-    sqlFileName,
-    dbms,
-    ...
   )
 
   duration = -1
