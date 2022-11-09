@@ -2,7 +2,7 @@ select
   domain,
   type_concept_id as type_concept_id,
   concept_name || '(' || cast(type_concept_id as varchar) || ')' as type_concept_name,
-  floor((sum(record_count)+99)/100)*100 as "count"
+  floor((record_count+99)/100)*100 as "count"
 from (
   select 'Observation Period' as domain, period_type_concept_id AS type_concept_id, count_big(*) as record_count
   from @cdmDatabaseSchema.observation_period
@@ -53,6 +53,4 @@ from (
 	  group by type_concept_id
 ) cte
 join @vocabDatabaseSchema.concept on type_concept_id = concept_id
-group by domain, type_concept_id, concept_name
-having sum(record_count)>@smallCellCount
 ;

@@ -74,7 +74,7 @@ dataTablesChecks <- function (connectionDetails,
   observedByMonth <- executeQuery(outputFolder,"observed_by_month.sql", "Observed by month query executed successfully",
                                   connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
   typeConcepts <- executeQuery(outputFolder,"type_concepts.sql", "Type concept query executed successfully",
-                               connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+                               connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema, vocabDatabaseSchema=vocabDatabaseSchema)
   tableDateRange <- executeQuery(outputFolder,"data_tables_date_range.sql", "Date range query executed successfully",
                                  connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
 
