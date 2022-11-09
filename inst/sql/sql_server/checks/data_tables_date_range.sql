@@ -1,48 +1,92 @@
 select
-  tablename as "Table",
-  YEAR(min(start_date)) *100 + MONTH(min(start_date)) as "First event start month",
-  YEAR(max(start_date)) *100 + MONTH(max(start_date)) as "Last event start month"
+	table_name as "Table",
+	left(cast(first_start_date as varchar), 7) as "First start month",
+  left(cast(last_start_date as varchar), 7) as "Last start month"
 from (
-  select 'condition_occurrence' as tablename, condition_start_date as start_date
-  from @cdmDatabaseSchema.condition_occurrence
-  UNION
-  select 'drug_exposure' as tablename, drug_exposure_start_date as start_date
-  from @cdmDatabaseSchema.drug_exposure
-  UNION
-  select 'death' as tablename, death_date as start_date
-  from @cdmDatabaseSchema.death
-  UNION
-  select 'device_exposure' as tablename, device_exposure_start_date as start_date
+	select
+		'observation_period' as table_name,
+		min(observation_period_start_date) as first_start_date,
+		max(observation_period_start_date) as last_start_date
+	from @cdmDatabaseSchema.observation_period
+  UNION ALL
+	select
+  	'condition_occurrence' as table_name,
+		min(condition_start_date) as first_start_date,
+		max(condition_start_date) as last_start_date
+  	from @cdmDatabaseSchema.condition_occurrence
+  UNION ALL
+	select
+    'drug_exposure' as table_name,
+		min(drug_exposure_start_date) as first_start_date,
+		max(drug_exposure_start_date) as last_start_date
+  	from @cdmDatabaseSchema.drug_exposure
+  UNION ALL
+	select
+  	'death' as table_name,
+		min(death_date) as first_start_date,
+		max(death_date) as last_start_date
+  	from @cdmDatabaseSchema.death
+  UNION ALL
+	select
+  	'device_exposure' as table_name,
+		min(device_exposure_start_date) as first_start_date,
+		max(device_exposure_start_date) as last_start_date
   from @cdmDatabaseSchema.device_exposure
-  UNION
-  select 'measurement' as tablename, measurement_date as start_date
+  UNION ALL
+	select
+  	'measurement' as table_name,
+		min(measurement_date) as first_start_date,
+		max(measurement_date) as last_start_date
   from @cdmDatabaseSchema.measurement
   UNION
-  select 'observation' as tablename, observation_date as start_date
+	select
+  	'observation' as table_name,
+		min(observation_date) as first_start_date,
+		max(observation_date) as last_start_date
   from @cdmDatabaseSchema.observation
-  UNION
-  select 'procedure_occurrence' as tablename, procedure_date as start_date
+  UNION ALL
+	select
+  	'procedure_occurrence' as table_name,
+		min(procedure_date) as first_start_date,
+		max(procedure_date) as last_start_date
   from @cdmDatabaseSchema.procedure_occurrence
-  UNION
-  select 'specimen' as tablename, specimen_date as start_date
+  UNION ALL
+  select
+  	'specimen' as table_name,
+		min(specimen_date) as first_start_date,
+		max(specimen_date) as last_start_date
   from @cdmDatabaseSchema.specimen
-  UNION
-  select 'visit_detail' as tablename, visit_detail_start_date as start_date
-  from @cdmDatabaseSchema.visit_detail
-  UNION
-  select 'visit_occurrence' as tablename, visit_start_date as start_date
+  UNION ALL
+  select
+  	'visit_occurrence' as table_name,
+		min(visit_start_date) as first_start_date,
+		max(visit_start_date) as last_start_date
   from @cdmDatabaseSchema.visit_occurrence
-  UNION
-  select 'payer_plan_period' as tablename, payer_plan_period_start_date as start_date
+  UNION ALL
+  select
+  	'visit_detail' as table_name,
+		min(visit_detail_start_date) as first_start_date,
+		max(visit_detail_start_date) as last_start_date
+  from @cdmDatabaseSchema.visit_detail
+  UNION ALL
+	select
+  	'payer_plan_period' as table_name,
+		min(payer_plan_period_start_date) as first_start_date,
+		max(payer_plan_period_start_date) as last_start_date
   from @cdmDatabaseSchema.payer_plan_period
-  UNION
-  select 'note' as tablename, note_date as start_date
-  from @cdmDatabaseSchema.note
-  {@cdmVersion in ('5.4', '5.4.0')} ? {
-  UNION
-  select 'episode' as tablename, episode_start_date as start_date
+  UNION ALL
+  select
+  	'note' as table_name,
+		min(note_date) as first_start_date,
+		max(note_date) as last_start_date
+	from @cdmDatabaseSchema.note
+	{@cdmVersion == '5.4'} ? {
+  UNION ALL
+  select
+    'episode' as table_name,
+  	min(episode_start_date) as first_start_date,
+  	max(episode_start_date) as last_start_date
   from @cdmDatabaseSchema.episode
-  }
+	}
 ) cte
-group by tablename
 ;
