@@ -266,7 +266,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
     if (results$missingPackage=="") {
       doc<-doc %>%
-      officer::body_add_par("All R packages were available")
+      officer::body_add_par("All HADES R packages were available")
     } else {
       doc<-doc %>%
       officer::body_add_par(paste0("Missing R packages: ",results$missingPackages))
