@@ -67,6 +67,7 @@ vocabularyChecks <- function (connectionDetails,
                                    connectionDetails, sqlOnly,vocabDatabaseSchema=vocabDatabaseSchema)
 
   # Execute in same connection
+  # Note: if one query in the tryCatch fails, then all fail ("current transaction is aborted")
   tryCatch({
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     ParallelLogger::logInfo("Starting vocab mapping queries. Preprocessing domains...")
@@ -75,48 +76,47 @@ vocabularyChecks <- function (connectionDetails,
     mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", sqlOnly=sqlOnly,
                                             activeConnection=connection)
 
-    # TODO: if one query in the tryCatch fails, then all fail ("current transaction is aborted")
     drugMapping  <- executeQuery(outputFolder, "mapping_levels_drugs.sql", "Drug Level Mapping query executed successfully", sqlOnly=sqlOnly,
                                      activeConnection=connection, vocabDatabaseSchema=vocabDatabaseSchema)
 
-    unmappedDrugs <- executeQuery(outputFolder, "unmapped_domain_templated.sql", "Unmapped drugs query executed successfully", sqlOnly=sqlOnly,
+    unmappedDrugs <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped drugs query executed successfully", sqlOnly=sqlOnly,
                                       activeConnection=connection, cdmDomain='drug', smallCellCount=smallCellCount)
-    unmappedConditions <- executeQuery(outputFolder,"unmapped_domain_templated.sql", "Unmapped conditions query executed successfully", sqlOnly=sqlOnly,
+    unmappedConditions <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped conditions query executed successfully", sqlOnly=sqlOnly,
                                            activeConnection=connection, cdmDomain='condition', smallCellCount=smallCellCount)
-    unmappedMeasurements <- executeQuery(outputFolder,"unmapped_domain_templated.sql", "Unmapped measurements query executed successfully", sqlOnly=sqlOnly,
+    unmappedMeasurements <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped measurements query executed successfully", sqlOnly=sqlOnly,
                                              activeConnection=connection, cdmDomain='measurement', smallCellCount=smallCellCount)
-    unmappedObservations <- executeQuery(outputFolder,"unmapped_domain_templated.sql", "Unmapped observations query executed successfully", sqlOnly=sqlOnly,
+    unmappedObservations <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped observations query executed successfully", sqlOnly=sqlOnly,
                                              activeConnection=connection, cdmDomain='observation', smallCellCount=smallCellCount)
-    unmappedProcedures <- executeQuery(outputFolder,"unmapped_domain_templated.sql", "Unmapped procedures query executed successfully", sqlOnly=sqlOnly,
+    unmappedProcedures <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped procedures query executed successfully", sqlOnly=sqlOnly,
                                            activeConnection=connection, cdmDomain='procedure', smallCellCount=smallCellCount)
-    unmappedDevices <- executeQuery(outputFolder,"unmapped_domain_templated.sql", "Unmapped devices query executed successfully", sqlOnly=sqlOnly,
+    unmappedDevices <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped devices query executed successfully", sqlOnly=sqlOnly,
                                         activeConnection=connection, cdmDomain='device', smallCellCount=smallCellCount)
-    unmappedVisits <- executeQuery(outputFolder,"unmapped_domain_templated.sql", "Unmapped visits query executed successfully", sqlOnly=sqlOnly,
+    unmappedVisits <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped visits query executed successfully", sqlOnly=sqlOnly,
                                        activeConnection=connection, cdmDomain='visit', smallCellCount=smallCellCount)
-    unmappedUnitsMeas <- executeQuery(outputFolder,"unmapped_domain_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
+    unmappedUnitsMeas <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
                                           activeConnection=connection, cdmDomain='meas_unit', smallCellCount=smallCellCount)
-    unmappedUnitsObs <- executeQuery(outputFolder,"unmapped_domain_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
+    unmappedUnitsObs <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
                                          activeConnection=connection, cdmDomain='obs_unit', smallCellCount=smallCellCount)
     # todo: merge with domain name
     unmappedUnits <- rbind(unmappedUnitsMeas, unmappedUnitsObs)
 
-    mappedDrugs <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped drugs query executed successfully", sqlOnly=sqlOnly,
+    mappedDrugs <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped drugs query executed successfully", sqlOnly=sqlOnly,
                                    activeConnection=connection, cdmDomain='drug', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    mappedConditions <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped conditions query executed successfully", sqlOnly=sqlOnly,
+    mappedConditions <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped conditions query executed successfully", sqlOnly=sqlOnly,
                                          activeConnection=connection , cdmDomain='condition', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    mappedMeasurements <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped measurements query executed successfully", sqlOnly=sqlOnly,
+    mappedMeasurements <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped measurements query executed successfully", sqlOnly=sqlOnly,
                                            activeConnection=connection , cdmDomain='measurement', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    mappedObservations <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped observations query executed successfully", sqlOnly=sqlOnly,
+    mappedObservations <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped observations query executed successfully", sqlOnly=sqlOnly,
                                            activeConnection=connection , cdmDomain='observation', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    mappedProcedures <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped procedures query executed successfully", sqlOnly=sqlOnly,
+    mappedProcedures <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped procedures query executed successfully", sqlOnly=sqlOnly,
                                          activeConnection=connection  , cdmDomain='procedure', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    mappedDevices <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped devices query executed successfully", sqlOnly=sqlOnly,
+    mappedDevices <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped devices query executed successfully", sqlOnly=sqlOnly,
                                       activeConnection=connection  , cdmDomain='device', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    mappedVisits <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped visits query executed successfully", sqlOnly=sqlOnly,
+    mappedVisits <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped visits query executed successfully", sqlOnly=sqlOnly,
                                      activeConnection=connection  , cdmDomain='visit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    mappedUnitsMeas <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped units query executed successfully", sqlOnly=sqlOnly,
+    mappedUnitsMeas <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly=sqlOnly,
                                         activeConnection=connection  , cdmDomain='meas_unit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    mappedUnitsObs <- executeQuery(outputFolder,"mapped_domain_templated.sql", "Mapped units query executed successfully", sqlOnly=sqlOnly,
+    mappedUnitsObs <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly=sqlOnly,
                                        activeConnection=connection , cdmDomain='obs_unit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
     # todo: merge with domain name
     mappedUnits <- rbind(mappedUnitsMeas, mappedUnitsObs)

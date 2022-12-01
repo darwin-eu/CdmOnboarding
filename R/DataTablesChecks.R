@@ -50,12 +50,17 @@ dataTablesChecks <- function (connectionDetails,
                               sqlOnly = FALSE,
                               outputFolder = "output",
                               optimize = FALSE) {
-  if (optimize && connectionDetails$dbms == "postgresql" ) {
-    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_postgres.sql", "Data tables (postgres estimate) count query executed successfully",
-                                     connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
-  } else if (optimize &&connectionDetails$dbms == "sql server") {
-    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_sql_server.sql", "Data tables (sql server estimate) count query executed successfully",
-                                     connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+  if (optimize) {
+    if (connectionDetails$dbms == "postgresql" ) {
+      dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_postgres.sql", "Data tables (postgres estimate) count query executed successfully",
+                                       connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+    } else if (optimize && connectionDetails$dbms == "sql server") {
+      dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_sql_server.sql", "Data tables (sql server estimate) count query executed successfully",
+                                       connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+    } else {
+      dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_no_person_count.sql", "Data tables (no person count) count query executed successfully",
+                                       connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+    }
   } else {
     dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully",
                                      connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema, cdmVersion=cdmVersion)
