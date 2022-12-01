@@ -20,37 +20,61 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails, sqlOnly, cdmDatabaseSchema=NULL, vocabDatabaseSchema=NULL, resultsDatabaseSchema=NULL, smallCellCount=5, cdmVersion='5.3'){
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks",sqlFileName),
-                                           packageName = "CdmOnboarding",
-                                           dbms = connectionDetails$dbms,
-                                           warnOnMissingParameters = FALSE,
-                                           vocabDatabaseSchema = vocabDatabaseSchema,
-                                           cdmDatabaseSchema = cdmDatabaseSchema,
-                                           resultsDatabaseSchema = resultsDatabaseSchema,
-                                           smallCellCount = smallCellCount,
-                                           cdmVersion = cdmVersion)
+executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails=NULL, sqlOnly, activeConnection=NULL, useExecuteSql=FALSE, ...){
+  if (!is.null(connectionDetails)) {
+    dbms <- connectionDetails$dbms
+  } else {
+    dbms <- activeConnection@dbms
+  }
+
+  sql <-   do.call(
+    SqlRender::loadRenderTranslateSql,
+    c(
+      sqlFilename = file.path("checks", sqlFileName),
+      packageName = "CdmOnboarding",
+      dbms = dbms,
+      warnOnMissingParameters = FALSE,
+      list(...)
+    )
+  )
+
   duration = -1
   result = NULL
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, sqlFileName))
-  } else {
-    errorReportFile <- file.path(outputFolder, sprintf("%sErr.txt", tools::file_path_sans_ext(sqlFileName)))
-    tryCatch({
-      start_time <- Sys.time()
+    return(list(result=result, duration=duration))
+  }
+
+  errorReportFile <- file.path(outputFolder, sprintf("%sErr.txt", tools::file_path_sans_ext(sqlFileName)))
+  tryCatch({
+    start_time <- Sys.time()
+
+    if (is.null(activeConnection)) {
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    } else {
+      connection <- activeConnection
+    }
+
+    if (useExecuteSql) {
+      DatabaseConnector::executeSql(connection = connection, sql = sql, errorReportFile = errorReportFile, reportOverallTime = FALSE)
+    } else {
       result <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
-      duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
-      ParallelLogger::logInfo(sprintf("> %s in %.2f secs", successMessage, duration))
-    },
-    error = function (e) {
-      ParallelLogger::logError(sprintf("> Query failed. See '%s' for more details", errorReportFile))
-    },
-    finally = {
+    }
+
+    duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
+    ParallelLogger::logInfo(sprintf("> %s in %.2f secs", successMessage, duration))
+  },
+  error = function (e) {
+    ParallelLogger::logError(sprintf("%s", e))
+    ParallelLogger::logError(sprintf("> Query failed. See '%s' for more details", errorReportFile))
+  },
+  finally = {
+    if (is.null(activeConnection)) {
       DatabaseConnector::disconnect(connection = connection)
       rm(connection)
-    })
-  }
+    }
+  })
+
   return(list(result=result, duration=duration))
 }
 

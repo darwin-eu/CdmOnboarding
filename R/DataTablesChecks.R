@@ -50,20 +50,38 @@ dataTablesChecks <- function (connectionDetails,
                               sqlOnly = FALSE,
                               outputFolder = "output",
                               optimize = FALSE) {
-  if (optimize && connectionDetails$dbms == "postgresql" ) {
-    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_postgres.sql", "Data tables (postgres estimate) count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  } else if (optimize &&connectionDetails$dbms == "sql server") {
-    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_sql_server.sql", "Data tables (sql server estimate) count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+  if (optimize) {
+    if (connectionDetails$dbms == "postgresql" ) {
+      dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_postgres.sql", "Data tables (postgres estimate) count query executed successfully",
+                                       connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+    } else if (optimize && connectionDetails$dbms == "sql server") {
+      dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_sql_server.sql", "Data tables (sql server estimate) count query executed successfully",
+                                       connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+    } else {
+      dataTablesCounts <- executeQuery(outputFolder,"data_tables_count_no_person_count.sql", "Data tables (no person count) count query executed successfully",
+                                       connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+    }
   } else {
-    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema, cdmVersion)
+    dataTablesCounts <- executeQuery(outputFolder,"data_tables_count.sql", "Data tables count query executed successfully",
+                                     connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema, cdmVersion=cdmVersion)
   }
-  totalRecords <- executeQuery(outputFolder,"totalrecords.sql", "Total number of records over time query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  recordsPerPerson <- executeQuery(outputFolder,"recordsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  conceptsPerPerson <- executeQuery(outputFolder,"conceptsperperson.sql", "Number of records per person query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  observationPeriodLength <- executeQuery(outputFolder,"observation_period_length.sql", "Observation Period length query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  activePersons <- executeQuery(outputFolder,"active_persons.sql", "Active persons query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  observedByMonth <- executeQuery(outputFolder,"observed_by_month.sql", "Observed by month query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
-  typeConcepts <- executeQuery(outputFolder,"type_concepts.sql", "Type concept query executed successfully", connectionDetails, sqlOnly, cdmDatabaseSchema, vocabDatabaseSchema, resultsDatabaseSchema)
+
+  totalRecords <- executeQuery(outputFolder,"totalrecords.sql", "Total number of records over time query executed successfully",
+                               connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
+  recordsPerPerson <- executeQuery(outputFolder,"recordsperperson.sql", "Number of records per person query executed successfully",
+                                   connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
+  conceptsPerPerson <- executeQuery(outputFolder,"conceptsperperson.sql", "Number of records per person query executed successfully",
+                                    connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
+  observationPeriodLength <- executeQuery(outputFolder,"observation_period_length.sql", "Observation Period length query executed successfully",
+                                          connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
+  activePersons <- executeQuery(outputFolder,"active_persons.sql", "Active persons query executed successfully",
+                                connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
+  observedByMonth <- executeQuery(outputFolder,"observed_by_month.sql", "Observed by month query executed successfully",
+                                  connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
+  typeConcepts <- executeQuery(outputFolder,"type_concepts.sql", "Type concept query executed successfully",
+                               connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema, vocabDatabaseSchema=vocabDatabaseSchema)
+  tableDateRange <- executeQuery(outputFolder,"data_tables_date_range.sql", "Date range query executed successfully",
+                                 connectionDetails, sqlOnly, cdmDatabaseSchema=cdmDatabaseSchema)
 
   list(
     dataTablesCounts=dataTablesCounts,
@@ -73,6 +91,7 @@ dataTablesChecks <- function (connectionDetails,
     observationPeriodLength=observationPeriodLength,
     activePersons=activePersons,
     observedByMonth=observedByMonth,
-    typeConcepts=typeConcepts
+    typeConcepts=typeConcepts,
+    tableDateRange=tableDateRange
   )
 }
