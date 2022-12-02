@@ -1,92 +1,42 @@
 select
-	table_name as "Table",
-	left(cast(first_start_date as varchar), 7) as "First start month",
-  left(cast(last_start_date as varchar), 7) as "Last start month"
+  CASE analysis_id
+  	WHEN 111 THEN 'Observation Period'
+  	WHEN 502 THEN 'Death'
+  	WHEN 1411 THEN 'Payer Plan Period'
+  	WHEN 2102 THEN 'Device exposure'
+  	WHEN 220 THEN 'Visit Occurrence'
+    WHEN 420 THEN 'Condition Occurrence'
+    WHEN 620 THEN 'Procedure Occurrence'
+    WHEN 720 THEN 'Drug exposure'
+    WHEN 820 THEN 'Observation'
+    WHEN 920 THEN 'Drug era'
+    WHEN 1020 THEN 'Condition era'
+    WHEN 1320 THEN 'Visit detail'
+    WHEN 1820 THEN 'Measurement'
+    ELSE ''
+  END AS "Table",
+  left(min_start_month, 4) + '-' + right(min_start_month, 2) as "First start month",
+  left(max_start_month, 4) + '-' + right(max_start_month, 2) as "Last start month"
 from (
 	select
-		'Observation Period' as table_name,
-		min(observation_period_start_date) as first_start_date,
-		max(observation_period_start_date) as last_start_date
-	from @cdmDatabaseSchema.observation_period
-  UNION ALL
+	  analysis_id,
+	  min(stratum_1) as min_start_month,
+	  max(stratum_1) as max_start_month
+	from @resultsDatabaseSchema.achilles_results
+	where analysis_id IN (111, 502, 1411, 220, 420, 620, 720, 820, 920, 1020, 1320, 1820)
+	group by analysis_id
+
+	UNION ALL
+
+	-- No analysis 2120 for device expsoure. 2102 uses stratum_1 to stratify by concept_id
 	select
-  	'Condition Occurrence' as table_name,
-		min(condition_start_date) as first_start_date,
-		max(condition_start_date) as last_start_date
-  	from @cdmDatabaseSchema.condition_occurrence
-  UNION ALL
-	select
-    'Drug Exposure' as table_name,
-		min(drug_exposure_start_date) as first_start_date,
-		max(drug_exposure_start_date) as last_start_date
-  	from @cdmDatabaseSchema.drug_exposure
-  UNION ALL
-	select
-  	'Death' as table_name,
-		min(death_date) as first_start_date,
-		max(death_date) as last_start_date
-  	from @cdmDatabaseSchema.death
-  UNION ALL
-	select
-  	'Device Exposure' as table_name,
-		min(device_exposure_start_date) as first_start_date,
-		max(device_exposure_start_date) as last_start_date
-  from @cdmDatabaseSchema.device_exposure
-  UNION ALL
-	select
-  	'Measurement' as table_name,
-		min(measurement_date) as first_start_date,
-		max(measurement_date) as last_start_date
-  from @cdmDatabaseSchema.measurement
-  UNION
-	select
-  	'Observation' as table_name,
-		min(observation_date) as first_start_date,
-		max(observation_date) as last_start_date
-  from @cdmDatabaseSchema.observation
-  UNION ALL
-	select
-  	'Procedure Occurrence' as table_name,
-		min(procedure_date) as first_start_date,
-		max(procedure_date) as last_start_date
-  from @cdmDatabaseSchema.procedure_occurrence
-  UNION ALL
-  select
-  	'Specimen' as table_name,
-		min(specimen_date) as first_start_date,
-		max(specimen_date) as last_start_date
-  from @cdmDatabaseSchema.specimen
-  UNION ALL
-  select
-  	'Visit Occurrence' as table_name,
-		min(visit_start_date) as first_start_date,
-		max(visit_start_date) as last_start_date
-  from @cdmDatabaseSchema.visit_occurrence
-  UNION ALL
-  select
-  	'Visit Detail' as table_name,
-		min(visit_detail_start_date) as first_start_date,
-		max(visit_detail_start_date) as last_start_date
-  from @cdmDatabaseSchema.visit_detail
-  UNION ALL
-	select
-  	'Payer Plan Period' as table_name,
-		min(payer_plan_period_start_date) as first_start_date,
-		max(payer_plan_period_start_date) as last_start_date
-  from @cdmDatabaseSchema.payer_plan_period
-  UNION ALL
-  select
-  	'Note' as table_name,
-		min(note_date) as first_start_date,
-		max(note_date) as last_start_date
-	from @cdmDatabaseSchema.note
-	{@cdmVersion == '5.4'} ? {
-  UNION ALL
-  select
-    'Episode' as table_name,
-  	min(episode_start_date) as first_start_date,
-  	max(episode_start_date) as last_start_date
-  from @cdmDatabaseSchema.episode
-	}
+	  analysis_id,
+	  min(stratum_2),
+	  max(stratum_2)
+	from @resultsDatabaseSchema.achilles_results
+	where analysis_id IN (2102)
+	group by analysis_id
+
+	-- Missing domains (no achilles analysis defined): Note, Specimen, Episode
 ) cte
 ;

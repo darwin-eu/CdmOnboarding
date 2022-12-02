@@ -113,12 +113,12 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_break() %>%
       officer::body_add_par(value = "Data density plots", style = pkg.env$styles$heading2) %>%
       officer::body_add_gg(plot, height=4) %>%
-      officer::body_add_par("Total record count over time per OMOP data domain", style = pkg.env$styles$figureCaption)
+      officer::body_add_par("Total record count over time per OMOP data domain.", style = pkg.env$styles$figureCaption)
 
     plot <- recordsCountPlot(as.data.frame(df$recordsPerPerson$result))
     doc <- doc %>%
       officer::body_add_gg(plot, height=4) %>%
-      officer::body_add_par("Number of records per person over time per OMOP data domain", style = pkg.env$styles$figureCaption)
+      officer::body_add_par("Number of records per person over time per OMOP data domain.", style = pkg.env$styles$figureCaption)
 
     doc <- doc %>%
       officer::body_add_break() %>%
@@ -132,9 +132,9 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_par("") %>%
       officer::body_add_gg(plot, height=4) %>%
       officer::body_add_par(
-        sprintf("Persons with continuous observation by month. In the last 6 months %s persons with an active observation period (before source or cdm release date (%s)).",
-          prettyHr(df$activePersons$result$COUNT),
-          if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) {results$cdmSource$SOURCE_RELEASE_DATE} else {results$cdmSource$CDM_RELEASE_DATE}
+        sprintf("Persons with continuous observation by month. In the last 6 months (before %s), %s persons with an active observation period.",
+                if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) {results$cdmSource$SOURCE_RELEASE_DATE} else {results$cdmSource$CDM_RELEASE_DATE},
+                prettyHr(df$activePersons$result$COUNT)
         ),
         style = pkg.env$styles$figureCaption
       ) %>%
@@ -152,18 +152,18 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
                           id_cols=TYPE_CONCEPT_NAME,
                           names_from=DOMAIN,
                           values_from=COUNT,
-                          values_fill=0,
+                          values_fill="0",
                           values_fn = prettyHr)
     doc <- doc %>%
       officer::body_add_par(value = "Type Concepts", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par("Number of type concepts by domain. Counts are rounded up to the nearest hundred", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df_type_concept, style = pkg.env$styles$table) %>%
+      officer::body_add_par("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(value = df_type_concept, style = pkg.env$styles$table, alignment =  c('l',rep('r', ncol(df_type_concept)-1))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$typeConcepts$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>%
       officer::body_add_par(value = "Date Range", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par("Minimum and maximum date in each table, floored to the nearest month", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(value = df$tableDateRange$result, auto_format = FALSE, style = pkg.env$styles$table, alignment =  c('l',rep('r', ncol(df_type_concept)-1))) %>%
+      officer::body_add_par("Minimum and maximum date in each table, floored to the nearest month.", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(value = df$tableDateRange$result, auto_format = FALSE, style = pkg.env$styles$table, alignment =  c('l','r','r')) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$tableDateRange$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>% officer::body_add_break()
