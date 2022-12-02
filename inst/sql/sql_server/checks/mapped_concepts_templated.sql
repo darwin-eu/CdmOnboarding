@@ -2,7 +2,7 @@
 
 select top 25
   ROW_NUMBER() OVER(ORDER BY num_records desc) as "#",
-  c.concept_id as "Concept id",
+  CAST(c.concept_id AS varchar) as "Concept id",
   concept_name as "Concept Name",
   floor((num_records+99)/100)*100 as "#Records",
   round(num_records/t.total_records*100,1) as "%Records"

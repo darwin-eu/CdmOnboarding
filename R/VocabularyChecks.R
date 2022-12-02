@@ -72,7 +72,7 @@ vocabularyChecks <- function (connectionDetails,
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     ParallelLogger::logInfo("Starting vocab mapping queries. Preprocessing domains...")
     mappingTempTableCreation <- executeQuery(outputFolder, "mapping_temp_tables.sql", "Mapping Temp tables query executed successfully", sqlOnly=sqlOnly,
-                                                 activeConnection=connection, useExecuteSql=TRUE, cdmDatabaseSchema=cdmDatabaseSchema,optimize=optimize)
+                                                 activeConnection=connection, useExecuteSql=TRUE, cdmDatabaseSchema=cdmDatabaseSchema, optimize=optimize)
     mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", sqlOnly=sqlOnly,
                                             activeConnection=connection)
 
