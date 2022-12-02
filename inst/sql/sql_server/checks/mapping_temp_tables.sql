@@ -33,7 +33,8 @@ select
   drug_source_value as source_value,
   drug_concept_id as concept_id,
   case when drug_concept_id = 0 then 0 else 1 end as is_mapped,
-  count_big(*) as num_records
+  count_big(*) as num_records,
+  {@optimize} ? {0} : {count_big(distinct person_id)} as num_patients
 into #drug
 from @cdmDatabaseSchema.drug_exposure
 group by drug_concept_id, drug_source_value

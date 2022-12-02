@@ -86,11 +86,10 @@ prettyHr <- function(x) {
 }
 
 prettyPc <- function(x) {
-  if (x==100) {
-    return(sprintf("%.0f%%", x))
-  }
   result <- sprintf("%.1f%%", x)
   result[is.na(x)] <- "NA"
+  result[x==100] <- "100%"
+  result[x==0] <- "0%"
   return(result)
 }
 
@@ -127,7 +126,7 @@ my_body_add_table <- function (x, value, style = NULL, pos = "after", header = T
   officer::body_add_xml(x = x, str = xml_elt, pos = pos)
 }
 
-my_source_value_count_section <- function (x, data, domain, kind, smallCellCount, totalRecords) {
+my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
   n <- nrow(data$result)
 
   msg <- "Counts are rounded up to the nearest hundred."
@@ -136,7 +135,7 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   }
 
   if (n == 0) {
-    officer::body_add_par(x, sprintf("Omitted because no %s %s were found with a count >%d", kind, domain, smallCellCount),
+    officer::body_add_par(x, sprintf("Omitted because no %s %s were found with a count >%d.", kind, domain, smallCellCount),
                           style = pkg.env$styles$tableCaption)
   } else if (n < 25) {
     officer::body_add_par(x, sprintf("All %d %s %s. %s", n, kind, domain, msg),
@@ -146,9 +145,9 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
                           style = pkg.env$styles$tableCaption)
   }
 
-  if (n>0) {
+  if (n > 0) {
     names(data$result)[1] <- "#"
-    data$result$`%RECORDS` <- prettyPc(data$result$`#RECORDS` / totalRecords * 100)
+    data$result$`%RECORDS` <- prettyPc(data$result$`%RECORDS`)
     my_body_add_table(
       x,
       value = data$result,
@@ -158,14 +157,15 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   }
 
   officer::body_add_par(x, sprintf("Query executed in %.2f seconds", data$duration), style = pkg.env$styles$footnote)
+  invisible(NULL)
 }
 
-my_unmapped_section <- function(x, data, domain, smallCellCount, totalRecords) {
-  my_source_value_count_section(x, data, domain, "unmapped", smallCellCount, totalRecords)
+my_unmapped_section <- function(x, data, domain, smallCellCount) {
+  my_source_value_count_section(x, data, domain, "unmapped", smallCellCount)
 }
 
-my_mapped_section <- function(x, data, domain, smallCellCount, totalRecords) {
-  my_source_value_count_section(x, data, domain, "mapped", smallCellCount, totalRecords)
+my_mapped_section <- function(x, data, domain, smallCellCount) {
+  my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
 }
 
 

@@ -72,7 +72,7 @@ vocabularyChecks <- function (connectionDetails,
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     ParallelLogger::logInfo("Starting vocab mapping queries. Preprocessing domains...")
     mappingTempTableCreation <- executeQuery(outputFolder, "mapping_temp_tables.sql", "Mapping Temp tables query executed successfully", sqlOnly=sqlOnly,
-                                                 activeConnection=connection, useExecuteSql=TRUE, cdmDatabaseSchema=cdmDatabaseSchema)
+                                                 activeConnection=connection, useExecuteSql=TRUE, cdmDatabaseSchema=cdmDatabaseSchema,optimize=optimize)
     mappingCompleteness <- executeQuery(outputFolder,"mapping_completeness.sql", "Mapping Completeness query executed successfully", sqlOnly=sqlOnly,
                                             activeConnection=connection)
 
@@ -118,8 +118,6 @@ vocabularyChecks <- function (connectionDetails,
                                         activeConnection=connection  , cdmDomain='meas_unit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
     mappedUnitsObs <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly=sqlOnly,
                                        activeConnection=connection , cdmDomain='obs_unit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
-    # todo: merge with domain name
-    mappedUnits <- rbind(mappedUnitsMeas, mappedUnitsObs)
   },
   finally = {
     DatabaseConnector::disconnect(connection = connection)
@@ -138,7 +136,8 @@ vocabularyChecks <- function (connectionDetails,
     unmappedProcedures=unmappedProcedures,
     unmappedDevices=unmappedDevices,
     unmappedVisits=unmappedVisits,
-    unmappedUnits=unmappedUnits,
+    unmappedUnitsMeas=unmappedUnitsMeas,
+    unmappedUnitsObs=unmappedUnitsObs,
     mappedDrugs=mappedDrugs,
     mappedConditions=mappedConditions,
     mappedMeasurements=mappedMeasurements,
@@ -146,7 +145,8 @@ vocabularyChecks <- function (connectionDetails,
     mappedProcedures=mappedProcedures,
     mappedDevices=mappedDevices,
     mappedVisits=mappedVisits,
-    mappedUnits=mappedUnits,
+    mappedUnitsMeas=mappedUnitsMeas,
+    mappedUnitsObs=mappedUnitsObs,
     conceptCounts=conceptCounts,
     vocabularyCounts=vocabularyCounts,
     sourceConceptFrequency=sourceConceptFrequency,

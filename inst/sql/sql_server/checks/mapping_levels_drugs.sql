@@ -2,6 +2,7 @@
 
 select concept_class_id as "Class",
        sum(num_records) as "#Records",
+       sum(num_patients) as "#Patients",
        count_big(distinct source_value) as "#Source Codes",
        round(sum(num_records)/t.total_records*100,1) as "%Records"
 from #drug

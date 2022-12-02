@@ -45,5 +45,5 @@ select 'visit_occurrence' as tablename, count_big(*) as count, count_big(distinc
 UNION ALL
 select 'episode' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.episode
 UNION ALL
-select 'episode_event' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.episode_event
+select 'episode_event' as tablename, count_big(*) as count, NULL as "person count" from @cdmDatabaseSchema.episode_event
 }

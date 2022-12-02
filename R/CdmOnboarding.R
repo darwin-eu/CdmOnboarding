@@ -272,11 +272,12 @@ cdmOnboarding <- function(connectionDetails,
     # packages <- hadesPackageList$name
     # dump("packages", "")
     packages <- c("CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
-                  "EvidenceSynthesis", "PatientLevelPrediction", "EnsemblePatientLevelPrediction",
-                  "Capr", "CirceR", "CohortGenerator", "PhenotypeLibrary", "EmpiricalCalibration",
-                  "MethodEvaluation", "CohortDiagnostics", "Andromeda", "BigKnn",
-                  "Cyclops", "DatabaseConnector", "Eunomia", "FeatureExtraction",
-                  "Hydra", "OhdsiSharing", "ParallelLogger", "ROhdsiWebApi", "SqlRender")
+                  "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
+                  "EnsemblePatientLevelPrediction", "Capr", "CirceR", "CohortGenerator",
+                  "PhenotypeLibrary", "CohortDiagnostics", "CohortExplorer", "EmpiricalCalibration",
+                  "MethodEvaluation", "Andromeda", "BigKnn", "Cyclops", "DatabaseConnector",
+                  "Eunomia", "FeatureExtraction", "Hydra", "IterativeHardThresholding",
+                  "OhdsiSharing", "ParallelLogger", "ROhdsiWebApi", "SqlRender")
     diffPackages <- setdiff(packages, rownames(installed.packages()))
     missingPackages <- paste(diffPackages, collapse=', ')
 
@@ -287,9 +288,11 @@ cdmOnboarding <- function(connectionDetails,
       ParallelLogger::logInfo("> All HADES packages are installed")
     }
 
-    packinfo <- installed.packages(fields = c("Package", "Version"))
-    hades<-packinfo[,c("Package", "Version")]
-    hadesPackageVersions <- as.data.frame(hades[row.names(hades) %in% packages,])
+    # Note: can have multiple versions of the same package due to renvs
+    # Sorting on LibPath to get packages in same environment together
+    packinfo <- as.data.frame(installed.packages())
+    packinfo <- packinfo[order(packinfo$LibPath, packinfo$Package), c("Package", "Version")]
+    hadesPackageVersions <- packinfo[packinfo$Package %in% packages,]
 
     sys_details <- benchmarkme::get_sys_details(sys_info=FALSE)
     ParallelLogger::logInfo(sprintf("Running Performance Checks on %s cpu with %s cores, and %s ram.", sys_details$cpu$model_name, sys_details$cpu$no_of_cores, prettyunits::pretty_bytes(as.numeric(sys_details$ram))))
