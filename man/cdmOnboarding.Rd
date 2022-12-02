@@ -23,7 +23,9 @@ cdmOnboarding(
   baseUrl = "",
   sqlOnly = FALSE,
   outputFolder = "output",
-  verboseMode = TRUE
+  verboseMode = TRUE,
+  dqdJsonPath = NULL,
+  optimize = FALSE
 )
 }
 \arguments{
@@ -68,10 +70,14 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{outputFolder}{Path to store logs and SQL files}
 
 \item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
+
+\item{dqdJsonPath}{Path to the json of the DQD}
+
+\item{optimize}{Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE}
 }
 \value{
-\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
-}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
+}\if{html}{\out{</div>}}
 }
 \description{
 \code{cdmOnboarding} runs the CDM Onboarding procedure. Executing the checks and outputing a results document

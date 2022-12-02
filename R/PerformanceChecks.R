@@ -40,7 +40,7 @@
 #' @export
 performanceChecks <- function (connectionDetails,
                               resultsDatabaseSchema,
-                              vocabDatabaseSchema = cdmDatabaseSchema,
+                              vocabDatabaseSchema,
                               sqlOnly = FALSE,
                               outputFolder = "output") {
   achillesTiming <- executeQuery(outputFolder, "achilles_timing.sql", "Retrieving duration of Achilles queries",
