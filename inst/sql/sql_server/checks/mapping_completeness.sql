@@ -5,7 +5,7 @@ select  'Condition' as "Domain",
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-from condition
+from #condition
 union all
 select  'Procedure' as domain,
         count_big(*) as "#Codes Source",
@@ -14,7 +14,7 @@ select  'Procedure' as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from procedure
+from #procedure
 union all
 select  'Drug' as domain,
         count_big(*) as "#Codes Source",
@@ -23,7 +23,7 @@ select  'Drug' as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from drug
+from #drug
 union all
 select  'Device' as domain,
         count_big(*) as "#Codes Source",
@@ -32,7 +32,7 @@ select  'Device' as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from device
+from #device
 union all
 select  'Observation'  as domain,
         count_big(*) as "#Codes Source",
@@ -41,7 +41,7 @@ select  'Observation'  as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from observation
+from #observation
 union all
 select  'Measurement'  as domain,
         count_big(*) as "#Codes Source",
@@ -50,7 +50,7 @@ select  'Measurement'  as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from measurement
+from #measurement
 union all
 select  'Specimen' as "Domain",
         count_big(*) as "#Codes Source",
@@ -59,7 +59,7 @@ select  'Specimen' as "Domain",
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from specimen
+from #specimen
 union all
 select  'Visit' as domain,
         count_big(*) as "#Codes Source",
@@ -68,7 +68,7 @@ select  'Visit' as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from visit
+from #visit
 union all
 select  'Measurement Unit'as domain,
         count_big(*) as "#Codes Source",
@@ -77,7 +77,7 @@ select  'Measurement Unit'as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from meas_unit
+from #meas_unit
 union all
 select  'Observation Unit'as domain,
         count_big(*) as "#Codes Source",
@@ -86,7 +86,7 @@ select  'Observation Unit'as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from obs_unit
+from #obs_unit
 union all
 select  'Measurement value'  as domain,
         count_big(*) as "#Codes Source",
@@ -95,7 +95,7 @@ select  'Measurement value'  as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from meas_value
+from #meas_value
 union all
 select  'Observation value'  as domain,
         count_big(*) as "#Codes Source",
@@ -104,7 +104,7 @@ select  'Observation value'  as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from obs_value
+from #obs_value
 union all
 select  'Provider Specialty'  as domain,
         count_big(*) as "#Codes Source",
@@ -113,7 +113,7 @@ select  'Provider Specialty'  as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from specialty
+from #specialty
 union all
 select  'Condition status' as domain,
         count_big(*) as "#Codes Source",
@@ -122,7 +122,7 @@ select  'Condition status' as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from cond_status
+from #cond_status
 union all
 select  'Death cause'  as domain,
         count_big(*) as "#Codes Source",
@@ -131,5 +131,5 @@ select  'Death cause'  as domain,
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
-        from death_cause
+from #death_cause
 ;
