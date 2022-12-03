@@ -93,16 +93,28 @@ prettyPc <- function(x) {
   return(result)
 }
 
+my_caption <- function(x, caption, sourceSymbol, style) {
+  officer::body_add_par(
+    x,
+    value = sprintf(
+      "%s %s",
+      caption,
+      sourceSymbol
+    ),
+    style = style
+  )
+}
+
 my_body_add_table <- function (x, value, style = NULL, pos = "after", header = TRUE,
           alignment = NULL, stylenames = table_stylenames(), first_row = TRUE,
           first_column = FALSE, last_row = FALSE, last_column = FALSE,
           no_hband = FALSE, no_vband = TRUE, align = "left", auto_format = TRUE)
 {
-  pt <- officer::prop_table(style = style, layout = table_layout(),
-                   width = table_width(), stylenames = stylenames,
-                   tcf = table_conditional_formatting(first_row = first_row,
-                                                      first_column = first_column, last_row = last_row,
-                                                      last_column = last_column, no_hband = no_hband, no_vband = no_vband),
+  pt <- officer::prop_table(style = style, layout = officer::table_layout(),
+                   width = officer::table_width(), stylenames = stylenames,
+                   tcf = officer::table_conditional_formatting(
+                     first_row = first_row, first_column = first_column, last_row = last_row,
+                     last_column = last_column, no_hband = no_hband, no_vband = no_vband),
                    align = align)
 
   if (auto_format) {
@@ -134,16 +146,13 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
     msg <- sprintf("%s Values with a record count <=%d are omitted.", msg, smallCellCount)
   }
 
+  caption <- sprintf("Top 25 %s %s. %s", kind, domain, msg)
   if (n == 0) {
-    officer::body_add_par(x, sprintf("Omitted because no %s %s were found with a count >%d.", kind, domain, smallCellCount),
-                          style = pkg.env$styles$tableCaption)
+    caption <- sprintf("Omitted because no %s %s were found with a count >%d.", kind, domain, smallCellCount)
   } else if (n < 25) {
-    officer::body_add_par(x, sprintf("All %d %s %s. %s", n, kind, domain, msg),
-                          style = pkg.env$styles$tableCaption)
-  } else {
-    officer::body_add_par(x, sprintf("Top 25 %s %s. %s", kind, domain, msg),
-                          style = pkg.env$styles$tableCaption)
+    caption <- sprintf("All %d %s %s. %s", n, kind, domain, msg)
   }
+  my_caption(x, caption, sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
 
   if (n > 0) {
     names(data$result)[1] <- "#"
@@ -162,7 +171,6 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   }
 
   officer::body_add_par(x, sprintf("Query executed in %.2f seconds", data$duration), style = pkg.env$styles$footnote)
-  invisible(NULL)
 }
 
 my_unmapped_section <- function(x, data, domain, smallCellCount) {

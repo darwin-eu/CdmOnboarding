@@ -1,10 +1,10 @@
 select
   CASE analysis_id
-  	WHEN 111 THEN 'Observation Period'
-  	WHEN 502 THEN 'Death'
-  	WHEN 1411 THEN 'Payer Plan Period'
-  	WHEN 2102 THEN 'Device exposure'
-  	WHEN 220 THEN 'Visit Occurrence'
+    WHEN 111 THEN 'Observation Period'
+    WHEN 502 THEN 'Death'
+    WHEN 1411 THEN 'Payer Plan Period'
+    WHEN 2102 THEN 'Device exposure'
+    WHEN 220 THEN 'Visit Occurrence'
     WHEN 420 THEN 'Condition Occurrence'
     WHEN 620 THEN 'Procedure Occurrence'
     WHEN 720 THEN 'Drug exposure'
