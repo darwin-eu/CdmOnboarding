@@ -196,7 +196,7 @@ cdmOnboarding <- function(connectionDetails,
   cdmSource$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
   cdmSource$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
   cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
-  ParallelLogger::logInfo(sprintf("Found database '%s' with release date '%s'", cdmSource$CDM_SOURCE_NAME, cdmSource$CDM_RELEASE_DATE))
+  ParallelLogger::logInfo(sprintf("Found database '%s' with CDM release date '%s'", cdmSource$CDM_SOURCE_NAME, cdmSource$CDM_RELEASE_DATE))
 
   # Get source name from cdm_source if none provided ----------------------------------------------------------------------------------------------
   if (missing(databaseName) & !sqlOnly) {

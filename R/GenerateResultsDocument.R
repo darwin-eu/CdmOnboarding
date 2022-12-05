@@ -36,8 +36,8 @@ pkg.env$styles <- list(
 
 pkg.env$sources <- list(
   cdm="#",
-  achilles="Δ",
-  system="◊"
+  achilles="\u0394",  # Delta
+  system="\u25CA"  # Lozenge
 )
 
 
@@ -181,7 +181,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
-      my_caption("Minimum and maximum date in each table, floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
+      my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(df$tableDateRange$result, auto_format = FALSE, style = pkg.env$styles$table, alignment =  c('l','r','r')) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$tableDateRange$duration), style = pkg.env$styles$footnote)
 
@@ -195,6 +195,8 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
   vocabResults <-results$vocabularyResults
   if (!is.null(vocabResults)) {
+    doc <- doc %>% officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version))
+
     # Mapping Completeness
     df_mc <- vocabResults$mappingCompleteness$result
     df_mc$`%CODES MAPPED` <- prettyPc(df_mc$`%CODES MAPPED`)
@@ -314,7 +316,8 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
   if (!is.null(dqdResults)) {
     doc <- doc %>%
       officer::body_add_par("Data Quality Dashboard", style = pkg.env$styles$heading1) %>%
-      officer::body_add_par(sprintf("%.2f%% DQD checks pass (%d/%d)", dqdResults$percentPassed, dqdResults$countOverallFailed, dqdResults$countTotal), style = pkg.env$styles$highlight)
+      officer::body_add_par(sprintf("%.2f%% DQD checks pass.", dqdResults$percentPassed), style = pkg.env$styles$highlight) %>%
+      officer::body_add_par(sprintf("%d DQD checks failed, out of %d checks)", dqdResults$countOverallPassed, dqdResults$countTotal), style = pkg.env$styles$highlight)
   }
 
   doc<-doc %>%

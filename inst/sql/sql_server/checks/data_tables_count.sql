@@ -26,6 +26,8 @@ select 'measurement' as tablename, count_big(*) as count, count_big(distinct per
 UNION ALL
 select 'note' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.note
 UNION ALL
+select 'note_nlp' as tablename, count_big(*) as count, NULL as "person count" from @cdmDatabaseSchema.note_nlp
+UNION ALL
 select 'observation' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.observation
 UNION ALL
 select 'observation_period' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.observation_period
@@ -41,6 +43,12 @@ UNION ALL
 select 'visit_detail' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.visit_detail
 UNION ALL
 select 'visit_occurrence' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.visit_occurrence
+UNION ALL
+select 'fact_relationship' as tablename, count_big(*) as count, NULL as "person count" from @cdmDatabaseSchema.fact_relationship
+UNION ALL
+select 'metadata' as tablename, count_big(*) as count, NULL as "person count" from @cdmDatabaseSchema.metadata
+UNION ALL
+select 'cdm_source' as tablename, count_big(*) as count, NULL as "person count" from @cdmDatabaseSchema.cdm_source
 {@cdmVersion == '5.4'} ? {
 UNION ALL
 select 'episode' as tablename, count_big(*) as count, count_big(distinct person_id) as "person count" from @cdmDatabaseSchema.episode
