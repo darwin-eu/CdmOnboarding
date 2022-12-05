@@ -317,7 +317,8 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par("Data Quality Dashboard", style = pkg.env$styles$heading1) %>%
       officer::body_add_par(sprintf("%.2f%% DQD checks pass.", dqdResults$percentPassed), style = pkg.env$styles$highlight) %>%
-      officer::body_add_par(sprintf("%d DQD checks failed, out of %d checks)", dqdResults$countOverallPassed, dqdResults$countTotal), style = pkg.env$styles$highlight)
+      officer::body_add_par(sprintf("%d DQD checks failed, out of %d checks.", dqdResults$countOverallFailed, dqdResults$countTotal), style = pkg.env$styles$highlight) %>%
+      officer::body_add_par(sprintf("DQD run on %s (%s).", dqdResults$startTimestamp, dqdResults$executionTime))
   }
 
   doc<-doc %>%
