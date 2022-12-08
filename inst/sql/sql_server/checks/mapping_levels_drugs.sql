@@ -9,5 +9,5 @@ from #drug as cte
 cross join (select sum(num_records) as total_records from #drug) t
 join @vocabDatabaseSchema.concept on cte.concept_id=concept.concept_id
 group by concept_class_id, t.total_records
-order by "#Source Codes" DESC
+order by "#Records" DESC
 ;
