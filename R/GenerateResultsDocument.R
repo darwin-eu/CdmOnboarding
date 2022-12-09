@@ -250,6 +250,32 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     officer::body_add_break()
   }
 
+  doc <- doc %>%
+    officer::body_add_par("Data Quality Dashboard", style = pkg.env$styles$heading1)
+
+  dqdResults <- results$dqdResults
+  if (!is.null(dqdResults)) {
+    dqdOverview <- with(
+      dqdResults$overview,
+      data.frame(
+        Category = c("Plausibility", "Conformance", "Completeness", "Total"),
+        Pass = c(countPassedPlausibility, countPassedConformance, countPassedCompleteness, countPassed),
+        Fail = c(countFailedPlausibility, countFailedConformance, countFailedCompleteness, countOverallFailed),
+        Total = c(countTotalPlausibility, countTotalConformance, countTotalCompleteness, countTotal)
+      )
+    )
+    dqdOverview$`%Pass` <- prettyPc(dqdOverview$Pass / dqdOverview$Total * 100)
+
+    doc <- doc %>%
+      officer::body_add_par(sprintf("DataQualityDashboard Version: %s", dqdResults$version)) %>%
+      officer::body_add_par(sprintf("DataQualityDashboard executed at %s in %s.", dqdResults$startTimestamp, dqdResults$executionTime)) %>%
+      my_caption("Number of passed, failed and total DQD checks per category. For DQD v2+, the checks with status 'NA' are not included.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r',4)))
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("DataQualityDashboard results have not been provided, dqdJsonPath = empty?", style = pkg.env$styles$highlight)
+  }
+
   doc<-doc %>%
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
@@ -303,27 +329,6 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
   } else {
     doc<-doc %>%
       officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style = pkg.env$styles$highlight)
-  }
-
-  dqdResults <- results$dqdResults
-  if (!is.null(dqdResults)) {
-    dqdOverview <- with(
-      dqdResults$overview,
-      data.frame(
-        Category = c("Plausibility", "Conformance", "Completeness", "Total"),
-        Pass = c(countPassedPlausibility, countPassedConformance, countPassedCompleteness, countPassed),
-        Fail = c(countFailedPlausibility, countFailedConformance, countFailedCompleteness, countOverallFailed),
-        Total = c(countTotalPlausibility, countTotalConformance, countTotalCompleteness, countTotal)
-      )
-    )
-    dqdOverview$`%Pass` <- prettyPc(dqdOverview$Pass / dqdOverview$Total * 100)
-
-    doc <- doc %>%
-      officer::body_add_par("Data Quality Dashboard", style = pkg.env$styles$heading1) %>%
-      officer::body_add_par(sprintf("DataQualityDashboard Version: %s", dqdResults$version)) %>%
-      officer::body_add_par(sprintf("DataQualityDashboard executed at %s in %s.", dqdResults$startTimestamp, dqdResults$executionTime)) %>%
-      my_caption("Number of passed, failed and total DQD checks per category. For DQD v2+, the checks with status 'NA' are not included.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('r', rep('l',4)))
   }
 
   doc<-doc %>%

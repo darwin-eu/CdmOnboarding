@@ -5,8 +5,8 @@ select top 25
   CAST(cte.concept_id AS varchar) as "Concept id",
   concept.concept_name as "Concept Name",
   floor((num_records+99)/100)*100 as "#Records",
-  round(num_records/t.total_records*100,1) as "%Records",
-  num_source_codes as "#Source Codes"
+  round(num_records/t.total_records*100,1) as "%Records"
+  -- ,num_source_codes as "#Source Codes"
 from (
   select
     concept_id,
