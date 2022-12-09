@@ -71,25 +71,19 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     officer::body_add_break()
 
   # Execution details
+  df <- data.frame(rbind(
+    c("CdmOnboarding package version", paste0(as.character(packageVersion("CdmOnboarding")),
+                                              if(results$runWithOptimizedQueries) ' (performance optimized=TRUE)' else '')),
+    c("CDM version", results$cdmSource$CDM_VERSION),
+    c("Execution date", results$executionDate),
+    c("Execution duration", sprintf("%.2f seconds", results$executionDuration)),
+    c("Achilles version", results$achillesMetadata$ACHILLES_VERSION),
+    c("Achilles execution date", results$achillesMetadata$ACHILLES_EXECUTION_DATE)
+  ))
+  names(df) <- c('Detail', 'Value')
   doc <- doc %>%
     officer::body_add_par("Execution details", style = pkg.env$styles$heading1) %>%
-    my_body_add_table(data.frame(
-      Detail=c(
-        "CdmOnboarding package version",
-        "CDM version",
-        "Execution date",
-        "Execution duration",
-        "Achilles version",
-        "Achilles execution date"
-      ),
-      Value=c(
-        paste0(as.character(packageVersion("CdmOnboarding")), if(results$runWithOptimizedQueries) ' (performance optimized=TRUE)' else ''),
-        results$cdmSource$CDM_VERSION,
-        results$executionDate,
-        sprintf("%.2f seconds", results$executionDuration),
-        results$achillesMetadata$ACHILLES_VERSION,
-        results$achillesMetadata$ACHILLES_EXECUTION_DATE
-      )), style = pkg.env$styles$table) %>%
+    my_body_add_table(df) %>%
     # Explanation of symbols
     officer::body_add_par(
       sprintf(
@@ -97,8 +91,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
         pkg.env$sources$cdm,
         pkg.env$sources$achilles,
         pkg.env$sources$system
-      ),
-      style = pkg.env$styles$highlight
+      )
     )
 
   # CDM Source
@@ -109,7 +102,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
   doc <- doc %>%
     officer::body_add_par("CDM Source Table", style = pkg.env$styles$heading2) %>%
     my_caption("Content of the OMOP cdm_source table", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-    my_body_add_table(t_cdmSource, style = pkg.env$styles$table) %>%
+    my_body_add_table(t_cdmSource) %>%
     officer::body_add_break()
 
   counts_optimized <- results$runWithOptimizedQueries && results$dms %in% c("postgresql", "sqlserver")
@@ -121,7 +114,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_par("Clinical data", style = pkg.env$styles$heading1) %>%
       officer::body_add_par("Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
       my_caption("The number of records in all clinical data tables", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_dtc[order(df_dtc$COUNT, decreasing=TRUE),], style = pkg.env$styles$table) %>%
+      my_body_add_table(df_dtc[order(df_dtc$COUNT, decreasing=TRUE),]) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", df$dataTablesCounts$duration), style = pkg.env$styles$footnote)
 
     plot <- recordsCountPlot(as.data.frame(df$totalRecords$result))
@@ -140,7 +133,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_break() %>%
       officer::body_add_par("Distinct concepts per person", style = pkg.env$styles$heading2) %>%
       my_caption("The number of distinct concepts per person per OMOP data domains. Only persons with at least one record in that domain are included in the calculation.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df$conceptsPerPerson$result, style = pkg.env$styles$table) %>%
+      my_body_add_table(df$conceptsPerPerson$result) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$conceptsPerPerson$duration), style = pkg.env$styles$footnote)
 
     plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
@@ -162,7 +155,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par("Observation Period", style = pkg.env$styles$heading2) %>%
       my_caption("Length of first observation period (days).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df$observationPeriodLength$result, style = pkg.env$styles$table) %>%
+      my_body_add_table(df$observationPeriodLength$result) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$observationPeriodLength$duration), style = pkg.env$styles$footnote)
 
     df$typeConcepts$result
@@ -176,13 +169,13 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par("Type Concepts", style = pkg.env$styles$heading2) %>%
       my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_type_concept, style = pkg.env$styles$table, alignment =  c('l',rep('r', ncol(df_type_concept)-1))) %>%
+      my_body_add_table(df_type_concept, alignment =  c('l',rep('r', ncol(df_type_concept)-1))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$typeConcepts$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df$tableDateRange$result, auto_format = FALSE, style = pkg.env$styles$table, alignment =  c('l','r','r')) %>%
+      my_body_add_table(df$tableDateRange$result, auto_format = FALSE, alignment =  c('l','r','r')) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$tableDateRange$duration), style = pkg.env$styles$footnote)
 
     doc <- doc %>% officer::body_add_break()
@@ -204,7 +197,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc<-doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
       my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note that there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_mc[order(df_mc$DOMAIN),], style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
+      my_body_add_table(df_mc[order(df_mc$DOMAIN),], alignment = c('l', rep('r',6))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$mappingCompleteness$duration), style = pkg.env$styles$footnote)
 
     # Drug Level Mappings
@@ -213,7 +206,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc<-doc %>%
       officer::body_add_par("Drug Mappings", style = pkg.env$styles$heading2) %>%
       my_caption("The level of the drug mappings", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_dm[order(df_dm$`#RECORDS`, decreasing=TRUE),], alignment =  c('l', rep('r',4)), style = pkg.env$styles$table) %>%
+      my_body_add_table(df_dm[order(df_dm$`#RECORDS`, decreasing=TRUE),], alignment =  c('l', rep('r',4))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$drugMapping$duration), style = pkg.env$styles$footnote)
 
     # Top 25 missing mappings
@@ -246,7 +239,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc<-doc %>%
       officer::body_add_par("Source to concept map", style = pkg.env$styles$heading2) %>%
       my_caption("Source to concept map breakdown", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(vocabResults$sourceConceptFrequency$result, style = pkg.env$styles$table) %>%
+      my_body_add_table(vocabResults$sourceConceptFrequency$result) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$sourceConceptFrequency$duration), style = pkg.env$styles$footnote) %>%
       officer::body_add_par("") %>%
       officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style = pkg.env$styles$highlight)
@@ -265,7 +258,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc<-doc %>%
       officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
       my_caption("Versions of all installed R packages that are relevant for DARWIN EU studies.", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(results$hadesPackageVersions, style = pkg.env$styles$table)
+      my_body_add_table(results$hadesPackageVersions)
 
     if (results$missingPackage=="") {
       doc<-doc %>%
@@ -301,7 +294,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     if (!is.null(results$performanceResults$achillesTiming$result)) {
       results$performanceResults$achillesTiming$result$ID <- as.character(results$performanceResults$achillesTiming$result$ID)
       doc<-doc %>%
-        my_body_add_table(results$performanceResults$achillesTiming$result, style = pkg.env$styles$table) %>%
+        my_body_add_table(results$performanceResults$achillesTiming$result) %>%
         officer::body_add_par(sprintf("Query executed in %.2f seconds", results$performanceResults$achillesTiming$duration), style = pkg.env$styles$footnote)
     } else {
       doc<-doc %>%
@@ -314,11 +307,23 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
   dqdResults <- results$dqdResults
   if (!is.null(dqdResults)) {
+    dqdOverview <- with(
+      dqdResults$overview,
+      data.frame(
+        Category = c("Plausibility", "Conformance", "Completeness", "Total"),
+        Pass = c(countPassedPlausibility, countPassedConformance, countPassedCompleteness, countPassed),
+        Fail = c(countFailedPlausibility, countFailedConformance, countFailedCompleteness, countOverallFailed),
+        Total = c(countTotalPlausibility, countTotalConformance, countTotalCompleteness, countTotal)
+      )
+    )
+    dqdOverview$`%Pass` <- prettyPc(dqdOverview$Pass / dqdOverview$Total * 100)
+
     doc <- doc %>%
       officer::body_add_par("Data Quality Dashboard", style = pkg.env$styles$heading1) %>%
-      officer::body_add_par(sprintf("%.2f%% DQD checks pass.", dqdResults$percentPassed), style = pkg.env$styles$highlight) %>%
-      officer::body_add_par(sprintf("%d DQD checks failed, out of %d checks.", dqdResults$countOverallFailed, dqdResults$countTotal), style = pkg.env$styles$highlight) %>%
-      officer::body_add_par(sprintf("DQD run on %s (%s).", dqdResults$startTimestamp, dqdResults$executionTime))
+      officer::body_add_par(sprintf("DataQualityDashboard Version: %s", dqdResults$version)) %>%
+      officer::body_add_par(sprintf("DataQualityDashboard executed at %s in %s.", dqdResults$startTimestamp, dqdResults$executionTime)) %>%
+      my_caption("Number of passed, failed and total DQD checks per category. For DQD v2+, the checks with status 'NA' are not included.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('r', rep('l',4)))
   }
 
   doc<-doc %>%
@@ -330,7 +335,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
       my_caption("Shows the number of records in all vocabulary tables. See the appendix for an overview of the different vocabularies loaded.", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_vc[order(df_vc$COUNT, decreasing=TRUE),], style = pkg.env$styles$table) %>%
+      my_body_add_table(df_vc[order(df_vc$COUNT, decreasing=TRUE),]) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$vocabularyCounts$duration), style = pkg.env$styles$footnote)
 
     # vocabularies table
@@ -338,7 +343,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(paste0("Vocabulary version: ",results$vocabularyResults$version)) %>%
       my_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(vocabResults$conceptCounts$result, style = pkg.env$styles$table) %>%
+      my_body_add_table(vocabResults$conceptCounts$result) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$conceptCounts$duration), style = pkg.env$styles$footnote)
   }
 

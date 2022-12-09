@@ -105,12 +105,12 @@ my_caption <- function(x, caption, sourceSymbol, style) {
   )
 }
 
-my_body_add_table <- function (x, value, style = NULL, pos = "after", header = TRUE,
+my_body_add_table <- function (x, value, pos = "after", header = TRUE,
           alignment = NULL, stylenames = table_stylenames(), first_row = TRUE,
           first_column = FALSE, last_row = FALSE, last_column = FALSE,
           no_hband = FALSE, no_vband = TRUE, align = "left", auto_format = TRUE)
 {
-  pt <- officer::prop_table(style = style, layout = officer::table_layout(),
+  pt <- officer::prop_table(style = pkg.env$styles$table, layout = officer::table_layout(),
                    width = officer::table_width(), stylenames = stylenames,
                    tcf = officer::table_conditional_formatting(
                      first_row = first_row, first_column = first_column, last_row = last_row,
@@ -165,7 +165,6 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
     my_body_add_table(
       x,
       value = data$result,
-      style = pkg.env$styles$table,
       alignment = alignment
     )
   }

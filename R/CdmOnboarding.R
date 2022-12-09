@@ -326,13 +326,12 @@ cdmOnboarding <- function(connectionDetails,
   dqdResults <- NULL
   if (!is.null(dqdJsonPath)) {
     ParallelLogger::logInfo("Reading DataQualityDashboard results")
-    results <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = T)
+    df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = T)
     dqdResults <- list(
-      percentPassed = round(results$Overview$countPassed / results$Overview$countTotal * 100, 2),
-      countOverallFailed = results$Overview$countOverallFailed,
-      countTotal = results$Overview$countTotal,
-      startTimestamp = results$startTimestamp,
-      executionTime = results$executionTime
+      version = df$Metadata$DQD_VERSION,
+      overview = df$Overview,
+      startTimestamp = df$startTimestamp,
+      executionTime = df$executionTime
     )
   }
 
