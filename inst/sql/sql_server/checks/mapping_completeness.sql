@@ -98,9 +98,9 @@ select  'Measurement value'  as domain,
 from #meas_value
 union all
 select  'Observation value'  as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
+        NULL as "#Codes Source",
+        NULL as "#Codes Mapped",
+        NULL as "%Codes Mapped",
         sum(num_records) as "#Records Source",
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"

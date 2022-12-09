@@ -35,9 +35,9 @@ pkg.env$styles <- list(
 )
 
 pkg.env$sources <- list(
-  cdm="#",
-  achilles="\u0394",  # Delta
-  system="\u25CA"  # Lozenge
+  cdm="\u24C4",  # O in circle
+  achilles="\u24B6",  # A in circle
+  system="\u24C8"  # S in circle
 )
 
 
@@ -203,7 +203,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     df_mc$`%RECORDS MAPPED` <- prettyPc(df_mc$`%RECORDS MAPPED`)
     doc<-doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
-      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note that there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(df_mc[order(df_mc$DOMAIN),], style = pkg.env$styles$table, alignment = c('l', rep('r',6))) %>%
       officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$mappingCompleteness$duration), style = pkg.env$styles$footnote)
 
