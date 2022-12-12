@@ -52,6 +52,8 @@
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
+#' @param dqdJsonPath                      Path to the json of the DQD
+#' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 cdmOnboarding <- function(connectionDetails,
@@ -72,7 +74,9 @@ cdmOnboarding <- function(connectionDetails,
                           baseUrl = "",
                           sqlOnly = FALSE,
                           outputFolder = "output",
-                          verboseMode = TRUE) {
+                          verboseMode = TRUE,
+                          dqdJsonPath = NULL,
+                          optimize = FALSE) {
   if(missing(databaseId)) {
     stop("Argument databaseId is missing")
   }
@@ -95,7 +99,9 @@ cdmOnboarding <- function(connectionDetails,
     baseUrl = baseUrl,
     sqlOnly = sqlOnly,
     outputFolder = outputFolder,
-    verboseMode = verboseMode
+    verboseMode = verboseMode,
+    dqdJsonPath = dqdJsonPath,
+    optimize = optimize
   )
 
   if(is.null(results)) {
@@ -132,7 +138,7 @@ cdmOnboarding <- function(connectionDetails,
     logError("!! CdmOnboarding document generation failed. Please fix any issues or reach out to the DARWIN-EU Coordination Centre.")
   }
 
-  return(results)
+  invisible(results)
 }
 
 # The main execution of CDM Onboarding analyses (for v5.x)
@@ -155,7 +161,9 @@ cdmOnboarding <- function(connectionDetails,
     baseUrl,
     sqlOnly,
     outputFolder,
-    verboseMode) {
+    verboseMode,
+    dqdJsonPath,
+    optimize) {
   # Log execution -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if(!dir.exists(outputFolder)){dir.create(outputFolder,recursive=T)}
@@ -177,6 +185,7 @@ cdmOnboarding <- function(connectionDetails,
   ParallelLogger::registerLogger(logger)
 
   start_time <- Sys.time()
+  ParallelLogger::logInfo(sprintf('Running CdmOnboarding v%s %s', packageVersion("CdmOnboarding"), if(optimize) {"(performance optimized)"} else {""}))
 
   # CDM Source ------------------------------------------
   cdmSource <- .getCdmSource(connectionDetails, cdmDatabaseSchema, sqlOnly, outputFolder)
@@ -187,6 +196,7 @@ cdmOnboarding <- function(connectionDetails,
   cdmSource$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
   cdmSource$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
   cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
+  ParallelLogger::logInfo(sprintf("Found database '%s' with CDM release date '%s'", cdmSource$CDM_SOURCE_NAME, cdmSource$CDM_RELEASE_DATE))
 
   # Get source name from cdm_source if none provided ----------------------------------------------------------------------------------------------
   if (missing(databaseName) & !sqlOnly) {
@@ -202,11 +212,15 @@ cdmOnboarding <- function(connectionDetails,
     return(NULL)
   }
 
-  # Check whether Achilles output is available ---------------------------------------
-  if (!sqlOnly && !.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
-    ParallelLogger::logError("The output from the Achilles analyses is required.")
-    ParallelLogger::logError(sprintf("Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').", resultsDatabaseSchema))
-    return(NULL)
+  # Check whether Achilles output is available and get Achilles run info ---------------------------------------
+  achillesMetadata <- NULL
+  if (!sqlOnly) {
+    achillesMetadata <- .getAchillesMetadata(connectionDetails, resultsDatabaseSchema, outputFolder)
+    if(is.null(achillesMetadata) || !.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema, outputFolder)) {
+      ParallelLogger::logError("The output from the Achilles analyses is required.")
+      ParallelLogger::logError(sprintf("Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').", resultsDatabaseSchema))
+      return(NULL)
+    }
   }
 
   # Establish folder paths --------------------------------------------------------------------------------------------------------
@@ -226,7 +240,8 @@ cdmOnboarding <- function(connectionDetails,
       resultsDatabaseSchema = resultsDatabaseSchema,
       cdmVersion = cdmVersion,
       outputFolder = outputFolder,
-      sqlOnly = sqlOnly
+      sqlOnly = sqlOnly,
+      optimize = optimize
     )
   }
 
@@ -240,7 +255,9 @@ cdmOnboarding <- function(connectionDetails,
       vocabDatabaseSchema = vocabDatabaseSchema,
       smallCellCount = smallCellCount,
       sqlOnly = sqlOnly,
-      outputFolder = outputFolder
+      outputFolder = outputFolder,
+      optimize = optimize,
+      dqdJsonPath = dqdJsonPath
     )
   }
 
@@ -257,11 +274,12 @@ cdmOnboarding <- function(connectionDetails,
     # packages <- hadesPackageList$name
     # dump("packages", "")
     packages <- c("CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
-                  "EvidenceSynthesis", "PatientLevelPrediction", "EnsemblePatientLevelPrediction",
-                  "Capr", "CirceR", "CohortGenerator", "PhenotypeLibrary", "EmpiricalCalibration",
-                  "MethodEvaluation", "CohortDiagnostics", "Andromeda", "BigKnn",
-                  "Cyclops", "DatabaseConnector", "Eunomia", "FeatureExtraction",
-                  "Hydra", "OhdsiSharing", "ParallelLogger", "ROhdsiWebApi", "SqlRender")
+                  "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
+                  "EnsemblePatientLevelPrediction", "Capr", "CirceR", "CohortGenerator",
+                  "PhenotypeLibrary", "CohortDiagnostics", "CohortExplorer", "EmpiricalCalibration",
+                  "MethodEvaluation", "Andromeda", "BigKnn", "Cyclops", "DatabaseConnector",
+                  "Eunomia", "FeatureExtraction", "Hydra", "IterativeHardThresholding",
+                  "OhdsiSharing", "ParallelLogger", "ROhdsiWebApi", "SqlRender")
     diffPackages <- setdiff(packages, rownames(installed.packages()))
     missingPackages <- paste(diffPackages, collapse=', ')
 
@@ -272,9 +290,11 @@ cdmOnboarding <- function(connectionDetails,
       ParallelLogger::logInfo("> All HADES packages are installed")
     }
 
-    packinfo <- installed.packages(fields = c("Package", "Version"))
-    hades<-packinfo[,c("Package", "Version")]
-    hadesPackageVersions <- as.data.frame(hades[row.names(hades) %in% packages,])
+    # Note: can have multiple versions of the same package due to renvs
+    # Sorting on LibPath to get packages in same environment together
+    packinfo <- as.data.frame(installed.packages())
+    packinfo <- packinfo[order(packinfo$LibPath, packinfo$Package), c("Package", "Version")]
+    hadesPackageVersions <- packinfo[packinfo$Package %in% packages,]
 
     sys_details <- benchmarkme::get_sys_details(sys_info=FALSE)
     ParallelLogger::logInfo(sprintf("Running Performance Checks on %s cpu with %s cores, and %s ram.", sys_details$cpu$model_name, sys_details$cpu$no_of_cores, prettyunits::pretty_bytes(as.numeric(sys_details$ram))))
@@ -303,6 +323,18 @@ cdmOnboarding <- function(connectionDetails,
       })
   }
 
+  dqdResults <- NULL
+  if (!is.null(dqdJsonPath)) {
+    ParallelLogger::logInfo("Reading DataQualityDashboard results")
+    df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = T)
+    dqdResults <- list(
+      version = df$Metadata$DQD_VERSION,
+      overview = df$Overview,
+      startTimestamp = df$startTimestamp,
+      executionTime = df$executionTime
+    )
+  }
+
   ParallelLogger::logInfo("Done.")
 
   ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes", as.numeric(difftime(Sys.time(),start_time), units="mins")))
@@ -310,6 +342,7 @@ cdmOnboarding <- function(connectionDetails,
   # save results  ------------------------------------------------------------------------------------------------------------
   results<-list(executionDate = date(),
                 executionDuration = as.numeric(difftime(Sys.time(),start_time), units="secs"),
+                cdmOnboardingVersion = packageVersion("CdmOnboarding"),
                 databaseId = databaseId,
                 databaseName = databaseName,
                 databaseDescription = databaseDescription,
@@ -322,8 +355,11 @@ cdmOnboarding <- function(connectionDetails,
                 sys_details= sys_details,
                 webAPIversion = webAPIversion,
                 cdmSource = cdmSource,
-                dms=connectionDetails$dbms,
-                smallCellCount=smallCellCount)
+                achillesMetadata = achillesMetadata,
+                dms = connectionDetails$dbms,
+                smallCellCount = smallCellCount,
+                runWithOptimizedQueries = optimize,
+                dqdResults = dqdResults)
 
   tryCatch({
       saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s.rds", databaseId)))
@@ -348,10 +384,10 @@ cdmOnboarding <- function(connectionDetails,
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, "get_cdm_source_table.sql"))
     return(NULL)
   }
-
+  errorReportFile <- file.path(outputFolder, "cdmSourceError.txt")
   cdmSource <- tryCatch({
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-      cdmSource <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = file.path(outputFolder, "cdmSourceError.txt"))
+      cdmSource <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
       if (nrow(cdmSource) > 1) {
         ParallelLogger::logWarn("Multiple records found in the cdm_source table. The first record is used.")
         cdmSource <- cdmSource[1,]
@@ -363,7 +399,7 @@ cdmOnboarding <- function(connectionDetails,
       cdmSource
     },
     error = function (e) {
-      ParallelLogger::logError(sprintf("> CDM Source table could not be extracted, see %s for more details", file.path(outputFolder, "cdmSourceError.txt")))
+      ParallelLogger::logError(sprintf("> CDM Source table could not be extracted, see %s for more details", errorReportFile))
       NULL
     },
     finally = {
@@ -374,8 +410,9 @@ cdmOnboarding <- function(connectionDetails,
   return(cdmSource)
 }
 
-.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema) {
+.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
   required_achilles_tables <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
+  errorReportFile <- file.path(outputFolder, "errorAchillesExistsSql.txt")
   achilles_tables_exist <- tryCatch({
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     for(x in required_achilles_tables) {
@@ -392,13 +429,15 @@ cdmOnboarding <- function(connectionDetails,
         sql = sql,
         progressBar = F,
         reportOverallTime = F,
-        errorReportFile = "errorAchillesExistsSql.txt"
+        errorReportFile = errorReportFile
       )
     }
     TRUE
   },
   error = function (e) {
-    ParallelLogger::logWarn("The Achilles tables have not been found (", paste(required_achilles_tables, collapse = ', '), "). Please see error report in errorAchillesExistsSql.txt")
+    ParallelLogger::logWarn(sprintf("> The Achilles tables have not been found (%s). Please see error report in %s",
+                            paste(required_achilles_tables, collapse = ', '),
+                            errorReportFile))
     FALSE
   },
   finally = {
@@ -406,4 +445,35 @@ cdmOnboarding <- function(connectionDetails,
     rm(connection)
   })
   return(achilles_tables_exist)
+}
+
+.getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
+  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks","get_achilles_metadata.sql"),
+                                           packageName = "CdmOnboarding",
+                                           dbms = connectionDetails$dbms,
+                                           warnOnMissingParameters = FALSE,
+                                           resultsDatabaseSchema = resultsDatabaseSchema)
+  errorReportFile <- file.path(outputFolder, "getAchillesMetadataError.txt")
+  cdmSource <- tryCatch({
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    achillesMetadata <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
+    if (nrow(achillesMetadata) > 1) {
+      ParallelLogger::logWarn("Multiple records found for same analysis in achilles_results table. The first record is used.")
+      cdmSource <- achillesMetadata[1,]
+    }
+    if (nrow(achillesMetadata) == 0) {
+      stop("No records found in the achilles_results table. Please run Achilles.")
+    }
+    ParallelLogger::logInfo("> Achilles metadata successfully extracted")
+    achillesMetadata
+  },
+  error = function (e) {
+    ParallelLogger::logError(sprintf("> Achilles metadata could not be extracted, see %s for more details", errorReportFile))
+    NULL
+  },
+  finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
+  return(achillesMetadata)
 }

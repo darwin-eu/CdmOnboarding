@@ -10,7 +10,9 @@ vocabularyChecks(
   vocabDatabaseSchema = cdmDatabaseSchema,
   smallCellCount = 5,
   sqlOnly = FALSE,
-  outputFolder = "output"
+  outputFolder = "output",
+  dqdJsonPath = NULL,
+  optimize = FALSE
 )
 }
 \arguments{
@@ -26,10 +28,14 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 
 \item{outputFolder}{Path to store logs and SQL files}
+
+\item{dqdJsonPath}{Path to the json of the DQD}
+
+\item{optimize}{Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE}
 }
 \value{
-\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
-}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
+}\if{html}{\out{</div>}}
 }
 \description{
 \code{vocabularyChecks} runs a list of checks on the vocabulary as part of the CDM Onboarding procedure

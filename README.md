@@ -63,7 +63,7 @@ Ideally, run the CdmOnboarding package on the same machine you will perform actu
 Make sure that Achilles has run in the results schema you select when calling the `cdmOnboarding` function.
 Ideally, all Achilles analyses are run before running CdmOnboarding. 
 However, the following Achilles analyses are required for CdmOnboarding to create a complete report: 
-`analysisIds = c(111, 117, 220, 420, 502, 620, 720, 820, 920, 1020, 1820, 2120, 203, 403, 603, 703, 803, 903, 1003, 1803)`
+`analysisIds = c(105, 110, 111, 117, 220, 420, 502, 620, 720, 820, 920, 1020, 1820, 2102, 2120, 203, 403, 603, 703, 803, 903, 920, 1003, 1020, 1320, 1411, 1803, 1820)`
 
 For a template execution script, see [extras/CodeToRun.R](extras/CodeToRun.R).
 

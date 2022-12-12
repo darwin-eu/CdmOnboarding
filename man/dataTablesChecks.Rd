@@ -11,7 +11,8 @@ dataTablesChecks(
   vocabDatabaseSchema = cdmDatabaseSchema,
   cdmVersion,
   sqlOnly = FALSE,
-  outputFolder = "output"
+  outputFolder = "output",
+  optimize = FALSE
 )
 }
 \arguments{
@@ -31,10 +32,12 @@ Use major release number or minor number only (e.g. 5, 5.3)}
 \item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 
 \item{outputFolder}{Path to store logs and SQL files}
+
+\item{optimize}{Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE}
 }
 \value{
-\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
-}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
+}\if{html}{\out{</div>}}
 }
 \description{
 \code{dataTablesChecks} runs a list of checks on the clinical data tables as part of the CDM Onboarding procedure

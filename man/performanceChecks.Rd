@@ -7,7 +7,7 @@
 performanceChecks(
   connectionDetails,
   resultsDatabaseSchema,
-  vocabDatabaseSchema = cdmDatabaseSchema,
+  vocabDatabaseSchema,
   sqlOnly = FALSE,
   outputFolder = "output"
 )
@@ -26,8 +26,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{outputFolder}{Path to store logs and SQL files}
 }
 \value{
-\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
-}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results
+}\if{html}{\out{</div>}}
 }
 \description{
 \code{PerformanceChecks} runs a list of performance checks as part of the CDM Onboarding procedure

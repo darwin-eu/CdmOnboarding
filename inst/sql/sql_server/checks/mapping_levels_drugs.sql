@@ -1,10 +1,13 @@
 -- Levels at which drugs are mapped
 
 select concept_class_id as "Class",
-       count_big( drug_exposure_id) as "#Records",
-       count_big(distinct person_id) as "#Patients",
-       count_big(distinct drug_source_value) as "#Source Codes"
-from @cdmDatabaseSchema.drug_exposure
-join @vocabDatabaseSchema.concept on drug_concept_id=concept_id
-group by concept_class_id
-order by "#Source Codes" DESC
+       sum(num_records) as "#Records",
+       sum(num_patients) as "#Patients",
+       count_big(distinct source_value) as "#Source Codes",
+       round(sum(num_records)/t.total_records*100,1) as "%Records"
+from #drug as cte
+cross join (select sum(num_records) as total_records from #drug) t
+join @vocabDatabaseSchema.concept on cte.concept_id=concept.concept_id
+group by concept_class_id, t.total_records
+order by "#Records" DESC
+;
