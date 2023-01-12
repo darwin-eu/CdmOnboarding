@@ -132,4 +132,13 @@ select  'Death cause'  as domain,
         sum(is_mapped * num_records) as "#Records Mapped",
         100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
 from #death_cause
+union all
+select  'Drug Route'  as domain,
+        count_big(distinct source_value) as "#Codes Source",
+        sum(is_mapped) as "#Codes Mapped",
+        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
+        sum(num_records) as "#Records Source",
+        sum(is_mapped * num_records) as "#Records Mapped",
+        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+from #drug_route
 ;

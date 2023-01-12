@@ -215,12 +215,13 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       my_unmapped_section(vocabResults$unmappedDrugs, "drugs", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedConditions, "conditions", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedMeasurements, "measurements", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedObservations, "observations",results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedObservations, "observations", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedProcedures, "procedures", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDevices, "devices", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedVisits, "visits", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount)
+      my_unmapped_section(vocabResults$unmappedUnitsMeas, "observation units", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount)
 
     ## add top 25 mapped codes
     doc<-doc %>%
@@ -228,12 +229,13 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       my_mapped_section(vocabResults$mappedDrugs, "drugs", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedConditions, "conditions", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedMeasurements, "measurements", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedObservations, "observations",results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedObservations, "observations", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedProcedures, "procedures", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDevices, "devices", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedVisits, "visits", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount)
+      my_mapped_section(vocabResults$mappedUnitsMeas, "observation units", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount)
 
     ## add source_to_concept_map breakdown
     doc<-doc %>%

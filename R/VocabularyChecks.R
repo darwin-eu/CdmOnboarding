@@ -97,6 +97,8 @@ vocabularyChecks <- function (connectionDetails,
                                           activeConnection=connection, cdmDomain='meas_unit', smallCellCount=smallCellCount)
     unmappedUnitsObs <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
                                          activeConnection=connection, cdmDomain='obs_unit', smallCellCount=smallCellCount)
+    unmappedDrugRoute <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
+                                         activeConnection=connection, cdmDomain='drug_route', smallCellCount=smallCellCount)
     # todo: merge with domain name
     unmappedUnits <- rbind(unmappedUnitsMeas, unmappedUnitsObs)
 
@@ -118,6 +120,8 @@ vocabularyChecks <- function (connectionDetails,
                                         activeConnection=connection  , cdmDomain='meas_unit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
     mappedUnitsObs <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly=sqlOnly,
                                        activeConnection=connection , cdmDomain='obs_unit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
+    mappedDrugRoute <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
+                                         activeConnection=connection, cdmDomain='drug_route', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
   },
   finally = {
     DatabaseConnector::disconnect(connection = connection)
@@ -138,6 +142,7 @@ vocabularyChecks <- function (connectionDetails,
     unmappedVisits=unmappedVisits,
     unmappedUnitsMeas=unmappedUnitsMeas,
     unmappedUnitsObs=unmappedUnitsObs,
+    unmappedDrugRoute=unmappedDrugRoute,
     mappedDrugs=mappedDrugs,
     mappedConditions=mappedConditions,
     mappedMeasurements=mappedMeasurements,
@@ -147,6 +152,7 @@ vocabularyChecks <- function (connectionDetails,
     mappedVisits=mappedVisits,
     mappedUnitsMeas=mappedUnitsMeas,
     mappedUnitsObs=mappedUnitsObs,
+    mappedDrugRoute=mappedDrugRoute,
     conceptCounts=conceptCounts,
     vocabularyCounts=vocabularyCounts,
     sourceConceptFrequency=sourceConceptFrequency,

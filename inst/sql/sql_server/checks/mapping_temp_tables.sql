@@ -157,3 +157,14 @@ from @cdmDatabaseSchema.condition_occurrence
 where condition_status_concept_id IS NOT NULL
 group by condition_status_concept_id, condition_status_source_value
 ;
+
+select
+  ISNULL(route_source_value, '') as source_value,
+  route_concept_id as concept_id,
+  case when route_concept_id = 0 then 0 else 1 end as is_mapped,
+  count_big(*) as num_records
+into #drug_route
+from @cdmDatabaseSchema.drug_exposure
+where route_concept_id IS NOT NULL
+group by route_concept_id, route_source_value
+;
