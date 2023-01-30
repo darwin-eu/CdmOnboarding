@@ -174,7 +174,6 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   x <- my_caption(x, caption, sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
 
   if (n > 0) {
-    names(data$result)[1] <- "#"
     data$result$`%RECORDS` <- prettyPc(data$result$`%RECORDS`)
     if (kind == 'unmapped') {
       alignment <- c('r','l','r','r') # #,name,n,%
@@ -192,10 +191,12 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
 }
 
 my_unmapped_section <- function(x, data, domain, smallCellCount) {
+  names(data$result) <- c("#", "Source Value", "#Records", "%Records")
   my_source_value_count_section(x, data, domain, "unmapped", smallCellCount)
 }
 
 my_mapped_section <- function(x, data, domain, smallCellCount) {
+  names(data$result) <- c("#", "Concept id", "Concept Name", "#Records", "%Records")
   my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
 }
 
