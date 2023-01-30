@@ -14,9 +14,9 @@ select
     WHEN 1320 THEN 'Visit detail'
     WHEN 1820 THEN 'Measurement'
     ELSE ''
-  END AS "Table",
-  left(min_start_month, 4) + '-' + right(min_start_month, 2) as "First start month",
-  left(max_start_month, 4) + '-' + right(max_start_month, 2) as "Last start month"
+  END AS domain,
+  left(min_start_month, 4) + '-' + right(min_start_month, 2) as first_start_month,
+  left(max_start_month, 4) + '-' + right(max_start_month, 2) as last_start_month
 from (
 	select
 	  analysis_id,

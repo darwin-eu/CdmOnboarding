@@ -2,7 +2,7 @@
 SELECT
     c.relname AS tablename,
     c.reltuples::bigint as count,
-    NULL as "person count"
+    NULL as n_persons
 FROM pg_class c
 LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE relkind = 'r'

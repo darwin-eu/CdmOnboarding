@@ -174,7 +174,7 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   x <- my_caption(x, caption, sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
 
   if (n > 0) {
-    data$result$`%RECORDS` <- prettyPc(data$result$`%RECORDS`)
+    data$result$`%Records` <- prettyPc(data$result$`%Records`)
     if (kind == 'unmapped') {
       alignment <- c('r','l','r','r') # #,name,n,%
     } else {

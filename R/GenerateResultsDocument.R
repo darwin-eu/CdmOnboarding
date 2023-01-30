@@ -201,7 +201,6 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
         `#Records Mapped` = N_RECORDS_MAPPED,
         `%Records Mapped` = P_RECORDS_MAPPED,
       )
-    `#Codes Source` =,
     doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
       my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note that there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%

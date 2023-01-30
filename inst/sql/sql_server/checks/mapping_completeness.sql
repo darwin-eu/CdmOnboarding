@@ -17,7 +17,7 @@ select  'Procedure',
 from #procedure
 union all
 select  'Drug',
-        count_big(distinct source_value)
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -26,7 +26,7 @@ select  'Drug',
 from #drug
 union all
 select  'Device',
-        count_big(distinct source_value)
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -34,8 +34,8 @@ select  'Device',
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #device
 union all
-select  'Observation' ,
-        count_big(distinct source_value)
+select  'Observation',
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -43,8 +43,8 @@ select  'Observation' ,
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #observation
 union all
-select  'Measurement' ,
-        count_big(distinct source_value)
+select  'Measurement',
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -52,8 +52,8 @@ select  'Measurement' ,
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #measurement
 union all
-select  'Specimen' as "Domain",
-        count_big(distinct source_value)
+select  'Specimen',
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -62,7 +62,7 @@ select  'Specimen' as "Domain",
 from #specimen
 union all
 select  'Visit',
-        count_big(distinct source_value)
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -70,8 +70,8 @@ select  'Visit',
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #visit
 union all
-select  'Measurement Unit'as domain,
-        count_big(distinct source_value)
+select  'Measurement Unit',
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -79,8 +79,8 @@ select  'Measurement Unit'as domain,
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #meas_unit
 union all
-select  'Observation Unit'as domain,
-        count_big(distinct source_value)
+select  'Observation Unit',
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -88,8 +88,8 @@ select  'Observation Unit'as domain,
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #obs_unit
 union all
-select  'Measurement value' ,
-        count_big(distinct source_value)
+select  'Measurement value',
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -97,17 +97,17 @@ select  'Measurement value' ,
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #meas_value
 union all
-select  'Observation value' ,
-        NULL
-        NULL,
-        NULL,
+select  'Observation value',
+        cast(NULL as BIGINT),
+        cast(NULL as BIGINT),
+        cast(NULL as FLOAT),
         sum(num_records),
         sum(is_mapped * num_records),
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #obs_value
 union all
 select  'Provider Specialty' ,
-        count_big(distinct source_value)
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -116,7 +116,7 @@ select  'Provider Specialty' ,
 from #specialty
 union all
 select  'Condition status',
-        count_big(distinct source_value)
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -125,7 +125,7 @@ select  'Condition status',
 from #cond_status
 union all
 select  'Death cause' ,
-        count_big(distinct source_value)
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),
@@ -134,7 +134,7 @@ select  'Death cause' ,
 from #death_cause
 union all
 select  'Drug Route' ,
-        count_big(distinct source_value)
+        count_big(distinct source_value),
         sum(is_mapped),
         100.0*sum(is_mapped) / count_big(distinct source_value),
         sum(num_records),

@@ -454,15 +454,15 @@ cdmOnboarding <- function(connectionDetails,
                                            warnOnMissingParameters = FALSE,
                                            resultsDatabaseSchema = resultsDatabaseSchema)
   errorReportFile <- file.path(outputFolder, "getAchillesMetadataError.txt")
-  cdmSource <- tryCatch({
+  achillesMetadata <- tryCatch({
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     achillesMetadata <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
     if (nrow(achillesMetadata) > 1) {
       ParallelLogger::logWarn("Multiple records found for same analysis in achilles_results table. The first record is used.")
-      cdmSource <- achillesMetadata[1,]
-    }
-    if (nrow(achillesMetadata) == 0) {
-      stop("No records found in the achilles_results table. Please run Achilles.")
+      achillesMetadata <- achillesMetadata[1,]
+    } else if (nrow(achillesMetadata) == 0) {
+      ParallelLogger::logError("No record for analysis_id 0 found in the achilles_results table. Please run Achilles first.")
+      return(NULL)
     }
     ParallelLogger::logInfo("> Achilles metadata successfully extracted")
     achillesMetadata
