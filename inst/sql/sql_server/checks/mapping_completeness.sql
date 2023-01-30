@@ -1,144 +1,144 @@
-select  'Condition' as "Domain",
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Condition' as domain,
+        count_big(distinct source_value) as n_codes_source,
+        sum(is_mapped) as n_codes_mapped,
+        100.0*sum(is_mapped) / count_big(distinct source_value) as p_codes_mapped,
+        sum(num_records) as n_records_source,
+        sum(is_mapped * num_records) as n_records_mapped,
+        100.0*sum(is_mapped * num_records)/sum(num_records) as p_records_mapped
 from #condition
 union all
-select  'Procedure' as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Procedure',
+        count_big(distinct source_value),
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #procedure
 union all
-select  'Drug' as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Drug',
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #drug
 union all
-select  'Device' as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Device',
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #device
 union all
-select  'Observation'  as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Observation' ,
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #observation
 union all
-select  'Measurement'  as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Measurement' ,
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #measurement
 union all
 select  'Specimen' as "Domain",
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #specimen
 union all
-select  'Visit' as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Visit',
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #visit
 union all
 select  'Measurement Unit'as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #meas_unit
 union all
 select  'Observation Unit'as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #obs_unit
 union all
-select  'Measurement value'  as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Measurement value' ,
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #meas_value
 union all
-select  'Observation value'  as domain,
-        NULL as "#Codes Source",
-        NULL as "#Codes Mapped",
-        NULL as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Observation value' ,
+        NULL
+        NULL,
+        NULL,
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #obs_value
 union all
-select  'Provider Specialty'  as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Provider Specialty' ,
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #specialty
 union all
-select  'Condition status' as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Condition status',
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #cond_status
 union all
-select  'Death cause'  as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Death cause' ,
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #death_cause
 union all
-select  'Drug Route'  as domain,
-        count_big(distinct source_value) as "#Codes Source",
-        sum(is_mapped) as "#Codes Mapped",
-        100.0*sum(is_mapped) / count_big(distinct source_value) as "%Codes Mapped",
-        sum(num_records) as "#Records Source",
-        sum(is_mapped * num_records) as "#Records Mapped",
-        100.0*sum(is_mapped * num_records)/sum(num_records) as "%Records Mapped"
+select  'Drug Route' ,
+        count_big(distinct source_value)
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(distinct source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
 from #drug_route
 ;

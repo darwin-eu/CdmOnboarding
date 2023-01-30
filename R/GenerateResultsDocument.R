@@ -189,9 +189,19 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%
       arrange(DOMAIN) %>%
       mutate(
-        `%CODES MAPPED` = prettyPc(`%CODES MAPPED`),
-        `%RECORDS MAPPED` = prettyPc(`%RECORDS MAPPED`),
+        P_CODES_MAPPED = prettyPc(P_CODES_MAPPED),
+        P_RECORDS_MAPPED = prettyPc(P_RECORDS_MAPPED),
+      ) %>%
+      rename(
+        Domain = DOMAIN,
+        `#Codes Source` = N_CODES_SOURCE,
+        `#Codes Mapped` = N_CODES_MAPPED,
+        `%Codes Mapped` = P_CODES_MAPPED,
+        `#Records Source` = N_RECORDS_SOURCE,
+        `#Records Mapped` = N_RECORDS_MAPPED,
+        `%Records Mapped` = P_RECORDS_MAPPED,
       )
+    `#Codes Source` =,
     doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
       my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note that there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
@@ -199,9 +209,16 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
     # Drug Level Mappings
     vocabResults$drugMapping$result <- vocabResults$drugMapping$result %>%
-      arrange(desc(`#RECORDS`)) %>%
+      arrange(desc(N_RECORDS)) %>%
       mutate(
-        `%RECORDS` = prettyPc(`%RECORDS`),
+        P_RECORDS = prettyPc(P_RECORDS),
+      ) %>%
+      rename(
+        Class = CLASS,
+        `#Records` = N_RECORDS,
+        `#Patients` = N_PATIENTS,
+        `#Codes` = N_SOURCE_CODES,
+        `%Records` = P_RECORDS,
       )
     doc <- doc %>%
       officer::body_add_par("Drug Mappings", style = pkg.env$styles$heading2) %>%
@@ -343,6 +360,12 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       my_body_add_table_runtime(vocabResults$vocabularyCounts)
 
     # vocabularies table
+    vocabResults$conceptCounts$result <- vocabResults$conceptCounts$result %>%
+      rename(
+        S = N_STANDARD_CONCEPTS,
+        C = N_CLASSIFICATION_CONCEPTS,
+        `-` = N_NON_STANDARD_CONCEPTS
+      )
     doc <- doc %>%
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(paste0("Vocabulary version: ",results$vocabularyResults$version)) %>%
