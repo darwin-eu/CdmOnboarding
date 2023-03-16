@@ -13,8 +13,8 @@
       WHEN 2120 THEN 'Device Exposure'
       ELSE ''
     END                                                AS series_name,
-    ar.stratum_1                                       AS x_Calendar_Month,
-    round(1.0 * ar.count_value / denom.count_value, 5) AS y_Record_Count
+    ar.stratum_1                                       AS x_calendar_month,
+    round(1.0 * ar.count_value / denom.count_value, 5) AS y_record_count
 FROM @resultsDatabaseSchema.achilles_results AS ar
 INNER JOIN @resultsDatabaseSchema.achilles_results AS denom
   ON ar.stratum_1 = denom.stratum_1 AND denom.analysis_id = 117

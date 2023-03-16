@@ -1,7 +1,7 @@
 select
-  stratum_1 as "X_CALENDAR_MONTH",
-  count_value as "Y_RECORD_COUNT",
-  'Observation Period' as "SERIES_NAME"
+  stratum_1 as x_calendar_month,
+  count_value as y_record_count,
+  'Observation Period' as series_name
 from @resultsDatabaseSchema.achilles_results
 where analysis_id = 110
 ;

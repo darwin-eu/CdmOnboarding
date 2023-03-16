@@ -20,7 +20,15 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails=NULL, sqlOnly, activeConnection=NULL, useExecuteSql=FALSE, ...){
+executeQuery <- function(
+  outputFolder,
+  sqlFileName,
+  successMessage,
+  connectionDetails = NULL,
+  sqlOnly = FALSE,
+  activeConnection = NULL,
+  useExecuteSql = FALSE,
+  ...){
   if (!is.null(connectionDetails)) {
     dbms <- connectionDetails$dbms
   } else {
@@ -38,8 +46,8 @@ executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDe
     )
   )
 
-  duration = -1
-  result = NULL
+  duration <- -1
+  result <- NULL
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, sqlFileName))
     return(list(result=result, duration=duration))
@@ -56,7 +64,12 @@ executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDe
     }
 
     if (useExecuteSql) {
-      DatabaseConnector::executeSql(connection = connection, sql = sql, errorReportFile = errorReportFile, reportOverallTime = FALSE)
+      DatabaseConnector::executeSql(
+        connection = connection,
+        sql = sql,
+        errorReportFile = errorReportFile,
+        reportOverallTime = FALSE
+      )
     } else {
       result <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
     }
@@ -105,7 +118,7 @@ my_caption <- function(x, caption, sourceSymbol, style) {
   )
 }
 
-my_body_add_table <- function (x, value, pos = "after", header = TRUE,
+my_body_add_table <- function(x, value, pos = "after", header = TRUE,
           alignment = NULL, stylenames = table_stylenames(), first_row = TRUE,
           first_column = FALSE, last_row = FALSE, last_column = FALSE,
           no_hband = FALSE, no_vband = TRUE, align = "left", auto_format = TRUE)
@@ -124,7 +137,7 @@ my_body_add_table <- function (x, value, pos = "after", header = TRUE,
     }
 
     # Formatting numeric columns: align right and add thousands separator.
-    for (i in 1:ncol(value)) {
+    for (i in seq_len(ncol(value))) {
       if (is.numeric(value[,i])) {
         value[,i] <- format(value[,i], big.mark=",")
         alignment[i] <- 'r'
@@ -136,6 +149,12 @@ my_body_add_table <- function (x, value, pos = "after", header = TRUE,
                     alignment = alignment)
   xml_elt <- officer::to_wml(bt, add_ns = TRUE, base_document = x)
   officer::body_add_xml(x = x, str = xml_elt, pos = pos)
+}
+
+my_body_add_table_runtime <- function(x, value, ...)
+{
+  my_body_add_table(x, value$result, ...) %>%
+    officer::body_add_par(sprintf("Query executed in %.2f seconds", value$duration), style = pkg.env$styles$footnote)
 }
 
 my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
@@ -152,17 +171,16 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   } else if (n < 25) {
     caption <- sprintf("All %d %s %s. %s", n, kind, domain, msg)
   }
-  my_caption(x, caption, sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
+  x <- my_caption(x, caption, sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
 
   if (n > 0) {
-    names(data$result)[1] <- "#"
-    data$result$`%RECORDS` <- prettyPc(data$result$`%RECORDS`)
+    data$result$`%Records` <- prettyPc(data$result$`%Records`)
     if (kind == 'unmapped') {
       alignment <- c('r','l','r','r') # #,name,n,%
     } else {
       alignment <- c('r','l','l','r','r') # #,concept_id,name,n,%
     }
-    my_body_add_table(
+    x <- my_body_add_table(
       x,
       value = data$result,
       alignment = alignment
@@ -173,10 +191,12 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
 }
 
 my_unmapped_section <- function(x, data, domain, smallCellCount) {
+  names(data$result) <- c("#", "Source Value", "#Records", "%Records")
   my_source_value_count_section(x, data, domain, "unmapped", smallCellCount)
 }
 
 my_mapped_section <- function(x, data, domain, smallCellCount) {
+  names(data$result) <- c("#", "Concept id", "Concept Name", "#Records", "%Records")
   my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
 }
 
