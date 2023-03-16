@@ -76,7 +76,8 @@ cdmOnboarding <- function(connectionDetails,
                           outputFolder = "output",
                           verboseMode = TRUE,
                           dqdJsonPath = NULL,
-                          optimize = FALSE) {
+                          optimize = FALSE,
+                          dedIngredientIds = NULL) {
   if(missing(databaseId)) {
     stop("Argument databaseId is missing")
   }
@@ -101,7 +102,8 @@ cdmOnboarding <- function(connectionDetails,
     outputFolder = outputFolder,
     verboseMode = verboseMode,
     dqdJsonPath = dqdJsonPath,
-    optimize = optimize
+    optimize = optimize,
+    dedIngredientIds = dedIngredientIds
   )
 
   if(is.null(results)) {
@@ -163,7 +165,8 @@ cdmOnboarding <- function(connectionDetails,
     outputFolder,
     verboseMode,
     dqdJsonPath,
-    optimize) {
+    optimize,
+    dedIngredientIds) {
   # Log execution -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if(!dir.exists(outputFolder)){dir.create(outputFolder,recursive=T)}
@@ -337,12 +340,36 @@ cdmOnboarding <- function(connectionDetails,
         startTimestamp = df$startTimestamp,
         executionTime = df$executionTime
       )
-      ParallelLogger::logInfo(sprintf("> succesfully extracted DQD results overview from '%s'", dqdJsonPath))
+      ParallelLogger::logInfo(sprintf("> Succesfully extracted DQD results overview from '%s'", dqdJsonPath))
       }, error = function(e) {
         ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
       })
   }
 
+  drugExposureDiagnostics <- NULL
+  if (is.null(dedIngredientIds)) {
+    dedIngredientIds <- c(1125315,1139042,1703687,1119119,1154343,528323,954688,968426,1550557,1140643,40225722)
+  }
+  ParallelLogger::logInfo(sprintf("Starting execution of DrugExposureDiagnostics for %s ingredients", length(dedIngredientIds)))
+  tryCatch({
+      connection <- DatabaseConnector::connect(connectionDetails) 
+      cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
+      dedResults <- DrugExposureDiagnostics::executeChecks(
+        cdm = cdm,
+        ingredients = dedIngredientIds,
+        earliestStartDate = "2010-01-01"
+      )
+      drugExposureDiagnostics <- dedResults$diagnostics_summary
+    },
+    error = function(e) {
+      ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
+    },
+    finally = {
+      DatabaseConnector::disconnect(connection)
+      rm(connection)
+    }
+  )
+ 
   ParallelLogger::logInfo("Done.")
 
   ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes", as.numeric(difftime(Sys.time(),start_time), units="mins")))
@@ -367,7 +394,8 @@ cdmOnboarding <- function(connectionDetails,
                 dms = connectionDetails$dbms,
                 smallCellCount = smallCellCount,
                 runWithOptimizedQueries = optimize,
-                dqdResults = dqdResults)
+                dqdResults = dqdResults,
+                drugExposureDiagnostics = drugExposureDiagnostics)
 
   tryCatch({
       saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s.rds", databaseId)))

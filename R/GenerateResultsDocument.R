@@ -292,6 +292,18 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_par("DataQualityDashboard results have not been provided.", style = pkg.env$styles$highlight)
   }
 
+  doc <- doc %>%
+    officer::body_add_par("Drug Exposure Diagnostics", style = pkg.env$styles$heading1)
+  
+  dedResults <- results$drugExposureDiagnostics
+  if (!is.null(dedResults)) {
+    doc <- doc %>% 
+      my_body_add_table(dedResults)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("Drug Exposure Diagnostics results are missing.", style = pkg.env$styles$highlight)
+  }
+
   doc<-doc %>%
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 

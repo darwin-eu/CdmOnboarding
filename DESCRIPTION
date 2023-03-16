@@ -38,10 +38,14 @@ Imports:
     lubridate,
     ggplot2,
     tidyr,
-    jsonlite
+    jsonlite,
+    DBI,
+    RPostgres
 Suggests:
     flextable,
     devtools,
     knitr
 Remotes:
-    OHDSI/ROhdsiWebApi
+    OHDSI/ROhdsiWebApi,
+    DARWIN-EU/DrugExposureDiagnostics,
+    DARWIN-EU/CDMConnector
