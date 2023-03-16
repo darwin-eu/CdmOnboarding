@@ -223,6 +223,10 @@ cdmOnboarding <- function(connectionDetails,
     }
   }
 
+  if(is.null(dqdJsonPath)) {
+    ParallelLogger::logWarning("No dqdJsonPath specfied, data quality section will be empty.")
+  }
+
   # Establish folder paths --------------------------------------------------------------------------------------------------------
   if (!dir.exists(outputFolder)) {
     dir.create(path = outputFolder, recursive = TRUE)
@@ -256,8 +260,7 @@ cdmOnboarding <- function(connectionDetails,
       smallCellCount = smallCellCount,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder,
-      optimize = optimize,
-      dqdJsonPath = dqdJsonPath
+      optimize = optimize
     )
   }
 
@@ -316,23 +319,28 @@ cdmOnboarding <- function(connectionDetails,
     tryCatch({
       webAPIversion <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
       ParallelLogger::logInfo(sprintf("> Connected successfully to '%s'", baseUrl))
-      ParallelLogger::logInfo(sprintf("> WebAPI version: %s", webAPIversion))},
-             error = function (e) {
-               ParallelLogger::logError(sprintf("Could not connect to the WebAPI on '%s'", baseUrl))
-               webAPIversion <- "Failed"
+      ParallelLogger::logInfo(sprintf("> WebAPI version: %s", webAPIversion))
+      }, error = function (e) {
+        ParallelLogger::logError(sprintf("Could not connect to the WebAPI on '%s'", baseUrl))
+        webAPIversion <- "Failed"
       })
   }
 
   dqdResults <- NULL
   if (!is.null(dqdJsonPath)) {
     ParallelLogger::logInfo("Reading DataQualityDashboard results")
-    df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = T)
-    dqdResults <- list(
-      version = df$Metadata$DQD_VERSION,
-      overview = df$Overview,
-      startTimestamp = df$startTimestamp,
-      executionTime = df$executionTime
-    )
+    tryCatch({
+      df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = T)
+      dqdResults <- list(
+        version = df$Metadata$DQD_VERSION,
+        overview = df$Overview,
+        startTimestamp = df$startTimestamp,
+        executionTime = df$executionTime
+      )
+      ParallelLogger::logInfo(sprintf("> succesfully extracted DQD results overview from '%s'", dqdJsonPath))
+      }, error = function(e) {
+        ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
+      })
   }
 
   ParallelLogger::logInfo("Done.")

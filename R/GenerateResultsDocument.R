@@ -289,7 +289,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r',4)), last_row = TRUE)
   } else {
     doc <- doc %>%
-      officer::body_add_par("DataQualityDashboard results have not been provided, dqdJsonPath = empty?", style = pkg.env$styles$highlight)
+      officer::body_add_par("DataQualityDashboard results have not been provided.", style = pkg.env$styles$highlight)
   }
 
   doc<-doc %>%
