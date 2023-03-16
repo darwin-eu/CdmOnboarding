@@ -297,8 +297,26 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
   
   dedResults <- results$drugExposureDiagnostics
   if (!is.null(dedResults)) {
+    dedResults <- dedResults %>%       
+      rename(
+          `Concept ID` = ingredient_concept_id,
+          `#` = n_records,
+          `Ingredient` = ingredient,
+          `Dose Form` = proportion_of_records_with_dose_form,
+          `Route` = proportion_of_records_by_route_type,
+          `Type` = proportion_of_records_by_drug_type,
+          `Neg. Days` = proportion_of_records_with_negative_drug_exposure_days,
+          `Supply Days` = proportion_of_records_missing_days_supply_or_dates,
+          `Exposure Days` = median_drug_exposure_days_q05_q95,
+          `Quantity` = median_quantity_q05_q95,
+          `Amount` = median_amount_value_q05_q95,
+          `Missing denom unit` = proportion_of_records_missing_denominator_unit_concept_id
+        )
     doc <- doc %>% 
-      my_body_add_table(dedResults)
+      my_caption("DrugExposureDiagnostics 1/2. Value ranges given as median, q05 and q95. Proportions given as a value between 0-1.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(dedResults[1:6]) %>%
+      my_caption("DrugExposureDiagnostics 2/2. Value ranges given as median, q05 and q95. Proportions given as a value between 0-1.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(dedResults[c(1,2,7:length(dedResults))])
   } else {
     doc <- doc %>%
       officer::body_add_par("Drug Exposure Diagnostics results are missing.", style = pkg.env$styles$highlight)
