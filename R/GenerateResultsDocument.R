@@ -293,11 +293,20 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
   }
 
   doc <- doc %>%
+    officer::body_end_section_portrait() %>%
     officer::body_add_par("Drug Exposure Diagnostics", style = pkg.env$styles$heading1)
-  
+
   dedResults <- results$drugExposureDiagnostics
   if (!is.null(dedResults)) {
-    dedResults <- dedResults %>%       
+    dedResults <- dedResults %>%
+      mutate(
+        proportion_of_records_with_negative_drug_exposure_days
+         = prettyPc(proportion_of_records_with_negative_drug_exposure_days),
+        proportion_of_records_missing_days_supply_or_dates
+         = prettyPc(proportion_of_records_missing_days_supply_or_dates),
+        proportion_of_records_missing_denominator_unit_concept_id
+         = prettyPc(proportion_of_records_missing_denominator_unit_concept_id)
+      ) %>%
       rename(
           `Concept ID` = ingredient_concept_id,
           `#` = n_records,
@@ -306,23 +315,33 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
           `Route` = proportion_of_records_by_route_type,
           `Type` = proportion_of_records_by_drug_type,
           `Neg. Days` = proportion_of_records_with_negative_drug_exposure_days,
-          `Supply Days` = proportion_of_records_missing_days_supply_or_dates,
+          `Days Supply` = proportion_of_records_missing_days_supply_or_dates,
+          `Denom. Unit` = proportion_of_records_missing_denominator_unit_concept_id,
           `Exposure Days` = median_drug_exposure_days_q05_q95,
           `Quantity` = median_quantity_q05_q95,
           `Amount` = median_amount_value_q05_q95,
-          `Missing denom unit` = proportion_of_records_missing_denominator_unit_concept_id
+          `Obscured?` = results_obscured
         )
-    doc <- doc %>% 
-      my_caption("DrugExposureDiagnostics 1/2. Value ranges given as median, q05 and q95. Proportions given as a value between 0-1.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(dedResults[1:6]) %>%
-      my_caption("DrugExposureDiagnostics 2/2. Value ranges given as median, q05 and q95. Proportions given as a value between 0-1.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(dedResults[c(1,2,7:length(dedResults))])
+    doc <- doc %>%
+      my_caption(paste(
+            "Drug Exposure Diagnostics results for selected ingredients.",
+            "Dose Form = Number of records with dose form.",
+            "Neg. Days = Proportion of records with negative drug exposure days.",
+            "Days Supply = Proportion of records missing days supply or start/end dates.",
+            "Denom. Unit = Proportion of records missing the denominator unit concept id.",
+            "Exposure Days = Median (q05-q95) drug exposure days",
+            "Quantity = Median (q05-q95) quantity",
+            "Amount = Median (q05-q95) amount"),
+        sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(dedResults)
   } else {
     doc <- doc %>%
       officer::body_add_par("Drug Exposure Diagnostics results are missing.", style = pkg.env$styles$highlight)
   }
 
-  doc<-doc %>%
+  doc <- doc %>% officer::body_end_section_landscape()
+
+  doc <- doc %>%
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
   if (!is.null(results$performanceResults)) {
