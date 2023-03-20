@@ -94,7 +94,7 @@ results <- CdmOnboarding::cdmOnboarding(
  baseUrl = baseUrl,
  outputFolder = outputFolder,
  dqdJsonPath = dqdJsonPath
-#  dedIngredientIds = 1125315
+#  ,dedIngredientIds = c(1125315, 1154343)
 )
 
  # cdmOnboarding() should already generate the resultsdocument. Use this to regenerate upon error (results object should be returned anyway)

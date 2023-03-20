@@ -348,17 +348,21 @@ cdmOnboarding <- function(connectionDetails,
 
   drugExposureDiagnostics <- NULL
   if (is.null(dedIngredientIds)) {
-    dedIngredientIds <- c(1125315,1139042,1703687,1119119,1154343,528323,954688,968426,1550557,1140643,40225722)
+    dedIngredientIds <- c(1125315, 1139042, 1703687, 1119119, 1154343,
+                          528323, 954688, 968426, 1550557, 1140643, 40225722)
   }
-  ParallelLogger::logInfo(sprintf("Starting execution of DrugExposureDiagnostics for %s ingredients", length(dedIngredientIds)))
+  ParallelLogger::logInfo(sprintf("Starting execution of DrugExposureDiagnostics for %s ingredients",
+                            length(dedIngredientIds)))
   tryCatch({
-      connection <- DatabaseConnector::connect(connectionDetails) 
+      connection <- DatabaseConnector::connect(connectionDetails)
       cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
-      dedResults <- DrugExposureDiagnostics::executeChecks(
-        cdm = cdm,
-        ingredients = dedIngredientIds,
-        earliestStartDate = "2010-01-01"
-      )
+      suppressWarnings({
+        dedResults <- DrugExposureDiagnostics::executeChecks(
+          cdm = cdm,
+          ingredients = dedIngredientIds,
+          earliestStartDate = "2010-01-01"
+        )
+      })
       drugExposureDiagnostics <- dedResults$diagnostics_summary
     },
     error = function(e) {
@@ -369,7 +373,7 @@ cdmOnboarding <- function(connectionDetails,
       rm(connection)
     }
   )
- 
+
   ParallelLogger::logInfo("Done.")
 
   ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes", as.numeric(difftime(Sys.time(),start_time), units="mins")))
