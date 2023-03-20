@@ -303,30 +303,28 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
           `Ingredient` = ingredient,
           `Concept ID` = ingredient_concept_id,
           `#` = n_records,
+          `Type (n,%)` = proportion_of_records_by_drug_type,
           `Route (n,%)` = proportion_of_records_by_route_type,
           `Dose Form (n,%)` = proportion_of_records_with_dose_form,
-          `Type (n,%)` = proportion_of_records_by_drug_type,
-          `Neg. Days (n,%)` = proportion_of_records_with_negative_drug_exposure_days,  #prettyPc
-          # `Days Supply` = proportion_of_records_missing_days_supply_or_dates,   #prettyPc
-          `Fixed amount dose form (n,%)` = proportion_of_records_missing_denominator_unit_concept_id,   #prettyPc
-          `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
-          `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
+          `Fixed amount dose form (n,%)` = proportion_of_records_missing_denominator_unit_concept_id,
           `Amount distrib. [null or missing]` = median_amount_value_q05_q95,
+          `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
+          `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
+          `Neg. Days (n,%)` = proportion_of_records_with_negative_drug_exposure_days,
           .keep = "none"
-          # `Obscured?` = results_obscured
         )
     doc <- doc %>%
       my_caption(paste(
             "Drug Exposure Diagnostics results for selected ingredients.",
+            "# = Number of records.",
+            "Type (n,%) = Number and percentage of available drug types.",
             "Route (n,%) = Number and percentage of available routes.",
             "Dose Form (n,%) = Number and percentage with dose form present.",
-            "Type (n,%) = Number and percentage of available drug type.",
-            "Neg. Days (n,%) = Number and percentage of negative exposure days.",
-            # "Days Supply = Proportion of records missing days supply or start/end dates.",
             "Fixed amount dose form (n,%) = Number and percentage missing denominator unit concept id.",
-            "Exposure days distrib. [null or missing] = Median (q05-q95) number and percentage missing days_supply or exposure dates.",
-            "Quantity distrib. [null or missing] = Median (q05-q95) number and percentage missing quantity.",
-            "Amount distrib. [null or missing] = Median (q05-q95) number and percentage missing amount."),
+            "Amount distrib. [null or missing] = Distribution of amount (median q05-q95) and percentage missing amount.",
+            "Quantity distrib. [null or missing] = Distribution of quantity (median q05-q95) and percentage missing quantity.",
+            "Exposure days distrib. [null or missing] = Distribution of exposure days (median q05-q95) and percentage missing days_supply or exposure dates.",
+            "Neg. Days (n,%) = Number and percentage of negative exposure days.", collapse = "\n"),
         sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(dedResults)
   } else {
