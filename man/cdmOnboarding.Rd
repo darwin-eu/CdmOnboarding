@@ -25,7 +25,8 @@ cdmOnboarding(
   outputFolder = "output",
   verboseMode = TRUE,
   dqdJsonPath = NULL,
-  optimize = FALSE
+  optimize = FALSE,
+  dedIngredientIds = NULL
 )
 }
 \arguments{
@@ -74,6 +75,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{dqdJsonPath}{Path to the json of the DQD}
 
 \item{optimize}{Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE}
+
+\item{dedIngredientIds}{Integer vector with ingredient concept ids to run DrugExposureDiagnostics on. When set to NULL, DED is run on a default set of ingredients.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results

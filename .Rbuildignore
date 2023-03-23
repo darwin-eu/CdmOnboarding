@@ -8,3 +8,4 @@
 ^errorReport.+\.txt$
 ^.+session\.sql$
 ^\.vscode$
+^\.lintr$

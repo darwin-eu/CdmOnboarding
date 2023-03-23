@@ -54,6 +54,7 @@
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @param dqdJsonPath                      Path to the json of the DQD
 #' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
+#' @param dedIngredientIds                 Integer vector with ingredient concept ids to run DrugExposureDiagnostics on. When set to NULL, DED is run on a default set of ingredients.
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 cdmOnboarding <- function(connectionDetails,
@@ -227,7 +228,7 @@ cdmOnboarding <- function(connectionDetails,
   }
 
   if(is.null(dqdJsonPath)) {
-    ParallelLogger::logWarning("No dqdJsonPath specfied, data quality section will be empty.")
+    ParallelLogger::logWarn("No dqdJsonPath specfied, data quality section will be empty.")
   }
 
   # Establish folder paths --------------------------------------------------------------------------------------------------------

@@ -31,7 +31,6 @@ Depends:
 Imports:
     benchmarkme,
     prettyunits,
-    magrittr,
     tools,
     dplyr,
     officer,
@@ -40,9 +39,6 @@ Imports:
     ggplot2,
     tidyr,
     jsonlite,
-    DBI,
-    RPostgres,
-    ROhdsiWebApi,
     DrugExposureDiagnostics (>= 0.4.2),
     CDMConnector
 Suggests:
