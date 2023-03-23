@@ -55,10 +55,10 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
   logo <- system.file("templates", "img", "darwin-logo.jpg", package="CdmOnboarding")
 
   # open a new doc from the doctemplate
-  doc<-officer::read_docx(path = docTemplate)
+  doc <- officer::read_docx(path = docTemplate)
 
   # add Title Page
-  doc<- doc %>%
+  doc <- doc %>%
     officer::body_add_img(logo, width = 5.00, height = 2.39, style = pkg.env$styles$title) %>%
     officer::body_add_par(sprintf("CDM Onboarding report for the %s database", results$databaseName), style = pkg.env$styles$title) %>%
     officer::body_add_par(paste(authors, collapse = ","), style = pkg.env$styles$subTitle) %>%
@@ -203,7 +203,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       )
     doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
-      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note that there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note: 1) for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes could be bigger than actual number of unique source codes and 2) there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(vocabResults$mappingCompleteness, alignment = c('l', rep('r',6)))
 
     # Drug Level Mappings
