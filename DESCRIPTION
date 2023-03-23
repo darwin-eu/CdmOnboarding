@@ -14,7 +14,7 @@ Authors@R:
            comment = c(ORCID = "https://orcid.org/0000-0001-8473-2433"))
    )
 Description: The goal this R Package is to generate a report to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the data network and participate in research studies.
-License: Apache License 2.0
+License: Apache License (>= 2)
 VignetteBuilder: knitr
 URL: https://github.com/darwin-eu/CdmOnboarding
 BugReports: https://github.com/darwin-eu/CdmOnboarding/issue
