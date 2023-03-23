@@ -202,10 +202,10 @@ cdmOnboarding <- function(connectionDetails,
   ParallelLogger::logInfo(sprintf("Found database '%s' with CDM release date '%s'", cdmSource$CDM_SOURCE_NAME, cdmSource$CDM_RELEASE_DATE))
 
   # Get source name from cdm_source if none provided ----------------------------------------------------------------------------------------------
-  if (missing(databaseName) & !sqlOnly) {
+  if (missing(databaseName) && !sqlOnly) {
     databaseName <- cdmSource$CDM_SOURCE_NAME
   }
-  if (missing(databaseDescription) & !sqlOnly) {
+  if (missing(databaseDescription) && !sqlOnly) {
     databaseDescription <- cdmSource$SOURCE_DESCRIPTION
   }
 
@@ -303,7 +303,14 @@ cdmOnboarding <- function(connectionDetails,
     hadesPackageVersions <- packinfo[packinfo$Package %in% packages,]
 
     sys_details <- benchmarkme::get_sys_details(sys_info=FALSE)
-    ParallelLogger::logInfo(sprintf("Running Performance Checks on %s cpu with %s cores, and %s ram.", sys_details$cpu$model_name, sys_details$cpu$no_of_cores, prettyunits::pretty_bytes(as.numeric(sys_details$ram))))
+    ParallelLogger::logInfo(
+      sprintf(
+        "Running Performance Checks on %s cpu with %s cores, and %s ram.",
+        sys_details$cpu$model_name,
+        sys_details$cpu$no_of_cores,
+        prettyunits::pretty_bytes(as.numeric(sys_details$ram))
+      )
+    )
 
     ParallelLogger::logInfo("Running Performance Checks SQL")
     performanceResults <- performanceChecks(
@@ -315,25 +322,27 @@ cdmOnboarding <- function(connectionDetails,
     )
   }
 
-  webAPIversion <- "unknown"
-  if (runWebAPIChecks && baseUrl != ""){
+  webApiVersion <- "unknown"
+  if (runWebAPIChecks && baseUrl != "") {
     ParallelLogger::logInfo("Running WebAPIChecks")
 
-    tryCatch({
-      webAPIversion <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
-      ParallelLogger::logInfo(sprintf("> Connected successfully to '%s'", baseUrl))
-      ParallelLogger::logInfo(sprintf("> WebAPI version: %s", webAPIversion))
-      }, error = function (e) {
-        ParallelLogger::logError(sprintf("Could not connect to the WebAPI on '%s'", baseUrl))
-        webAPIversion <- "Failed"
-      })
+    webApiVersion <- tryCatch({
+        version <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
+        ParallelLogger::logInfo(sprintf("> Connected successfully to '%s'", baseUrl))
+        ParallelLogger::logInfo(sprintf("> WebAPI version: %s", version))
+        version
+      }, error = function(e) {
+        ParallelLogger::logError(sprintf("Could not connect to the WebAPI on '%s':\n%s", baseUrl, e))
+        return("Failed")
+      }
+    )
   }
 
   dqdResults <- NULL
   if (!is.null(dqdJsonPath)) {
     ParallelLogger::logInfo("Reading DataQualityDashboard results")
     tryCatch({
-      df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = T)
+      df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = TRUE)
       dqdResults <- list(
         version = df$Metadata$DQD_VERSION,
         overview = df$Overview,
@@ -389,7 +398,7 @@ cdmOnboarding <- function(connectionDetails,
   # save results
   results <- list(
     executionDate = date(),
-    executionDuration = as.numeric(difftime(Sys.time(),start_time), units="secs"),
+    executionDuration = as.numeric(difftime(Sys.time(), start_time), units = "secs"),
     cdmOnboardingVersion = packageVersion("CdmOnboarding"),
     databaseId = databaseId,
     databaseName = databaseName,
@@ -400,8 +409,8 @@ cdmOnboarding <- function(connectionDetails,
     hadesPackageVersions = hadesPackageVersions,
     missingPackages = missingPackages,
     performanceResults = performanceResults,
-    sys_details= sys_details,
-    webAPIversion = webAPIversion,
+    sys_details = sys_details,
+    webAPIversion = webApiVersion,
     cdmSource = cdmSource,
     achillesMetadata = achillesMetadata,
     dms = connectionDetails$dbms,
@@ -424,9 +433,13 @@ cdmOnboarding <- function(connectionDetails,
   return(results)
 }
 
-.getCdmSource <- function(connectionDetails,
-                           cdmDatabaseSchema,sqlOnly,outputFolder) {
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks","get_cdm_source_table.sql"),
+.getCdmSource <- function(
+  connectionDetails,
+  cdmDatabaseSchema,
+  sqlOnly,
+  outputFolder
+) {
+  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks", "get_cdm_source_table.sql"),
                                            packageName = "CdmOnboarding",
                                            dbms = connectionDetails$dbms,
                                            warnOnMissingParameters = FALSE,
@@ -441,7 +454,7 @@ cdmOnboarding <- function(connectionDetails,
       cdmSource <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
       if (nrow(cdmSource) > 1) {
         ParallelLogger::logWarn("Multiple records found in the cdm_source table. The first record is used.")
-        cdmSource <- cdmSource[1,]
+        cdmSource <- cdmSource[1, ]
       }
       if (nrow(cdmSource) == 0) {
         stop("No records found in the cdm_source table. Please populate the table.")
@@ -449,7 +462,7 @@ cdmOnboarding <- function(connectionDetails,
       ParallelLogger::logInfo("> CDM Source table successfully extracted")
       cdmSource
     },
-    error = function (e) {
+    error = function(e) {
       ParallelLogger::logError(sprintf("> CDM Source table could not be extracted, see %s for more details", errorReportFile))
       NULL
     },
@@ -470,22 +483,22 @@ cdmOnboarding <- function(connectionDetails,
       sql <- SqlRender::translate(
                SqlRender::render(
                  "SELECT COUNT(*) FROM @resultsDatabaseSchema.@table",
-                 resultsDatabaseSchema=resultsDatabaseSchema,
-                 table=x
+                 resultsDatabaseSchema = resultsDatabaseSchema,
+                 table = x
                ),
                targetDialect = 'postgresql'
              )
       DatabaseConnector::executeSql(
         connection = connection,
         sql = sql,
-        progressBar = F,
-        reportOverallTime = F,
+        progressBar = FALSE,
+        reportOverallTime = FALSE,
         errorReportFile = errorReportFile
       )
     }
     TRUE
   },
-  error = function (e) {
+  error = function(e) {
     ParallelLogger::logWarn(sprintf("> The Achilles tables have not been found (%s). Please see error report in %s",
                             paste(required_achilles_tables, collapse = ', '),
                             errorReportFile))
@@ -499,7 +512,7 @@ cdmOnboarding <- function(connectionDetails,
 }
 
 .getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks","get_achilles_metadata.sql"),
+  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks", "get_achilles_metadata.sql"),
                                            packageName = "CdmOnboarding",
                                            dbms = connectionDetails$dbms,
                                            warnOnMissingParameters = FALSE,
