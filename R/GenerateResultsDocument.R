@@ -292,7 +292,50 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_par("DataQualityDashboard results have not been provided.", style = pkg.env$styles$highlight)
   }
 
-  doc<-doc %>%
+  doc <- doc %>%
+    officer::body_end_section_portrait() %>%
+    officer::body_add_par("Drug Exposure Diagnostics", style = pkg.env$styles$heading1)
+
+  dedResults <- results$drugExposureDiagnostics
+  if (!is.null(dedResults)) {
+    dedResults <- dedResults %>%
+      mutate(
+          `Ingredient` = ingredient,
+          `Concept ID` = ingredient_concept_id,
+          `#` = n_records,
+          `Type (n,%)` = proportion_of_records_by_drug_type,
+          `Route (n,%)` = proportion_of_records_by_route_type,
+          `Dose Form present n (%)` = proportion_of_records_with_dose_form,
+          `Fixed amount dose form n (%)` = proportion_of_records_missing_denominator_unit_concept_id,
+          `Amount distrib. [null or missing]` = median_amount_value_q05_q95,
+          `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
+          `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
+          `Neg. Days n (%)` = proportion_of_records_with_negative_drug_exposure_days,
+          .keep = "none"
+        )
+    doc <- doc %>%
+      my_caption(paste(
+            "Drug Exposure Diagnostics results for selected ingredients.",
+            "Executed with minCellCount = 5, sample = 1e+06, earliestStartDate = 2010-01-01.",
+            "# = Number of records.",
+            "Type (n,%) = Number and percentage of available drug types.",
+            "Route (n,%) = Number and percentage of available routes.",
+            "Dose Form present n (%) = Number and percentage with dose form present.",
+            "Fixed amount dose form n (%) = Number and percentage missing denominator unit concept id.",
+            "Amount distrib. [null or missing] = Distribution of amount (median q05-q95), records and percentage missing amount.",
+            "Quantity distrib. [null or missing] = Distribution of quantity (median q05-q95), records and percentage missing quantity.",
+            "Exposure days distrib. [null or missing] = Distribution of exposure days (median q05-q95), records and percentage missing days_supply or exposure dates.",
+            "Neg. Days n (%) = Number and percentage of negative exposure days."),
+        sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(dedResults)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("Drug Exposure Diagnostics results are missing.", style = pkg.env$styles$highlight)
+  }
+
+  doc <- doc %>% officer::body_end_section_landscape()
+
+  doc <- doc %>%
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
   if (!is.null(results$performanceResults)) {

@@ -29,6 +29,8 @@
 # Once you have established an .Renviron file, you must restart your R session for R to pick up these new
 # variables.
 #
+# Alternatively, enter the parameters directly in this file, replacing the 'Sys.getenv' calls.
+#
 # In section 2 below, you will also need to update the code to use your site specific values. Please scroll
 # down for specific instructions.
 
@@ -63,23 +65,21 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   pathToDriver = pathToDriver
 )
 
-# Details for connecting to the CDM and storing the results
-outputFolder <- file.path(getwd(), "output", databaseId)
+# Details for connecting to the CDM
 cdmDatabaseSchema <- Sys.getenv("CDM_SCHEMA")
 resultsDatabaseSchema <- Sys.getenv("RESULTS_SCHEMA")
 vocabDatabaseSchema <- cdmDatabaseSchema
-
-# Details specific to the database:
-databaseId <- 'Synthea20K'
-authors <- c('<author_1>', '<author_2>') # used on the title page
-
-# For Oracle: define a schema that can be used to emulate temp tables:
 oracleTempSchema <- NULL
 
+# Details specific to the database:
+databaseId <- Sys.getenv("DATABASE_ID")
+authors <- c('<author_1>', '<author_2>') # used on the title page
+
+outputFolder <- file.path(getwd(), "output", databaseId)
 smallCellCount <- 5
 verboseMode <- TRUE
-baseUrl <- "<your_baseUrl>" # URL to your OHDSI WebAPI that Atlas uses, e.g. http://localhost:8080/WebAPI
-dqdJsonPath <- 'extrasd/example_input/synthea20k-20221205120100.json' # (optional) Path to your DQD results file
+baseUrl <- Sys.getenv("WEBAPI_BASEURL") # URL to the WebAPI that your local Atlas instance uses, e.g. http://localhost:8080/WebAPI
+dqdJsonPath <- 'extras/example_input/dqd_synthea20k.json' # (optional) Path to your DQD results file
 
 # *******************************************************
 # SECTION 3: Run the package
@@ -95,11 +95,11 @@ results <- CdmOnboarding::cdmOnboarding(
  smallCellCount = smallCellCount,
  baseUrl = baseUrl,
  outputFolder = outputFolder,
- verboseMode = verboseMode,
  dqdJsonPath = dqdJsonPath
 )
 
- # cdmOnboarding() should already generate the resultsdocument. Use this to regenerate upon error (results object should be returned anyway)
+ # cdmOnboarding() should already generate the resultsdocument.
+ # Use this to regenerate upon error (results object should be returned anyway)
 if (FALSE) {
   CdmOnboarding::generateResultsDocument(
     results = results,

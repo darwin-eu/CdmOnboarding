@@ -76,7 +76,8 @@ cdmOnboarding <- function(connectionDetails,
                           outputFolder = "output",
                           verboseMode = TRUE,
                           dqdJsonPath = NULL,
-                          optimize = FALSE) {
+                          optimize = FALSE,
+                          dedIngredientIds = NULL) {
   if(missing(databaseId)) {
     stop("Argument databaseId is missing")
   }
@@ -101,7 +102,8 @@ cdmOnboarding <- function(connectionDetails,
     outputFolder = outputFolder,
     verboseMode = verboseMode,
     dqdJsonPath = dqdJsonPath,
-    optimize = optimize
+    optimize = optimize,
+    dedIngredientIds = dedIngredientIds
   )
 
   if(is.null(results)) {
@@ -163,7 +165,8 @@ cdmOnboarding <- function(connectionDetails,
     outputFolder,
     verboseMode,
     dqdJsonPath,
-    optimize) {
+    optimize,
+    dedIngredientIds) {
   # Log execution -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if(!dir.exists(outputFolder)){dir.create(outputFolder,recursive=T)}
@@ -337,44 +340,84 @@ cdmOnboarding <- function(connectionDetails,
         startTimestamp = df$startTimestamp,
         executionTime = df$executionTime
       )
-      ParallelLogger::logInfo(sprintf("> succesfully extracted DQD results overview from '%s'", dqdJsonPath))
+      ParallelLogger::logInfo(sprintf("> Succesfully extracted DQD results overview from '%s'", dqdJsonPath))
       }, error = function(e) {
         ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
       })
   }
 
+  drugExposureDiagnostics <- NULL
+  if (is.null(dedIngredientIds)) {
+    dedIngredientIds <- c(1125315, 1139042, 1703687, 1119119, 1154343,
+                          528323, 954688, 968426, 1550557, 1140643, 40225722)
+  }
+  ParallelLogger::logInfo(sprintf("Starting execution of DrugExposureDiagnostics for %s ingredients...",
+                            length(dedIngredientIds)))
+  ded_start_time <- Sys.time()
+  tryCatch({
+      connection <- DatabaseConnector::connect(connectionDetails)
+      cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
+      # Reduce output lines by suppressing both warnings and messages. Only progress bar displayed.
+      suppressWarnings(suppressMessages(
+        dedResults <- DrugExposureDiagnostics::executeChecks(
+          cdm = cdm,
+          ingredients = dedIngredientIds,
+          checks = c("exposureDuration", "type", "route", "dose", "quantity"),
+          minCellCount = 5,
+          sample = 1e+06,
+          earliestStartDate = "2010-01-01"
+        )
+      ))
+      drugExposureDiagnostics <- dedResults$diagnostics_summary
+      ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.",
+        as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")))
+    },
+    error = function(e) {
+      ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
+    },
+    finally = {
+      DatabaseConnector::disconnect(connection)
+      rm(connection)
+    }
+  )
+
   ParallelLogger::logInfo("Done.")
 
-  ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes", as.numeric(difftime(Sys.time(),start_time), units="mins")))
+  ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes",
+    as.numeric(difftime(Sys.time(), start_time), units = "mins")))
 
-  # save results  ------------------------------------------------------------------------------------------------------------
-  results<-list(executionDate = date(),
-                executionDuration = as.numeric(difftime(Sys.time(),start_time), units="secs"),
-                cdmOnboardingVersion = packageVersion("CdmOnboarding"),
-                databaseId = databaseId,
-                databaseName = databaseName,
-                databaseDescription = databaseDescription,
-                vocabularyResults = vocabularyResults,
-                dataTablesResults = dataTablesResults,
-                packinfo=packinfo,
-                hadesPackageVersions = hadesPackageVersions,
-                missingPackages = missingPackages,
-                performanceResults = performanceResults,
-                sys_details= sys_details,
-                webAPIversion = webAPIversion,
-                cdmSource = cdmSource,
-                achillesMetadata = achillesMetadata,
-                dms = connectionDetails$dbms,
-                smallCellCount = smallCellCount,
-                runWithOptimizedQueries = optimize,
-                dqdResults = dqdResults)
+  # save results
+  results <- list(
+    executionDate = date(),
+    executionDuration = as.numeric(difftime(Sys.time(),start_time), units="secs"),
+    cdmOnboardingVersion = packageVersion("CdmOnboarding"),
+    databaseId = databaseId,
+    databaseName = databaseName,
+    databaseDescription = databaseDescription,
+    vocabularyResults = vocabularyResults,
+    dataTablesResults = dataTablesResults,
+    packinfo=packinfo,
+    hadesPackageVersions = hadesPackageVersions,
+    missingPackages = missingPackages,
+    performanceResults = performanceResults,
+    sys_details= sys_details,
+    webAPIversion = webAPIversion,
+    cdmSource = cdmSource,
+    achillesMetadata = achillesMetadata,
+    dms = connectionDetails$dbms,
+    smallCellCount = smallCellCount,
+    runWithOptimizedQueries = optimize,
+    dqdResults = dqdResults,
+    drugExposureDiagnostics = drugExposureDiagnostics
+  )
 
   tryCatch({
       saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s.rds", databaseId)))
       ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
     },
-    error = function (e) {
-      ParallelLogger::logWarn(sprintf("Failed to export CDM Onboarding results object, no rds file has been created: %s", e))
+    error = function(e) {
+      ParallelLogger::logWarn(
+        sprintf("Failed to export CDM Onboarding results object, no rds file has been created: %s", e))
     }
   )
 
