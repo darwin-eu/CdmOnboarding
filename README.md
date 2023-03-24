@@ -38,7 +38,21 @@ The CdmOnboarding R Package performs the following checks on top of the required
  - Overview of number of passed/failed checks
 
 ## Drug Exposure Diagnostics
- - Overview for set of 11 ingredients (acetaminophen,acetylcysteine,acyclovir,adalimumab,albuterol,hepatitis B surface antigen vaccine,latanoprost,mesalamine,prednisolone,sumatriptan,ulipristal)
+ - Summary for set of 11 ingredients:
+ 
+   Concept ID | Drug name (ATLAS)
+   -- | --
+   1125315 | acetaminophen
+   1139042 | acetylcysteine
+   1703687 | acyclovir
+   1119119 | adalimumab
+   1154343 | albuterol
+   528323 | hepatitis B surface antigen vaccine
+   954688 | latanoprost
+   968426 | mesalamine
+   1550557 | prednisolone
+   1140643 | sumatriptan
+   40225722 | ulipristal
 
 # Results Document Generation
 Produces a word document in a DARWIN EU template that contains all the results and can be added as Annex 1 to the DARWIN-EU© Onboarding document.
