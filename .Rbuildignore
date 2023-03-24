@@ -2,3 +2,10 @@
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^LICENSE\.md$
+^extra$
+^output$
+^errorReport.+\.txt$
+^.+session\.sql$
+^\.vscode$
+^\.lintr$

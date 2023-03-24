@@ -4,7 +4,7 @@ R Package to support the onboarding process of new CDMs in the DARWIN EU Data Ne
 # Introduction
 The DARWIN EU Coordination Center (CC) is resposonsible for building a data network to support EMA and stakeholders to answer regulatory research questions. To support the onboarding process of data sources, the CdmOnboarding R package will generate an onboarding document that is used by the CC and EMA to assess the quality and readiness of the CDM for participating in regulatory studies. 
 
-The goal of the onboarding report is to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the EHDEN and OHDSI data networks and participate in research studies. Additional procedural steps can be added before the data sources is added to the the data network. 
+The goal of the onboarding report is to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the DARWIN EU® data network and participate in research studies.
 
 An example of an onboarding report for a OMOP Synthea database can be found in [extras/CdmOnbaording-Synthea.docx](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding-Synthea.docx).
 
@@ -12,10 +12,13 @@ An example of an onboarding report for a OMOP Synthea database can be found in [
 The CdmOnboarding R Package performs the following checks on top of the required [Data Quality Dashboard](https://github.com/OHDSI/DataQualityDashboard) step.
 
 ## Data table counts
+ - Extraction of the CDM Source table
  - The number of records and persons per OMOP table
  - Achilles data density plots are inserted
  - For each domain, the distinct concepts per person
- - Extraction of the CDM Source table
+ - Observation Period length
+ - Type concepts
+ - Date ranges per domain
 
 ## Vocabulary counts
  - For each domain generate mapping completeness statistics with the number of unmapped codes and and unmapped records
@@ -31,6 +34,12 @@ The CdmOnboarding R Package performs the following checks on top of the required
  - Extract the versions of all installed R packages, checks if core [HADES](https://ohdsi.github.io/Hades/) packages are installed
  - Check if ATLAS is installed and WebAPI is running
 
+## Data Quality Dashboard
+ - Overview of number of passed/failed checks
+
+## Drug Exposure Diagnostics
+ - Overview for set of 11 ingredients (acetaminophen,acetylcysteine,acyclovir,adalimumab,albuterol,hepatitis B surface antigen vaccine,latanoprost,mesalamine,prednisolone,sumatriptan,ulipristal)
+
 # Results Document Generation
 Produces a word document in a DARWIN EU template that contains all the results and can be added as Annex 1 to the DARWIN-EU© Onboarding document.
 
@@ -44,16 +53,18 @@ Requires R. Some of the packages used by CdmOnboarding require Java.
 
 1. See the instructions [here](https://ohdsi.github.io/Hades/rSetup.html) for configuring your R environment, including Java.
 
-2. Make sure RohdsiWebApi is installed:
+2. Make sure dependencies from Github are installed:
 
 ```R
 remotes::install_github("OHDSI/ROhdsiWebApi")
+remotes::install_github("DARWIN-EU/CDMConnector")
+remotes::install_github("DARWIN-EU/DrugExposureDiagnostics")
 ```
 
-3. In R, use the following commands to download and install CdmOnboarding:
+3. Use the following commands to download and install CdmOnboarding:
 
 ```R
-remotes::install_github("darwin-eu/CdmOnboarding")
+remotes::install_github("DARWIN-EU/CdmOnboarding")
 ```
 
 # Execution instructions

@@ -1,6 +1,6 @@
 Package: CdmOnboarding
 Title: Generate report on an OMOP CDM instance
-Version: 2.0.0
+Version: 2.1.0
 Authors@R: 
   c(person(given = "Peter",
            family = "Rijnbeek",
@@ -14,7 +14,7 @@ Authors@R:
            comment = c(ORCID = "https://orcid.org/0000-0001-8473-2433"))
    )
 Description: The goal this R Package is to generate a report to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the data network and participate in research studies.
-License: Apache License 2.0
+License: Apache License (>= 2)
 VignetteBuilder: knitr
 URL: https://github.com/darwin-eu/CdmOnboarding
 BugReports: https://github.com/darwin-eu/CdmOnboarding/issue
@@ -22,7 +22,8 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
-Depends: R (>= 3.5.0),
+Depends: 
+    R (>= 3.5.0),
     DatabaseConnector (>= 3.0.0),
     ROhdsiWebApi (>= 1.1.2),
     ParallelLogger,
@@ -30,7 +31,6 @@ Depends: R (>= 3.5.0),
 Imports:
     benchmarkme,
     prettyunits,
-    magrittr,
     tools,
     dplyr,
     officer,
@@ -38,10 +38,14 @@ Imports:
     lubridate,
     ggplot2,
     tidyr,
-    jsonlite
+    jsonlite,
+    DrugExposureDiagnostics (>= 0.4.2),
+    CDMConnector
 Suggests:
     flextable,
     devtools,
     knitr
 Remotes:
-    OHDSI/ROhdsiWebApi
+    OHDSI/ROhdsiWebApi,
+    DARWIN-EU/DrugExposureDiagnostics,
+    DARWIN-EU/CDMConnector

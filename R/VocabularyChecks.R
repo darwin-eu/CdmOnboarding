@@ -36,7 +36,6 @@
 #' @param smallCellCount                   To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
-#' @param dqdJsonPath                      Path to the json of the DQD
 #' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
@@ -46,7 +45,6 @@ vocabularyChecks <- function (connectionDetails,
                            smallCellCount = 5,
                            sqlOnly = FALSE,
                            outputFolder = "output",
-                           dqdJsonPath = NULL,
                            optimize = FALSE) {
   if (optimize && connectionDetails$dbms == "postgresql" ) {
     vocabularyCounts <- executeQuery(outputFolder,"vocabulary_tables_count_postgres.sql", "Count on vocabulary tables (postgres estimate) query executed successfully",
@@ -97,6 +95,8 @@ vocabularyChecks <- function (connectionDetails,
                                           activeConnection=connection, cdmDomain='meas_unit', smallCellCount=smallCellCount)
     unmappedUnitsObs <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
                                          activeConnection=connection, cdmDomain='obs_unit', smallCellCount=smallCellCount)
+    unmappedDrugRoute <- executeQuery(outputFolder,"unmapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
+                                         activeConnection=connection, cdmDomain='drug_route', smallCellCount=smallCellCount)
     # todo: merge with domain name
     unmappedUnits <- rbind(unmappedUnitsMeas, unmappedUnitsObs)
 
@@ -118,6 +118,8 @@ vocabularyChecks <- function (connectionDetails,
                                         activeConnection=connection  , cdmDomain='meas_unit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
     mappedUnitsObs <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly=sqlOnly,
                                        activeConnection=connection , cdmDomain='obs_unit', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
+    mappedDrugRoute <- executeQuery(outputFolder,"mapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly=sqlOnly,
+                                         activeConnection=connection, cdmDomain='drug_route', vocabDatabaseSchema=vocabDatabaseSchema, smallCellCount=smallCellCount)
   },
   finally = {
     DatabaseConnector::disconnect(connection = connection)
@@ -138,6 +140,7 @@ vocabularyChecks <- function (connectionDetails,
     unmappedVisits=unmappedVisits,
     unmappedUnitsMeas=unmappedUnitsMeas,
     unmappedUnitsObs=unmappedUnitsObs,
+    unmappedDrugRoute=unmappedDrugRoute,
     mappedDrugs=mappedDrugs,
     mappedConditions=mappedConditions,
     mappedMeasurements=mappedMeasurements,
@@ -147,6 +150,7 @@ vocabularyChecks <- function (connectionDetails,
     mappedVisits=mappedVisits,
     mappedUnitsMeas=mappedUnitsMeas,
     mappedUnitsObs=mappedUnitsObs,
+    mappedDrugRoute=mappedDrugRoute,
     conceptCounts=conceptCounts,
     vocabularyCounts=vocabularyCounts,
     sourceConceptFrequency=sourceConceptFrequency,

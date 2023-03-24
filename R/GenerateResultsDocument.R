@@ -1,43 +1,43 @@
-# @file GenerateResultsDocument
-#
-# Copyright 2022 Darwin EU Coordination Center
-#
-# This file is part of CdmOnboarding
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# @author Darwin EU Coordination Center
-# @author Peter Rijnbeek
-# @author Maxim Moinat
+#' @file GenerateResultsDocument
+#'
+#' Copyright 2022 Darwin EU Coordination Center
+#'
+#' This file is part of CdmOnboarding
+#'
+#' Licensed under the Apache License, Version 2.0 (the "License");
+#' you may not use this file except in compliance with the License.
+#' You may obtain a copy of the License at
+#'
+#'     https://www.apache.org/licenses/LICENSE-2.0
+#'
+#' Unless required by applicable law or agreed to in writing, software
+#' distributed under the License is distributed on an "AS IS" BASIS,
+#' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#' See the License for the specific language governing permissions and
+#' limitations under the License.
+#'
+#' @author Darwin EU Coordination Center
+#' @author Peter Rijnbeek
+#' @author Maxim Moinat
 
 # Makes styles globally available, also for helper functions
 pkg.env <- new.env(parent = emptyenv())
 pkg.env$styles <- list(
-  title="Doc title (Agency)",
-  subTitle="Doc subtitle (Agency)",
-  heading1="Heading 1 (Agency)",
-  heading2="Heading 2 (Agency)",
-  table="Table grid (Agency)",
-  tableCaption="Table heading (Agency)",
-  figureCaption="Figure heading (Agency)",
-  highlight="Drafting Notes (Agency)",
-  footnote="Footnote text (Agency)"
+  title = "Doc title (Agency)",
+  subTitle = "Doc subtitle (Agency)",
+  heading1 = "Heading 1 (Agency)",
+  heading2 = "Heading 2 (Agency)",
+  table = "Table grid (Agency)",
+  tableCaption = "Table heading (Agency)",
+  figureCaption = "Figure heading (Agency)",
+  highlight = "Drafting Notes (Agency)",
+  footnote = "Footnote text (Agency)"
 )
 
 pkg.env$sources <- list(
-  cdm="\u24C4",  # O in circle
-  achilles="\u24B6",  # A in circle
-  system="\u24C8"  # S in circle
+  cdm = "\u24C4",  # O in circle
+  achilles = "\u24B6",  # A in circle
+  system = "\u24C8"  # S in circle
 )
 
 
@@ -50,17 +50,20 @@ pkg.env$sources <- list(
 #' @param authors             List of author names to be added in the document
 #' @param silent              Flag to not create output in the terminal (default = FALSE)
 #' @export
-generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE) {
-  docTemplate <- system.file("templates", "Template-DarwinEU.docx", package="CdmOnboarding")
-  logo <- system.file("templates", "img", "darwin-logo.jpg", package="CdmOnboarding")
+generateResultsDocument <- function(results, outputFolder, authors, silent = FALSE) {
+  docTemplate <- system.file("templates", "Template-DarwinEU.docx", package = "CdmOnboarding")
+  logo <- system.file("templates", "img", "darwin-logo.jpg", package = "CdmOnboarding")
 
   # open a new doc from the doctemplate
-  doc<-officer::read_docx(path = docTemplate)
+  doc <- officer::read_docx(path = docTemplate)
 
   # add Title Page
-  doc<- doc %>%
+  doc <- doc %>%
     officer::body_add_img(logo, width = 5.00, height = 2.39, style = pkg.env$styles$title) %>%
-    officer::body_add_par(sprintf("CDM Onboarding report for the %s database", results$databaseName), style = pkg.env$styles$title) %>%
+    officer::body_add_par(sprintf(
+      "CDM Onboarding report for the %s database",
+      results$databaseName
+      ), style = pkg.env$styles$title) %>%
     officer::body_add_par(paste(authors, collapse = ","), style = pkg.env$styles$subTitle) %>%
     officer::body_add_break()
 
@@ -72,8 +75,10 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
   # Execution details
   df <- data.frame(rbind(
-    c("CdmOnboarding package version", paste0(as.character(packageVersion("CdmOnboarding")),
-                                              if(results$runWithOptimizedQueries) ' (performance optimized=TRUE)' else '')),
+    c("CdmOnboarding package version", paste0(
+      as.character(packageVersion("CdmOnboarding")),
+      if (results$runWithOptimizedQueries) ' (performance optimized=TRUE)' else ''
+    )),
     c("CDM version", results$cdmSource$CDM_VERSION),
     c("Execution date", results$executionDate),
     c("Execution duration", sprintf("%.2f seconds", results$executionDuration)),
@@ -87,7 +92,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     # Explanation of symbols
     officer::body_add_par(
       sprintf(
-        "Symbols used in table/figure captions: %s=Computed directly from OMOP CDM data, %s=Computed from Achilles results, %s=Estimated from system tables.",
+        "Symbols used in table/figure captions: %s=Computed directly from OMOP CDM data, %s=Computed from Achilles results, %s=Estimated from system tables.", # nolint
         pkg.env$sources$cdm,
         pkg.env$sources$achilles,
         pkg.env$sources$system
@@ -96,7 +101,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
   # CDM Source
   t_cdmSource <- data.table::transpose(results$cdmSource)
-  colnames(t_cdmSource) <- rownames(results$cdmSource)
+  colnames(t_cdmSource) <- c('Values')
   field <- colnames(results$cdmSource)
   t_cdmSource <- cbind(field, t_cdmSource)
   doc <- doc %>%
@@ -109,13 +114,15 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
   df <- results$dataTablesResults
   if (!is.null(df)) {
-    df_dtc <- df$dataTablesCounts$result
+    df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
+      arrange(desc(COUNT))
     doc <- doc %>%
       officer::body_add_par("Clinical data", style = pkg.env$styles$heading1) %>%
       officer::body_add_par("Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
-      my_caption("The number of records in all clinical data tables", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_dtc[order(df_dtc$COUNT, decreasing=TRUE),]) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds", df$dataTablesCounts$duration), style = pkg.env$styles$footnote)
+      my_caption("The number of records in all clinical data tables",
+        sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm, 
+        style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table_runtime(df$dataTablesCounts)
 
     plot <- recordsCountPlot(as.data.frame(df$totalRecords$result))
     doc <- doc %>%
@@ -133,8 +140,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       officer::body_add_break() %>%
       officer::body_add_par("Distinct concepts per person", style = pkg.env$styles$heading2) %>%
       my_caption("The number of distinct concepts per person per OMOP data domains. Only persons with at least one record in that domain are included in the calculation.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df$conceptsPerPerson$result) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$conceptsPerPerson$duration), style = pkg.env$styles$footnote)
+      my_body_add_table_runtime(df$conceptsPerPerson)
 
     plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
     doc <- doc %>%
@@ -155,11 +161,9 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par("Observation Period", style = pkg.env$styles$heading2) %>%
       my_caption("Length of first observation period (days).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df$observationPeriodLength$result) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$observationPeriodLength$duration), style = pkg.env$styles$footnote)
+      my_body_add_table_runtime(df$observationPeriodLength)
 
-    df$typeConcepts$result
-    df_type_concept <- df$typeConcepts$result %>%
+    df$typeConcepts$result <- df$typeConcepts$result %>%
                         tidyr::pivot_wider(
                           id_cols=TYPE_CONCEPT_NAME,
                           names_from=DOMAIN,
@@ -169,21 +173,19 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par("Type Concepts", style = pkg.env$styles$heading2) %>%
       my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_type_concept, alignment =  c('l',rep('r', ncol(df_type_concept)-1))) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$typeConcepts$duration), style = pkg.env$styles$footnote)
+      my_body_add_table_runtime(df$typeConcepts, alignment =  c('l', rep('r', ncol(df$typeConcepts$result)-1)))  # TODO display in long format
 
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df$tableDateRange$result, auto_format = FALSE, alignment =  c('l','r','r')) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds",  df$tableDateRange$duration), style = pkg.env$styles$footnote)
+      my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l','r','r'))
 
     doc <- doc %>% officer::body_add_break()
   }
 
 
   ## Vocabulary checks section
-  doc<-doc %>%
+  doc <- doc %>%
     officer::body_add_par("Vocabulary mappings", style = pkg.env$styles$heading1)
 
   vocabResults <-results$vocabularyResults
@@ -191,63 +193,84 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>% officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version))
 
     # Mapping Completeness
-    df_mc <- vocabResults$mappingCompleteness$result
-    df_mc$`%CODES MAPPED` <- prettyPc(df_mc$`%CODES MAPPED`)
-    df_mc$`%RECORDS MAPPED` <- prettyPc(df_mc$`%RECORDS MAPPED`)
-    doc<-doc %>%
+    vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%
+      arrange(DOMAIN) %>%
+      mutate(
+        P_CODES_MAPPED = prettyPc(P_CODES_MAPPED),
+        P_RECORDS_MAPPED = prettyPc(P_RECORDS_MAPPED),
+      ) %>%
+      rename(
+        Domain = DOMAIN,
+        `#Codes Source` = N_CODES_SOURCE,
+        `#Codes Mapped` = N_CODES_MAPPED,
+        `%Codes Mapped` = P_CODES_MAPPED,
+        `#Records Source` = N_RECORDS_SOURCE,
+        `#Records Mapped` = N_RECORDS_MAPPED,
+        `%Records Mapped` = P_RECORDS_MAPPED,
+      )
+    doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
-      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note that there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_mc[order(df_mc$DOMAIN),], alignment = c('l', rep('r',6))) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$mappingCompleteness$duration), style = pkg.env$styles$footnote)
+      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note: 1) for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes could be bigger than actual number of unique source codes and 2) there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table_runtime(vocabResults$mappingCompleteness, alignment = c('l', rep('r',6)))
 
     # Drug Level Mappings
-    df_dm <- vocabResults$drugMapping$result
-    df_dm$`%RECORDS` <- prettyPc(df_dm$`%RECORDS`)
-    doc<-doc %>%
+    vocabResults$drugMapping$result <- vocabResults$drugMapping$result %>%
+      arrange(desc(N_RECORDS)) %>%
+      mutate(
+        P_RECORDS = prettyPc(P_RECORDS),
+      ) %>%
+      rename(
+        Class = CLASS,
+        `#Records` = N_RECORDS,
+        `#Patients` = N_PATIENTS,
+        `#Codes` = N_SOURCE_CODES,
+        `%Records` = P_RECORDS,
+      )
+    doc <- doc %>%
       officer::body_add_par("Drug Mappings", style = pkg.env$styles$heading2) %>%
       my_caption("The level of the drug mappings", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_dm[order(df_dm$`#RECORDS`, decreasing=TRUE),], alignment =  c('l', rep('r',4))) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$drugMapping$duration), style = pkg.env$styles$footnote)
+      my_body_add_table_runtime(vocabResults$drugMapping, alignment =  c('l', rep('r',4)))
 
     # Top 25 missing mappings
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par("Unmapped Codes", style = pkg.env$styles$heading2) %>%
       my_unmapped_section(vocabResults$unmappedDrugs, "drugs", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedConditions, "conditions", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedMeasurements, "measurements", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedObservations, "observations",results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedObservations, "observations", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedProcedures, "procedures", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDevices, "devices", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedVisits, "visits", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount)
+      my_unmapped_section(vocabResults$unmappedUnitsMeas, "observation units", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount)
 
     ## add top 25 mapped codes
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par("Mapped Codes", style = pkg.env$styles$heading2) %>%
       my_mapped_section(vocabResults$mappedDrugs, "drugs", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedConditions, "conditions", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedMeasurements, "measurements", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedObservations, "observations",results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedObservations, "observations", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedProcedures, "procedures", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDevices, "devices", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedVisits, "visits", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount)
+      my_mapped_section(vocabResults$mappedUnitsMeas, "observation units", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount)
 
     ## add source_to_concept_map breakdown
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par("Source to concept map", style = pkg.env$styles$heading2) %>%
       my_caption("Source to concept map breakdown", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(vocabResults$sourceConceptFrequency$result) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$sourceConceptFrequency$duration), style = pkg.env$styles$footnote) %>%
+      my_body_add_table_runtime(vocabResults$sourceConceptFrequency) %>%
       officer::body_add_par("") %>%
-      officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style = pkg.env$styles$highlight)
+      officer::body_add_par("Note that the full source_to_concept_map table is added in the results rds", style = pkg.env$styles$highlight)
 
   } else {
-    doc<-doc %>%
-    officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style = pkg.env$styles$highlight) %>%
-    officer::body_add_break()
+    doc <- doc %>%
+      officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style = pkg.env$styles$highlight) %>%
+      officer::body_add_break()
   }
 
   doc <- doc %>%
@@ -267,16 +290,66 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     dqdOverview$`%Pass` <- prettyPc(dqdOverview$Pass / dqdOverview$Total * 100)
 
     doc <- doc %>%
-      officer::body_add_par(sprintf("DataQualityDashboard Version: %s", dqdResults$version)) %>%
-      officer::body_add_par(sprintf("DataQualityDashboard executed at %s in %s.", dqdResults$startTimestamp, dqdResults$executionTime)) %>%
+      officer::body_add_par(sprintf(
+        "DataQualityDashboard Version: %s",
+        dqdResults$version[1]
+      )) %>%
+      officer::body_add_par(sprintf(
+        "DataQualityDashboard executed at %s in %s.",
+        dqdResults$startTimestamp,
+        dqdResults$executionTime
+      )) %>%
       my_caption("Number of passed, failed and total DQD checks per category. For DQD v2+, the checks with status 'NA' are not included.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r',4)))
+      my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r',4)), last_row = TRUE)
   } else {
     doc <- doc %>%
-      officer::body_add_par("DataQualityDashboard results have not been provided, dqdJsonPath = empty?", style = pkg.env$styles$highlight)
+      officer::body_add_par("DataQualityDashboard results have not been provided.", style = pkg.env$styles$highlight)
   }
 
-  doc<-doc %>%
+  doc <- doc %>%
+    officer::body_end_section_portrait() %>%
+    officer::body_add_par("Drug Exposure Diagnostics", style = pkg.env$styles$heading1)
+
+  dedResults <- results$drugExposureDiagnostics
+  if (!is.null(dedResults)) {
+    dedResults <- dedResults %>%
+      mutate(
+          `Ingredient` = ingredient,
+          `Concept ID` = ingredient_concept_id,
+          `#` = n_records,
+          `Type (n,%)` = proportion_of_records_by_drug_type,
+          `Route (n,%)` = proportion_of_records_by_route_type,
+          `Dose Form present n (%)` = proportion_of_records_with_dose_form,
+          `Fixed amount dose form n (%)` = proportion_of_records_missing_denominator_unit_concept_id,
+          `Amount distrib. [null or missing]` = median_amount_value_q05_q95,
+          `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
+          `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
+          `Neg. Days n (%)` = proportion_of_records_with_negative_drug_exposure_days,
+          .keep = "none"  # do not display other columns
+        )
+    doc <- doc %>%
+      my_caption(paste(
+            "Drug Exposure Diagnostics results for selected ingredients.",
+            "Executed with minCellCount = 5, sample = 1e+06, earliestStartDate = 2010-01-01.",
+            "# = Number of records.",
+            "Type (n,%) = Frequency and percentage of available drug types.",
+            "Route (n,%) = Frequency and percentage of available routes.",
+            "Dose Form present n (%) = Frequency and percentage with dose form present.",
+            "Fixed amount dose form n (%) = Frequency and percentage of missing denominator unit concept id.",
+            "Amount distrib. [null or missing] = Distribution of amount (median q05-q95), frequency and percentage of null or missing amount.",
+            "Quantity distrib. [null or missing] = Distribution of quantity (median q05-q95), frequency and percentage of null or missing quantity.",
+            "Exposure days distrib. [null or missing] = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
+            "Neg. Days n (%) = Frequency and percentage of negative exposure days."),
+        sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table(dedResults)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("Drug Exposure Diagnostics results are missing.", style = pkg.env$styles$highlight)
+  }
+
+  doc <- doc %>% officer::body_end_section_landscape()
+
+  doc <- doc %>%
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
   if (!is.null(results$performanceResults)) {
@@ -286,16 +359,16 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
       my_caption("Versions of all installed R packages that are relevant for DARWIN EU studies.", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(results$hadesPackageVersions)
 
-    if (results$missingPackage=="") {
-      doc<-doc %>%
-      officer::body_add_par("All HADES R packages were available")
+    if (results$missingPackage == "") {
+      doc <- doc %>%
+        officer::body_add_par("All HADES R packages were available")
     } else {
-      doc<-doc %>%
-      officer::body_add_par(paste0("Missing R packages: ",results$missingPackages))
+      doc <- doc %>%
+        officer::body_add_par(paste0("Missing R packages: ", results$missingPackages))
     }
 
     #system detail
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par("System Information", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(paste0("Installed R version: ", results$sys_details$r_version$version.string)) %>%
       officer::body_add_par(paste0("System CPU vendor: ", results$sys_details$cpu$vendor_id, collapse =", ")) %>%
@@ -308,48 +381,52 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
     n_relations <- results$performanceResults$performanceBenchmark$result$COUNT
     benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(sprintf("The number of 'Maps To' relations is equal to %s and queried in %.2f seconds (%g s/#).",
                                     prettyHr(n_relations), benchmark_query_time, benchmark_query_time/n_relations))
 
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2) %>%
       my_caption("Execution time of queries of the Achilles R-Package", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption)
 
     if (!is.null(results$performanceResults$achillesTiming$result)) {
       results$performanceResults$achillesTiming$result$ID <- as.character(results$performanceResults$achillesTiming$result$ID)
-      doc<-doc %>%
-        my_body_add_table(results$performanceResults$achillesTiming$result) %>%
-        officer::body_add_par(sprintf("Query executed in %.2f seconds", results$performanceResults$achillesTiming$duration), style = pkg.env$styles$footnote)
+      doc <- doc %>%
+        my_body_add_table_runtime(results$performanceResults$achillesTiming)
     } else {
-      doc<-doc %>%
+      doc <- doc %>%
         officer::body_add_par("Query did not return results", style = pkg.env$styles$highlight)
     }
   } else {
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style = pkg.env$styles$highlight)
   }
 
-  doc<-doc %>%
+  doc <- doc %>%
     officer::body_add_par("Appendix", style = pkg.env$styles$heading1)
 
   if (!is.null(vocabResults)) {
     # add vocabulary table counts
-    df_vc <- vocabResults$vocabularyCounts$result
+    vocabResults$vocabularyCounts$result <- vocabResults$vocabularyCounts$result %>%
+      arrange(desc(COUNT))
     doc <- doc %>%
       officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
-      my_caption("Shows the number of records in all vocabulary tables. See the appendix for an overview of the different vocabularies loaded.", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(df_vc[order(df_vc$COUNT, decreasing=TRUE),]) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$vocabularyCounts$duration), style = pkg.env$styles$footnote)
+      my_caption("The number of records in all vocabulary tables.", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table_runtime(vocabResults$vocabularyCounts)
 
     # vocabularies table
-    doc<-doc %>%
+    vocabResults$conceptCounts$result <- vocabResults$conceptCounts$result %>%
+      rename(
+        S = N_STANDARD_CONCEPTS,
+        C = N_CLASSIFICATION_CONCEPTS,
+        `-` = N_NON_STANDARD_CONCEPTS
+      )
+    doc <- doc %>%
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(paste0("Vocabulary version: ",results$vocabularyResults$version)) %>%
       my_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(vocabResults$conceptCounts$result) %>%
-      officer::body_add_par(sprintf("Query executed in %.2f seconds", vocabResults$conceptCounts$duration), style = pkg.env$styles$footnote)
+      my_body_add_table_runtime(vocabResults$conceptCounts)
   }
 
   ## save the doc as a word file

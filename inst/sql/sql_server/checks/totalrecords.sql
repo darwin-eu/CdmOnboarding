@@ -13,8 +13,8 @@
       WHEN 2120 THEN 'Device Exposure'
       ELSE ''
     END                AS series_name,
-    stratum_1          AS x_Calendar_Month,
-    count_value        AS y_Record_Count
+    stratum_1          AS x_calendar_month,
+    count_value        AS y_record_count
 FROM @resultsDatabaseSchema.achilles_results
 WHERE analysis_id IN (111, 220, 420, 502, 620, 720, 820, 920, 1020, 1820, 2120)
 ORDER BY series_Name, CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)

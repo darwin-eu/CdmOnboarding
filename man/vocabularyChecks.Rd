@@ -11,7 +11,6 @@ vocabularyChecks(
   smallCellCount = 5,
   sqlOnly = FALSE,
   outputFolder = "output",
-  dqdJsonPath = NULL,
   optimize = FALSE
 )
 }
@@ -28,8 +27,6 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 
 \item{outputFolder}{Path to store logs and SQL files}
-
-\item{dqdJsonPath}{Path to the json of the DQD}
 
 \item{optimize}{Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE}
 }

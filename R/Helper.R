@@ -20,7 +20,15 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDetails=NULL, sqlOnly, activeConnection=NULL, useExecuteSql=FALSE, ...){
+executeQuery <- function(
+  outputFolder,
+  sqlFileName,
+  successMessage,
+  connectionDetails = NULL,
+  sqlOnly = FALSE,
+  activeConnection = NULL,
+  useExecuteSql = FALSE,
+  ...) {
   if (!is.null(connectionDetails)) {
     dbms <- connectionDetails$dbms
   } else {
@@ -38,11 +46,11 @@ executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDe
     )
   )
 
-  duration = -1
-  result = NULL
+  duration <- -1
+  result <- NULL
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, sqlFileName))
-    return(list(result=result, duration=duration))
+    return(list(result = result, duration = duration))
   }
 
   errorReportFile <- file.path(outputFolder, sprintf("%sErr.txt", tools::file_path_sans_ext(sqlFileName)))
@@ -56,15 +64,20 @@ executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDe
     }
 
     if (useExecuteSql) {
-      DatabaseConnector::executeSql(connection = connection, sql = sql, errorReportFile = errorReportFile, reportOverallTime = FALSE)
+      DatabaseConnector::executeSql(
+        connection = connection,
+        sql = sql,
+        errorReportFile = errorReportFile,
+        reportOverallTime = FALSE
+      )
     } else {
       result <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
     }
 
-    duration <- as.numeric(difftime(Sys.time(),start_time), units="secs")
+    duration <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
     ParallelLogger::logInfo(sprintf("> %s in %.2f secs", successMessage, duration))
   },
-  error = function (e) {
+  error = function(e) {
     ParallelLogger::logError(sprintf("%s", e))
     ParallelLogger::logError(sprintf("> Query failed. See '%s' for more details", errorReportFile))
   },
@@ -75,21 +88,21 @@ executeQuery <- function(outputFolder, sqlFileName, successMessage, connectionDe
     }
   })
 
-  return(list(result=result, duration=duration))
+  return(list(result = result, duration = duration))
 }
 
 prettyHr <- function(x) {
   result <- sprintf("%.2f", x)
   result[is.na(x)] <- "NA"
-  result <- suppressWarnings(format(as.numeric(result), big.mark=",")) # add thousands separator
+  result <- suppressWarnings(format(as.numeric(result), big.mark = ",")) # add thousands separator
   return(result)
 }
 
 prettyPc <- function(x) {
   result <- sprintf("%.1f%%", x)
   result[is.na(x)] <- "NA"
-  result[x==100] <- "100%"
-  result[x==0] <- "0%"
+  result[x == 100] <- "100%"
+  result[x == 0] <- "0%"
   return(result)
 }
 
@@ -105,11 +118,10 @@ my_caption <- function(x, caption, sourceSymbol, style) {
   )
 }
 
-my_body_add_table <- function (x, value, pos = "after", header = TRUE,
+my_body_add_table <- function(x, value, pos = "after", header = TRUE,
           alignment = NULL, stylenames = table_stylenames(), first_row = TRUE,
           first_column = FALSE, last_row = FALSE, last_column = FALSE,
-          no_hband = FALSE, no_vband = TRUE, align = "left", auto_format = TRUE)
-{
+          no_hband = FALSE, no_vband = TRUE, align = "left", auto_format = TRUE) {
   pt <- officer::prop_table(style = pkg.env$styles$table, layout = officer::table_layout(),
                    width = officer::table_width(), stylenames = stylenames,
                    tcf = officer::table_conditional_formatting(
@@ -124,9 +136,9 @@ my_body_add_table <- function (x, value, pos = "after", header = TRUE,
     }
 
     # Formatting numeric columns: align right and add thousands separator.
-    for (i in 1:ncol(value)) {
-      if (is.numeric(value[,i])) {
-        value[,i] <- format(value[,i], big.mark=",")
+    for (i in seq_len(ncol(value))) {
+      if (is.numeric(value[, i])) {
+        value[, i] <- format(value[, i], big.mark = ",")
         alignment[i] <- 'r'
       }
     }
@@ -138,7 +150,12 @@ my_body_add_table <- function (x, value, pos = "after", header = TRUE,
   officer::body_add_xml(x = x, str = xml_elt, pos = pos)
 }
 
-my_source_value_count_section <- function (x, data, domain, kind, smallCellCount) {
+my_body_add_table_runtime <- function(x, value, ...) {
+  my_body_add_table(x, value$result, ...) %>%
+    officer::body_add_par(sprintf("Query executed in %.2f seconds", value$duration), style = pkg.env$styles$footnote)
+}
+
+my_source_value_count_section <- function(x, data, domain, kind, smallCellCount) {
   n <- nrow(data$result)
 
   msg <- "Counts are rounded up to the nearest hundred."
@@ -152,17 +169,16 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
   } else if (n < 25) {
     caption <- sprintf("All %d %s %s. %s", n, kind, domain, msg)
   }
-  my_caption(x, caption, sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
+  x <- my_caption(x, caption, sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
 
   if (n > 0) {
-    names(data$result)[1] <- "#"
-    data$result$`%RECORDS` <- prettyPc(data$result$`%RECORDS`)
+    data$result$`%Records` <- prettyPc(data$result$`%Records`)
     if (kind == 'unmapped') {
-      alignment <- c('r','l','r','r') # #,name,n,%
+      alignment <- c('r', 'l', 'r', 'r') # #,name,n,%
     } else {
-      alignment <- c('r','l','l','r','r') # #,concept_id,name,n,%
+      alignment <- c('r', 'l', 'l', 'r', 'r') # #,concept_id,name,n,%
     }
-    my_body_add_table(
+    x <- my_body_add_table(
       x,
       value = data$result,
       alignment = alignment
@@ -173,21 +189,23 @@ my_source_value_count_section <- function (x, data, domain, kind, smallCellCount
 }
 
 my_unmapped_section <- function(x, data, domain, smallCellCount) {
+  names(data$result) <- c("#", "Source Value", "#Records", "%Records")
   my_source_value_count_section(x, data, domain, "unmapped", smallCellCount)
 }
 
 my_mapped_section <- function(x, data, domain, smallCellCount) {
+  names(data$result) <- c("#", "Concept id", "Concept Name", "#Records", "%Records")
   my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
 }
 
 
-recordsCountPlot <- function(results){
+recordsCountPlot <- function(results) {
   temp <- results %>%
-    dplyr::rename(Date=X_CALENDAR_MONTH,Domain=SERIES_NAME, Count=Y_RECORD_COUNT) %>%
-    dplyr::mutate(Date=lubridate::parse_date_time(Date, "ym"))
+    dplyr::rename(Date = X_CALENDAR_MONTH, Domain = SERIES_NAME, Count = Y_RECORD_COUNT) %>%
+    dplyr::mutate(Date = lubridate::parse_date_time(Date, "ym"))
   plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) +
-    geom_line(aes(color = Domain)) + # , linetype = Domain
-    scale_colour_hue(l=40)
+    geom_line(aes(color = Domain)) +
+    scale_colour_hue(l = 40)
 }
 
 #' Bundles the results in a zip file

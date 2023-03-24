@@ -45,4 +45,8 @@ vignettes/*.pdf
 results/
 output/
 errorReport*.txt
-extras/CodeToRun_local.R
+extras/example_input/
+
+# VS code
+.lntr
+.vscode/
