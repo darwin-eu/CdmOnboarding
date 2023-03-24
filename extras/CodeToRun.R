@@ -41,7 +41,7 @@
 #' When asked to update packages, select '1' ('update all') (could be multiple times)
 #' When asked whether to install from source, select 'No' (could be multiple times)
 if (!require(CdmOnboarding)) {
-  remotes::install_github("darwin-eu/CdmOnboarding")
+  remotes::install_github("DARWIN-EU/CdmOnboarding")
 }
 
 # *******************************************************

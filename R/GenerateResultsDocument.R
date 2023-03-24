@@ -23,15 +23,15 @@
 # Makes styles globally available, also for helper functions
 pkg.env <- new.env(parent = emptyenv())
 pkg.env$styles <- list(
-  title="Doc title (Agency)",
-  subTitle="Doc subtitle (Agency)",
-  heading1="Heading 1 (Agency)",
-  heading2="Heading 2 (Agency)",
-  table="Table grid (Agency)",
-  tableCaption="Table heading (Agency)",
-  figureCaption="Figure heading (Agency)",
-  highlight="Drafting Notes (Agency)",
-  footnote="Footnote text (Agency)"
+  title = "Doc title (Agency)",
+  subTitle = "Doc subtitle (Agency)",
+  heading1 = "Heading 1 (Agency)",
+  heading2 = "Heading 2 (Agency)",
+  table = "Table grid (Agency)",
+  tableCaption = "Table heading (Agency)",
+  figureCaption = "Figure heading (Agency)",
+  highlight = "Drafting Notes (Agency)",
+  footnote = "Footnote text (Agency)"
 )
 
 pkg.env$sources <- list(
@@ -50,9 +50,9 @@ pkg.env$sources <- list(
 #' @param authors             List of author names to be added in the document
 #' @param silent              Flag to not create output in the terminal (default = FALSE)
 #' @export
-generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE) {
-  docTemplate <- system.file("templates", "Template-DarwinEU.docx", package="CdmOnboarding")
-  logo <- system.file("templates", "img", "darwin-logo.jpg", package="CdmOnboarding")
+generateResultsDocument <- function(results, outputFolder, authors, silent = FALSE) {
+  docTemplate <- system.file("templates", "Template-DarwinEU.docx", package = "CdmOnboarding")
+  logo <- system.file("templates", "img", "darwin-logo.jpg", package = "CdmOnboarding")
 
   # open a new doc from the doctemplate
   doc <- officer::read_docx(path = docTemplate)
@@ -60,7 +60,10 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
   # add Title Page
   doc <- doc %>%
     officer::body_add_img(logo, width = 5.00, height = 2.39, style = pkg.env$styles$title) %>%
-    officer::body_add_par(sprintf("CDM Onboarding report for the %s database", results$databaseName), style = pkg.env$styles$title) %>%
+    officer::body_add_par(sprintf(
+      "CDM Onboarding report for the %s database",
+      results$databaseName
+      ), style = pkg.env$styles$title) %>%
     officer::body_add_par(paste(authors, collapse = ","), style = pkg.env$styles$subTitle) %>%
     officer::body_add_break()
 
@@ -72,8 +75,10 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
 
   # Execution details
   df <- data.frame(rbind(
-    c("CdmOnboarding package version", paste0(as.character(packageVersion("CdmOnboarding")),
-                                              if(results$runWithOptimizedQueries) ' (performance optimized=TRUE)' else '')),
+    c("CdmOnboarding package version", paste0(
+      as.character(packageVersion("CdmOnboarding")),
+      if (results$runWithOptimizedQueries) ' (performance optimized=TRUE)' else ''
+    )),
     c("CDM version", results$cdmSource$CDM_VERSION),
     c("Execution date", results$executionDate),
     c("Execution duration", sprintf("%.2f seconds", results$executionDuration)),
@@ -87,7 +92,7 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     # Explanation of symbols
     officer::body_add_par(
       sprintf(
-        "Symbols used in table/figure captions: %s=Computed directly from OMOP CDM data, %s=Computed from Achilles results, %s=Estimated from system tables.",
+        "Symbols used in table/figure captions: %s=Computed directly from OMOP CDM data, %s=Computed from Achilles results, %s=Estimated from system tables.", # nolint
         pkg.env$sources$cdm,
         pkg.env$sources$achilles,
         pkg.env$sources$system
@@ -114,7 +119,9 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
     doc <- doc %>%
       officer::body_add_par("Clinical data", style = pkg.env$styles$heading1) %>%
       officer::body_add_par("Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
-      my_caption("The number of records in all clinical data tables", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>%
+      my_caption("The number of records in all clinical data tables",
+        sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm, 
+        style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$dataTablesCounts)
 
     plot <- recordsCountPlot(as.data.frame(df$totalRecords$result))
@@ -311,22 +318,22 @@ generateResultsDocument<- function(results, outputFolder, authors, silent=FALSE)
           `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
           `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
           `Neg. Days n (%)` = proportion_of_records_with_negative_drug_exposure_days,
-          .keep = "none"
+          .keep = "none"  # do not display other columns
         )
     doc <- doc %>%
       my_caption(paste(
             "Drug Exposure Diagnostics results for selected ingredients.",
             "Executed with minCellCount = 5, sample = 1e+06, earliestStartDate = 2010-01-01.",
             "# = Number of records.",
-            "Type (n,%) = Number and percentage of available drug types.",
-            "Route (n,%) = Number and percentage of available routes.",
-            "Dose Form present n (%) = Number and percentage with dose form present.",
-            "Fixed amount dose form n (%) = Number and percentage missing denominator unit concept id.",
-            "Amount distrib. [null or missing] = Distribution of amount (median q05-q95), records and percentage missing amount.",
-            "Quantity distrib. [null or missing] = Distribution of quantity (median q05-q95), records and percentage missing quantity.",
-            "Exposure days distrib. [null or missing] = Distribution of exposure days (median q05-q95), records and percentage missing days_supply or exposure dates.",
-            "Neg. Days n (%) = Number and percentage of negative exposure days."),
-        sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
+            "Type (n,%) = Frequency and percentage of available drug types.",
+            "Route (n,%) = Frequency and percentage of available routes.",
+            "Dose Form present n (%) = Frequency and percentage with dose form present.",
+            "Fixed amount dose form n (%) = Frequency and percentage of missing denominator unit concept id.",
+            "Amount distrib. [null or missing] = Distribution of amount (median q05-q95), frequency and percentage of null or missing amount.",
+            "Quantity distrib. [null or missing] = Distribution of quantity (median q05-q95), frequency and percentage of null or missing quantity.",
+            "Exposure days distrib. [null or missing] = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
+            "Neg. Days n (%) = Frequency and percentage of negative exposure days."),
+        sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(dedResults)
   } else {
     doc <- doc %>%

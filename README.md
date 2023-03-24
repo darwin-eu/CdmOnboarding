@@ -53,16 +53,18 @@ Requires R. Some of the packages used by CdmOnboarding require Java.
 
 1. See the instructions [here](https://ohdsi.github.io/Hades/rSetup.html) for configuring your R environment, including Java.
 
-2. Make sure RohdsiWebApi is installed:
+2. Make sure dependencies from Github are installed:
 
 ```R
 remotes::install_github("OHDSI/ROhdsiWebApi")
+remotes::install_github("DARWIN-EU/CDMConnector")
+remotes::install_github("DARWIN-EU/DrugExposureDiagnostics")
 ```
 
-3. In R, use the following commands to download and install CdmOnboarding:
+3. Use the following commands to download and install CdmOnboarding:
 
 ```R
-remotes::install_github("darwin-eu/CdmOnboarding")
+remotes::install_github("DARWIN-EU/CdmOnboarding")
 ```
 
 # Execution instructions
