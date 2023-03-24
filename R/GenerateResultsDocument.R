@@ -101,7 +101,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   # CDM Source
   t_cdmSource <- data.table::transpose(results$cdmSource)
-  colnames(t_cdmSource) <- rownames(results$cdmSource)
+  colnames(t_cdmSource) <- c('Values')
   field <- colnames(results$cdmSource)
   t_cdmSource <- cbind(field, t_cdmSource)
   doc <- doc %>%
@@ -265,7 +265,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Source to concept map breakdown", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(vocabResults$sourceConceptFrequency) %>%
       officer::body_add_par("") %>%
-      officer::body_add_par("Note that the full source_to_concept_map table is added in the results.zip", style = pkg.env$styles$highlight)
+      officer::body_add_par("Note that the full source_to_concept_map table is added in the results rds", style = pkg.env$styles$highlight)
 
   } else {
     doc <- doc %>%
@@ -290,8 +290,15 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     dqdOverview$`%Pass` <- prettyPc(dqdOverview$Pass / dqdOverview$Total * 100)
 
     doc <- doc %>%
-      officer::body_add_par(sprintf("DataQualityDashboard Version: %s", dqdResults$version)) %>%
-      officer::body_add_par(sprintf("DataQualityDashboard executed at %s in %s.", dqdResults$startTimestamp, dqdResults$executionTime)) %>%
+      officer::body_add_par(sprintf(
+        "DataQualityDashboard Version: %s",
+        dqdResults$version[1]
+      )) %>%
+      officer::body_add_par(sprintf(
+        "DataQualityDashboard executed at %s in %s.",
+        dqdResults$startTimestamp,
+        dqdResults$executionTime
+      )) %>%
       my_caption("Number of passed, failed and total DQD checks per category. For DQD v2+, the checks with status 'NA' are not included.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r',4)), last_row = TRUE)
   } else {
@@ -352,12 +359,12 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Versions of all installed R packages that are relevant for DARWIN EU studies.", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(results$hadesPackageVersions)
 
-    if (results$missingPackage=="") {
-      doc<-doc %>%
-      officer::body_add_par("All HADES R packages were available")
+    if (results$missingPackage == "") {
+      doc <- doc %>%
+        officer::body_add_par("All HADES R packages were available")
     } else {
-      doc<-doc %>%
-      officer::body_add_par(paste0("Missing R packages: ",results$missingPackages))
+      doc <- doc %>%
+        officer::body_add_par(paste0("Missing R packages: ", results$missingPackages))
     }
 
     #system detail

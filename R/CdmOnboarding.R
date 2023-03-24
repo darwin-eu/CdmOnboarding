@@ -250,7 +250,7 @@ cdmOnboarding <- function(connectionDetails,
     }
   }
 
-  if(is.null(dqdJsonPath)) {
+  if (is.null(dqdJsonPath)) {
     ParallelLogger::logWarn("No dqdJsonPath specfied, data quality section will be empty.")
   }
 
@@ -371,7 +371,7 @@ cdmOnboarding <- function(connectionDetails,
     tryCatch({
       df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = TRUE)
       dqdResults <- list(
-        version = df$Metadata$DQD_VERSION,
+        version = df$Metadata$DQD_VERSION[1],  # if multiple cdm_souce records, then there can be multiple DQD versions
         overview = df$Overview,
         startTimestamp = df$startTimestamp,
         executionTime = df$executionTime
@@ -424,7 +424,7 @@ cdmOnboarding <- function(connectionDetails,
 
   # save results
   results <- list(
-    executionDate = date(),
+    executionDate = format(Sys.time(), "%Y-%m-%d"),
     executionDuration = as.numeric(difftime(Sys.time(), start_time), units = "secs"),
     cdmOnboardingVersion = packageVersion("CdmOnboarding"),
     databaseId = databaseId,
