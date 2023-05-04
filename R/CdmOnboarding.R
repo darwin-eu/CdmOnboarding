@@ -404,9 +404,9 @@ cdmOnboarding <- function(connectionDetails,
           earliestStartDate = "2010-01-01"
         )
       ))
-      drugExposureDiagnostics <- dedResults$diagnostics_summary
-      ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.",
-        as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")))
+      duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
+      drugExposureDiagnostics <- list(result = dedResults$diagnostics_summary, duration = duration)
+      ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
     },
     error = function(e) {
       ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)

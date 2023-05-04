@@ -188,7 +188,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   doc <- doc %>%
     officer::body_add_par("Vocabulary mappings", style = pkg.env$styles$heading1)
 
-  vocabResults <-results$vocabularyResults
+  vocabResults <- results$vocabularyResults
   if (!is.null(vocabResults)) {
     doc <- doc %>% officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version))
 
@@ -211,7 +211,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
       my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note: 1) for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes could be bigger than actual number of unique source codes and 2) there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(vocabResults$mappingCompleteness, alignment = c('l', rep('r',6)))
+      my_body_add_table_runtime(vocabResults$mappingCompleteness, alignment = c('l', rep('r', 6)))
 
     # Drug Level Mappings
     vocabResults$drugMapping$result <- vocabResults$drugMapping$result %>%
@@ -229,7 +229,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_par("Drug Mappings", style = pkg.env$styles$heading2) %>%
       my_caption("The level of the drug mappings", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(vocabResults$drugMapping, alignment =  c('l', rep('r',4)))
+      my_body_add_table_runtime(vocabResults$drugMapping, alignment =  c('l', rep('r', 4)))
 
     # Top 25 missing mappings
     doc <- doc %>%
@@ -312,7 +312,12 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   dedResults <- results$drugExposureDiagnostics
   if (!is.null(dedResults)) {
-    dedResults <- dedResults %>%
+    # Backwards compatibility with 2.1 where dedResults was not wrapped in result object + duration.
+    if (!('result' %in% names(dedResults))) {
+      dedResults <- list(result = dedResults, duration = NULL)
+    }
+
+    dedResults$result <- dedResults$result %>%
       mutate(
           `Ingredient` = ingredient,
           `Concept ID` = ingredient_concept_id,
@@ -327,6 +332,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           `Neg. Days n (%)` = proportion_of_records_with_negative_drug_exposure_days,
           .keep = "none"  # do not display other columns
         )
+
     doc <- doc %>%
       my_caption(paste(
             "Drug Exposure Diagnostics results for selected ingredients.",
@@ -341,7 +347,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
             "Exposure days distrib. [null or missing] = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
             "Neg. Days n (%) = Frequency and percentage of negative exposure days."),
         sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(dedResults)
+      my_body_add_table_runtime(dedResults)
   } else {
     doc <- doc %>%
       officer::body_add_par("Drug Exposure Diagnostics results are missing.", style = pkg.env$styles$highlight)
