@@ -37,7 +37,8 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param scratchDatabaseSchema            Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
-#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.
 #' @param databaseId                       ID of your database, this will be used as subfolder for the results and naming of the report
 #' @param databaseName		                 String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.
@@ -60,7 +61,7 @@
 #' @export
 cdmOnboarding <- function(connectionDetails,
                           cdmDatabaseSchema,
-                          resultsDatabaseSchema = cdmDatabaseSchema,
+                          resultsDatabaseSchema,
                           scratchDatabaseSchema = resultsDatabaseSchema,
                           vocabDatabaseSchema = cdmDatabaseSchema,
                           oracleTempSchema = resultsDatabaseSchema,
@@ -155,10 +156,10 @@ cdmOnboarding <- function(connectionDetails,
 .execute <- function(
     connectionDetails,
     cdmDatabaseSchema,
-    resultsDatabaseSchema = cdmDatabaseSchema,
-    scratchDatabaseSchema = resultsDatabaseSchema,
-    vocabDatabaseSchema = cdmDatabaseSchema,
-    oracleTempSchema = resultsDatabaseSchema,
+    resultsDatabaseSchema,
+    scratchDatabaseSchema,
+    vocabDatabaseSchema,
+    oracleTempSchema,
     databaseId,
     databaseName,
     databaseDescription,
@@ -204,6 +205,40 @@ cdmOnboarding <- function(connectionDetails,
     if (optimize) "(performance optimized)" else ""
   ))
 
+  # Check for Achilles results ----------------
+  ParallelLogger::logInfo(sprintf("Checking that Achilles results are available in schema '%s'", resultsDatabaseSchema))
+    if (!.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
+        ParallelLogger::logError("The output from the Achilles analyses is required.")
+        ParallelLogger::logInfo(sprintf(
+            "Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').", # nolint
+            resultsDatabaseSchema)
+        )
+        return(NULL)
+    }
+
+  # Check whether results for required Achilles analyses is available. Generate soft warning.
+  # At least require person, obs. period, condition and drug exposure. Other domains can be empty.
+  expectedAnalysisIds <- c(105, 110, 111, 117, 403, 420, 703, 720)
+  analysisIdsAvailable <- .getAvailableAchillesAnalysisIds(connectionDetails, resultsDatabaseSchema)
+  missingAnalysisIds <- setdiff(expectedAnalysisIds, analysisIdsAvailable)
+  if (length(missingAnalysisIds) > 0) {
+      ParallelLogger::logWarn(
+          sprintf("Missing Achilles analysis ids in result tables: %s.",
+          paste(missingAnalysisIds, collapse = ", "))
+      )
+      answer <- readline("If this is expected, press enter to continue. If not, abort and rerun Achilles including above analyses.")
+  }
+
+  # Display Achilles metadata
+  achillesMetadata <- .getAchillesMetadata(connectionDetails, resultsDatabaseSchema)
+  ParallelLogger::logInfo(sprintf(
+      "Achilles v%s results found. Executed on %s for '%s' (n=%dk).",
+      achillesMetadata$ACHILLES_VERSION,
+      achillesMetadata$ACHILLES_EXECUTION_DATE,
+      achillesMetadata$ACHILLES_SOURCE_NAME,
+      achillesMetadata$PERSON_COUNT_THOUSANDS
+  ))
+
   # CDM Source ------------------------------------------
   cdmSource <- .getCdmSource(connectionDetails, cdmDatabaseSchema, sqlOnly, outputFolder)
   if (is.null(cdmSource)) {
@@ -213,6 +248,7 @@ cdmOnboarding <- function(connectionDetails,
     ))
     return(NULL)
   }
+
   cdmSource$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
   cdmSource$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
   cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
@@ -585,4 +621,57 @@ cdmOnboarding <- function(connectionDetails,
       ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
     }
   )
+}
+
+.getAvailableAchillesAnalysisIds <- function(connectionDetails, resultsDatabaseSchema) {
+    sql <- SqlRender::loadRenderTranslateSql(
+        sqlFilename = "getAchillesAnalyses.sql",
+        packageName = "DashboardExport",
+        dbms = connectionDetails$dbms,
+        results_database_schema = resultsDatabaseSchema
+    )
+
+    connection <- DatabaseConnector::connect(connectionDetails)
+    result <- tryCatch({
+            DatabaseConnector::querySql(
+                connection = connection,
+                sql = sql
+            )
+        },
+        error = function(e) {
+            ParallelLogger::logError("Could not get available achilles analyses")
+            ParallelLogger::logError(e)
+        },
+        finally = {
+            DatabaseConnector::disconnect(connection = connection)
+            rm(connection)
+        }
+    )
+    result$ANALYSIS_ID
+}
+
+.getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema) {
+   sql <- SqlRender::loadRenderTranslateSql(
+        sqlFilename = "getAchillesMetadata.sql",
+        packageName = "DashboardExport",
+        dbms = connectionDetails$dbms,
+        results_database_schema = resultsDatabaseSchema
+    )
+
+    connection <- DatabaseConnector::connect(connectionDetails)
+    tryCatch({
+            DatabaseConnector::querySql(
+                connection = connection,
+                sql = sql
+            )
+        },
+        error = function(e) {
+            ParallelLogger::logError("Could not get Achilles metadata.")
+            ParallelLogger::logError(e)
+        },
+        finally = {
+            DatabaseConnector::disconnect(connection = connection)
+            rm(connection)
+        }
+    )
 }
