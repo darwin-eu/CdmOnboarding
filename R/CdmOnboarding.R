@@ -256,7 +256,6 @@ cdmOnboarding <- function(connectionDetails,
     }
     if (utils::compareVersion(achillesMetadata$ACHILLES_VERSION, '1.7') < 1) {
       ParallelLogger::logWarn(sprintf("An old Achilles version was used (v%s) to generate results, please consider installing the latest release of Achilles and rerun.", achillesMetadata$ACHILLES_VERSION)) #nolint
-      answer <- readline("> If this is expected, press enter to continue. If not, abort (ctrl-c) and update Achilles.")
     }
   }
 
@@ -460,7 +459,7 @@ cdmOnboarding <- function(connectionDetails,
   )
 
   tryCatch({
-      saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s.rds", databaseId)))
+      saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s_%s.rds", databaseId, format(Sys.time(), "%Y%m%d"))))
       ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
     },
     error = function(e) {

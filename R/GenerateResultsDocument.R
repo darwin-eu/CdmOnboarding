@@ -453,7 +453,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   }
 
   ## save the doc as a word file
-  outputFile <- file.path(outputFolder, paste0("CdmOnboarding-", results$databaseId, ".docx"))
+  outputFile <- file.path(outputFolder, sprintf("CdmOnboarding_%s_%s.docx", results$databaseId, format(Sys.time(), "%Y%m%d")))
   writeLines(paste("Saving doc to", outputFile))
   print(doc, target = outputFile)
 }
