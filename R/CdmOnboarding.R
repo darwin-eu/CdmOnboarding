@@ -205,40 +205,6 @@ cdmOnboarding <- function(connectionDetails,
     if (optimize) "(performance optimized)" else ""
   ))
 
-  # Check for Achilles results ----------------
-  ParallelLogger::logInfo(sprintf("Checking that Achilles results are available in schema '%s'", resultsDatabaseSchema))
-    if (!.checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)) {
-        ParallelLogger::logError("The output from the Achilles analyses is required.")
-        ParallelLogger::logInfo(sprintf(
-            "Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').", # nolint
-            resultsDatabaseSchema)
-        )
-        return(NULL)
-    }
-
-  # Check whether results for required Achilles analyses is available. Generate soft warning.
-  # At least require person, obs. period, condition and drug exposure. Other domains can be empty.
-  expectedAnalysisIds <- c(105, 110, 111, 117, 403, 420, 703, 720)
-  analysisIdsAvailable <- .getAvailableAchillesAnalysisIds(connectionDetails, resultsDatabaseSchema)
-  missingAnalysisIds <- setdiff(expectedAnalysisIds, analysisIdsAvailable)
-  if (length(missingAnalysisIds) > 0) {
-      ParallelLogger::logWarn(
-          sprintf("Missing Achilles analysis ids in result tables: %s.",
-          paste(missingAnalysisIds, collapse = ", "))
-      )
-      answer <- readline("If this is expected, press enter to continue. If not, abort and rerun Achilles including above analyses.")
-  }
-
-  # Display Achilles metadata
-  achillesMetadata <- .getAchillesMetadata(connectionDetails, resultsDatabaseSchema)
-  ParallelLogger::logInfo(sprintf(
-      "Achilles v%s results found. Executed on %s for '%s' (n=%dk).",
-      achillesMetadata$ACHILLES_VERSION,
-      achillesMetadata$ACHILLES_EXECUTION_DATE,
-      achillesMetadata$ACHILLES_SOURCE_NAME,
-      achillesMetadata$PERSON_COUNT_THOUSANDS
-  ))
-
   # CDM Source ------------------------------------------
   cdmSource <- .getCdmSource(connectionDetails, cdmDatabaseSchema, sqlOnly, outputFolder)
   if (is.null(cdmSource)) {
@@ -290,6 +256,20 @@ cdmOnboarding <- function(connectionDetails,
     }
   }
 
+  # Check whether results for required Achilles analyses is available. Generate soft warning.
+  # At least require person, obs. period, condition and drug exposure. Other domains can be empty.
+  expectedAnalysisIds <- c(105, 110, 111, 117, 403, 420, 703, 720, 888)
+  analysisIdsAvailable <- .getAvailableAchillesAnalysisIds(connectionDetails, resultsDatabaseSchema)
+  missingAnalysisIds <- setdiff(expectedAnalysisIds, analysisIdsAvailable)
+  if (length(missingAnalysisIds) > 0) {
+      ParallelLogger::logWarn(
+          sprintf("Missing Achilles analysis ids in result tables: %s.",
+          paste(missingAnalysisIds, collapse = ", "))
+      )
+      answer <- readline("> If this is expected, press enter to continue. If not, abort (ctrl-c) and rerun Achilles including above analyses.")
+  }
+
+  dqdResults <- NULL
   if (is.null(dqdJsonPath)) {
     ParallelLogger::logWarn("No dqdJsonPath specfied, data quality section will be empty.")
   } else {
@@ -622,6 +602,7 @@ cdmOnboarding <- function(connectionDetails,
       ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
     }
   )
+  return(dqdResults)
 }
 
 .getAvailableAchillesAnalysisIds <- function(connectionDetails, resultsDatabaseSchema) {
@@ -649,30 +630,4 @@ cdmOnboarding <- function(connectionDetails,
         }
     )
     result$ANALYSIS_ID
-}
-
-.getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema) {
-   sql <- SqlRender::loadRenderTranslateSql(
-        sqlFilename = "getAchillesMetadata.sql",
-        packageName = "DashboardExport",
-        dbms = connectionDetails$dbms,
-        results_database_schema = resultsDatabaseSchema
-    )
-
-    connection <- DatabaseConnector::connect(connectionDetails)
-    tryCatch({
-            DatabaseConnector::querySql(
-                connection = connection,
-                sql = sql
-            )
-        },
-        error = function(e) {
-            ParallelLogger::logError("Could not get Achilles metadata.")
-            ParallelLogger::logError(e)
-        },
-        finally = {
-            DatabaseConnector::disconnect(connection = connection)
-            rm(connection)
-        }
-    )
 }

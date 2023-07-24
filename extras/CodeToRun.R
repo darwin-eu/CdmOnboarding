@@ -89,17 +89,17 @@ verboseMode <- TRUE
 # SECTION 3: Run the package
 # *******************************************************
 results <- CdmOnboarding::cdmOnboarding(
- connectionDetails = connectionDetails,
- cdmDatabaseSchema = cdmDatabaseSchema,
- resultsDatabaseSchema = resultsDatabaseSchema,
- vocabDatabaseSchema = vocabDatabaseSchema,
- oracleTempSchema = oracleTempSchema,
- databaseId = databaseId,
- authors = authors,
- smallCellCount = smallCellCount,
- baseUrl = baseUrl,
- outputFolder = outputFolder,
- dqdJsonPath = dqdJsonPath
+  connectionDetails = connectionDetails,
+  cdmDatabaseSchema = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  vocabDatabaseSchema = vocabDatabaseSchema,
+  oracleTempSchema = oracleTempSchema,
+  databaseId = databaseId,
+  authors = authors,
+  smallCellCount = smallCellCount,
+  baseUrl = baseUrl,
+  outputFolder = outputFolder,
+  dqdJsonPath = dqdJsonPath
 )
 
  # cdmOnboarding() should already generate the resultsdocument.
