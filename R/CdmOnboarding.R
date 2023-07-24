@@ -350,10 +350,11 @@ cdmOnboarding <- function(connectionDetails,
                   "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
                   "EnsemblePatientLevelPrediction", "Characterization", "Capr",
                   "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
-                  "PheValuator", "CohortExplorer", "DataQualityDashboard", "EmpiricalCalibration",
-                  "MethodEvaluation", "Andromeda", "BigKnn", "Cyclops", "DatabaseConnector",
-                  "Eunomia", "FeatureExtraction", "Hydra", "IterativeHardThresholding",
-                  "OhdsiSharing", "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
+                  "PheValuator", "CohortExplorer", "Achilles", "DataQualityDashboard",
+                  "EmpiricalCalibration", "MethodEvaluation", "Andromeda", "BigKnn",
+                  "BrokenAdaptiveRidge", "Cyclops", "DatabaseConnector", "Eunomia",
+                  "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
+                  "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
                   "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender")
     diffPackages <- setdiff(packages, rownames(installed.packages()))
     missingPackages <- paste(diffPackages, collapse = ', ')
