@@ -149,11 +149,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption(
         sprintf("Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
                 pkg.env$sources$achilles,
-                if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) {
-                  results$cdmSource$SOURCE_RELEASE_DATE
-                } else {
-                  results$cdmSource$CDM_RELEASE_DATE
-                },
+                if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) results$cdmSource$SOURCE_RELEASE_DATE else results$cdmSource$CDM_RELEASE_DATE,
                 prettyHr(df$activePersons$result$COUNT),
                 pkg.env$sources$cdm
         ),
@@ -422,7 +418,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       arrange(desc(COUNT))
     doc <- doc %>%
       officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
-      my_caption("The number of records in all vocabulary tables.", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>% #nolint
+      my_caption("The number of records in all vocabulary tables.", sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(vocabResults$vocabularyCounts)
 
     # vocabularies table

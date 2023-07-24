@@ -38,20 +38,19 @@
 #' @param outputFolder                     Path to store logs and SQL files
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
-performanceChecks <- function (connectionDetails,
+performanceChecks <- function(connectionDetails,
                               resultsDatabaseSchema,
                               vocabDatabaseSchema,
                               sqlOnly = FALSE,
                               outputFolder = "output") {
   achillesTiming <- executeQuery(outputFolder, "achilles_timing.sql", "Retrieving duration of Achilles queries",
-                                 connectionDetails, sqlOnly, resultsDatabaseSchema=resultsDatabaseSchema)
+                                 connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
 
   performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
-                                       connectionDetails, sqlOnly, vocabDatabaseSchema=vocabDatabaseSchema)
+                                       connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
 
   list(
-    achillesTiming=achillesTiming,
-    performanceBenchmark=performanceBenchmark
+    achillesTiming = achillesTiming,
+    performanceBenchmark = performanceBenchmark
   )
 }
-

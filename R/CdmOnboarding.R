@@ -369,9 +369,9 @@ cdmOnboarding <- function(connectionDetails,
     # Sorting on LibPath to get packages in same environment together
     packinfo <- as.data.frame(installed.packages())
     packinfo <- packinfo[order(packinfo$LibPath, packinfo$Package), c("Package", "Version")]
-    hadesPackageVersions <- packinfo[packinfo$Package %in% packages,]
+    hadesPackageVersions <- packinfo[packinfo$Package %in% packages, ]
 
-    sys_details <- benchmarkme::get_sys_details(sys_info=FALSE)
+    sys_details <- benchmarkme::get_sys_details(sys_info = FALSE)
     ParallelLogger::logInfo(
       sprintf(
         "Running Performance Checks on %s cpu with %s cores, and %s ram.",
@@ -459,7 +459,7 @@ cdmOnboarding <- function(connectionDetails,
     databaseDescription = databaseDescription,
     vocabularyResults = vocabularyResults,
     dataTablesResults = dataTablesResults,
-    packinfo=packinfo,
+    packinfo = packinfo,
     hadesPackageVersions = hadesPackageVersions,
     missingPackages = missingPackages,
     performanceResults = performanceResults,
