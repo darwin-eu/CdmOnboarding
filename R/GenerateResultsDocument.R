@@ -299,7 +299,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         dqdResults$startTimestamp,
         dqdResults$executionTime
       )) %>%
-      my_caption("Number of passed, failed and total DQD checks per category. For DQD v2+, the checks with status 'NA' are not included.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
+      my_caption("Number of passed, failed and total DQD checks per category. For DQD v2, the checks with status 'NA' are not included.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r', 4)), last_row = TRUE)
   } else {
     doc <- doc %>%
@@ -395,21 +395,20 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2)
 
-    arTimings <- results$performanceResults$achillesTiming$result
     # If Achilles version 1.7, then timings not well reported (introduced after 1.6.3, fixed in 1.7.1)
     if (results$achillesMetadata$ACHILLES_VERSION == '1.7') {
       doc <- doc %>% officer::body_add_par("WARNING: For Achilles v1.7, the run time is not converted to seconds and the unit was not reported. Here, we assume they are all in seconds. This might not be accurate.") #nolint
     }
-
-    if (!is.null(results$performanceResults$achillesTiming$result)) {
-      results$performanceResults$achillesTiming$result$ID <- as.character(results$performanceResults$achillesTiming$result$ID)
-      if (utils::compareVersion(achillesMetadata$ACHILLES_VERSION, '1.6.3') < 1) {
+    arTimings <- results$performanceResults$achillesTiming$result
+    if (!is.null(arTimings)) {
+      arTimings$ID <- as.character(arTimings$ID)
+      if (utils::compareVersion(results$achillesMetadata$ACHILLES_VERSION, '1.6.3') < 1) {
         doc <- doc %>% my_caption("Execution time of Achilles analyses")
       } else {
         arTimings$DURATION <- as.numeric(arTimings$DURATION)
         longestAnalysis <- arTimings %>% slice_max(DURATION, n = 1)
         doc <- doc %>%
-          my_caption(sprintf("Execution time of Achilles analyses. Total: %s. Median: %s. Longest duration: analysis %d, %s.",
+          my_caption(sprintf("Execution time of Achilles analyses. Total: %s. Median: %s. Longest duration: analysis %s, %s.",
                         prettyunits::pretty_sec(sum(arTimings$DURATION)),
                         prettyunits::pretty_sec(stats::median(arTimings$DURATION)),
                         longestAnalysis$ID,
