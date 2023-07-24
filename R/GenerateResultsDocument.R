@@ -81,7 +81,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     )),
     c("CDM version", results$cdmSource$CDM_VERSION),
     c("Execution date", results$executionDate),
-    c("Execution duration", sprintf("%.2f seconds", results$executionDuration)),
+    c("Execution duration", prettyunits::pretty_sec(results$executionDuration)),
     c("Achilles version", results$achillesMetadata$ACHILLES_VERSION),
     c("Achilles execution date", results$achillesMetadata$ACHILLES_EXECUTION_DATE)
   ))
