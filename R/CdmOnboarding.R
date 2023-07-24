@@ -252,6 +252,8 @@ cdmOnboarding <- function(connectionDetails,
 
   if (is.null(dqdJsonPath)) {
     ParallelLogger::logWarn("No dqdJsonPath specfied, data quality section will be empty.")
+  } else {
+    dqdResults <- .processDqdResults(dqdJsonPath)
   }
 
   # Establish folder paths -------------------------------------------------------------------------------------
@@ -363,23 +365,6 @@ cdmOnboarding <- function(connectionDetails,
         return("Failed")
       }
     )
-  }
-
-  dqdResults <- NULL
-  if (!is.null(dqdJsonPath)) {
-    ParallelLogger::logInfo("Reading DataQualityDashboard results")
-    tryCatch({
-      df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = TRUE)
-      dqdResults <- list(
-        version = df$Metadata$DQD_VERSION[1],  # if multiple cdm_souce records, then there can be multiple DQD versions
-        overview = df$Overview,
-        startTimestamp = df$startTimestamp,
-        executionTime = df$executionTime
-      )
-      ParallelLogger::logInfo(sprintf("> Succesfully extracted DQD results overview from '%s'", dqdJsonPath))
-      }, error = function(e) {
-        ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
-      })
   }
 
   drugExposureDiagnostics <- NULL
@@ -577,4 +562,21 @@ cdmOnboarding <- function(connectionDetails,
     rm(connection)
   })
   return(achillesMetadata)
+}
+
+.processDqdResults <- function(dqdJsonPath) {
+  ParallelLogger::logInfo("Reading DataQualityDashboard results")
+  tryCatch({
+    df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = TRUE)
+    dqdResults <- list(
+      version = df$Metadata$DQD_VERSION[1],  # if multiple cdm_source records, then there can be multiple DQD versions
+      overview = df$Overview,
+      startTimestamp = df$startTimestamp,
+      executionTime = df$executionTime
+    )
+    ParallelLogger::logInfo(sprintf("> Succesfully extracted DQD results overview from '%s'", dqdJsonPath))
+    }, error = function(e) {
+      ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
+    }
+  )
 }
