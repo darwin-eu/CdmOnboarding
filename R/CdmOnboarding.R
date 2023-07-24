@@ -254,6 +254,10 @@ cdmOnboarding <- function(connectionDetails,
       ))
       return(NULL)
     }
+    if (utils::compareVersion(achillesMetadata$ACHILLES_VERSION, '1.7') < 1) {
+      ParallelLogger::logWarn(sprintf("An old Achilles version was used (v%s) to generate results, please consider installing the latest release of Achilles and rerun.", achillesMetadata$ACHILLES_VERSION)) #nolint
+      answer <- readline("> If this is expected, press enter to continue. If not, abort (ctrl-c) and update Achilles.")
+    }
   }
 
   # Check whether results for required Achilles analyses is available. Generate soft warning.

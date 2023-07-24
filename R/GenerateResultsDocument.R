@@ -393,13 +393,31 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
                                     prettyHr(n_relations), benchmark_query_time, benchmark_query_time / n_relations))
 
     doc <- doc %>%
-      officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2) %>%
-      my_caption("Execution time of queries of the Achilles R-Package", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption)
+      officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2)
+
+    arTimings <- results$performanceResults$achillesTiming$result
+    # If Achilles version 1.7, then timings not well reported (introduced after 1.6.3, fixed in 1.7.1)
+    if (results$achillesMetadata$ACHILLES_VERSION == '1.7') {
+      doc <- doc %>% officer::body_add_par("WARNING: For Achilles v1.7, the run time is not converted to seconds and the unit was not reported. Here, we assume they are all in seconds. This might not be accurate.") #nolint
+    }
 
     if (!is.null(results$performanceResults$achillesTiming$result)) {
       results$performanceResults$achillesTiming$result$ID <- as.character(results$performanceResults$achillesTiming$result$ID)
-      doc <- doc %>%
-        my_body_add_table_runtime(results$performanceResults$achillesTiming)
+      if (utils::compareVersion(achillesMetadata$ACHILLES_VERSION, '1.6.3') < 1) {
+        doc <- doc %>% my_caption("Execution time of Achilles analyses")
+      } else {
+        arTimings$DURATION <- as.numeric(arTimings$DURATION)
+        longestAnalysis <- arTimings %>% slice_max(DURATION, n = 1)
+        doc <- doc %>%
+          my_caption(sprintf("Execution time of Achilles analyses. Total: %s. Median: %s. Longest duration: analysis %d, %s.",
+                        prettyunits::pretty_sec(sum(arTimings$DURATION)),
+                        prettyunits::pretty_sec(stats::median(arTimings$DURATION)),
+                        longestAnalysis$ID,
+                        prettyunits::pretty_sec(longestAnalysis$DURATION)),
+                    sourceSymbol = pkg.env$sources$achilles,
+                    style = pkg.env$styles$tableCaption)
+      }
+      doc <- doc %>% my_body_add_table_runtime(results$performanceResults$achillesTiming)
     } else {
       doc <- doc %>%
         officer::body_add_par("Query did not return results", style = pkg.env$styles$highlight)

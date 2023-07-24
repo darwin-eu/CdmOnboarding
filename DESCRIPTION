@@ -39,6 +39,7 @@ Imports:
     ggplot2,
     tidyr,
     jsonlite,
+    stats,
     DrugExposureDiagnostics (>= 0.4.2),
     CDMConnector
 Suggests:
