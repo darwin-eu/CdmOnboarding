@@ -1,6 +1,6 @@
 #' @file GenerateResultsDocument
 #'
-#' Copyright 2022 Darwin EU Coordination Center
+#' Copyright 2023 Darwin EU Coordination Center
 #'
 #' This file is part of CdmOnboarding
 #'
@@ -120,36 +120,40 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("Clinical data", style = pkg.env$styles$heading1) %>%
       officer::body_add_par("Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
       my_caption("The number of records in all clinical data tables",
-        sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm, 
+        sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm,
         style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$dataTablesCounts)
 
-    plot <- recordsCountPlot(as.data.frame(df$totalRecords$result))
+    totalRecordsPlot <- recordsCountPlot(as.data.frame(df$totalRecords$result))
     doc <- doc %>%
       officer::body_add_break() %>%
       officer::body_add_par("Data density plots", style = pkg.env$styles$heading2) %>%
-      officer::body_add_gg(plot, height=4) %>%
+      officer::body_add_gg(totalRecordsPlot, height = 4) %>%
       my_caption("Total record count over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
-    plot <- recordsCountPlot(as.data.frame(df$recordsPerPerson$result))
+    recordsPerPersonPlot <- recordsCountPlot(as.data.frame(df$recordsPerPerson$result))
     doc <- doc %>%
-      officer::body_add_gg(plot, height=4) %>%
+      officer::body_add_gg(recordsPerPersonPlot, height = 4) %>%
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
     doc <- doc %>%
       officer::body_add_break() %>%
       officer::body_add_par("Distinct concepts per person", style = pkg.env$styles$heading2) %>%
-      my_caption("The number of distinct concepts per person per OMOP data domains. Only persons with at least one record in that domain are included in the calculation.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
+      my_caption("The number of distinct concepts per person per OMOP data domains. Only persons with at least one record in that domain are included in the calculation.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(df$conceptsPerPerson)
 
     plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
     doc <- doc %>%
       officer::body_add_par("") %>%
-      officer::body_add_gg(plot, height=4) %>%
+      officer::body_add_gg(plot, height = 4) %>%
       my_caption(
         sprintf("Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
                 pkg.env$sources$achilles,
-                if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) {results$cdmSource$SOURCE_RELEASE_DATE} else {results$cdmSource$CDM_RELEASE_DATE},
+                if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) {
+                  results$cdmSource$SOURCE_RELEASE_DATE
+                } else {
+                  results$cdmSource$CDM_RELEASE_DATE
+                },
                 prettyHr(df$activePersons$result$COUNT),
                 pkg.env$sources$cdm
         ),
@@ -165,20 +169,20 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     df$typeConcepts$result <- df$typeConcepts$result %>%
                         tidyr::pivot_wider(
-                          id_cols=TYPE_CONCEPT_NAME,
-                          names_from=DOMAIN,
-                          values_from=COUNT,
-                          values_fill="0",
+                          id_cols = TYPE_CONCEPT_NAME,
+                          names_from = DOMAIN,
+                          values_from = COUNT,
+                          values_fill = "0",
                           values_fn = prettyHr)
     doc <- doc %>%
       officer::body_add_par("Type Concepts", style = pkg.env$styles$heading2) %>%
       my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$typeConcepts, alignment =  c('l', rep('r', ncol(df$typeConcepts$result)-1)))  # TODO display in long format
+      my_body_add_table_runtime(df$typeConcepts, alignment =  c('l', rep('r', ncol(df$typeConcepts$result) - 1)))  # TODO display in long format
 
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
-      my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l','r','r'))
+      my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
+      my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l', 'r', 'r'))
 
     doc <- doc %>% officer::body_add_break()
   }
@@ -210,7 +214,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       )
     doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
-      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note: 1) for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes could be bigger than actual number of unique source codes and 2) there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note: 1) for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes could be bigger than actual number of unique source codes and 2) there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(vocabResults$mappingCompleteness, alignment = c('l', rep('r', 6)))
 
     # Drug Level Mappings
@@ -300,7 +304,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         dqdResults$executionTime
       )) %>%
       my_caption("Number of passed, failed and total DQD checks per category. For DQD v2+, the checks with status 'NA' are not included.", sourceSymbol = "", style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r',4)), last_row = TRUE)
+      my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r', 4)), last_row = TRUE)
   } else {
     doc <- doc %>%
       officer::body_add_par("DataQualityDashboard results have not been provided.", style = pkg.env$styles$highlight)
@@ -360,7 +364,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   if (!is.null(results$performanceResults)) {
     #installed packages
-    doc<-doc %>%
+    doc <- doc %>%
       officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
       my_caption("Versions of all installed R packages that are relevant for DARWIN EU studies.", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(results$hadesPackageVersions)
@@ -377,10 +381,10 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_par("System Information", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(paste0("Installed R version: ", results$sys_details$r_version$version.string)) %>%
-      officer::body_add_par(paste0("System CPU vendor: ", results$sys_details$cpu$vendor_id, collapse =", ")) %>%
-      officer::body_add_par(paste0("System CPU model: ", results$sys_details$cpu$model_name, collapse =", ")) %>%
-      officer::body_add_par(paste0("System CPU number of cores: ", results$sys_details$cpu$no_of_cores, collapse =", ")) %>%
-      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(results$sys_details$ram, collapse =", ")))) %>%
+      officer::body_add_par(paste0("System CPU vendor: ", results$sys_details$cpu$vendor_id, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System CPU model: ", results$sys_details$cpu$model_name, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System CPU number of cores: ", results$sys_details$cpu$no_of_cores, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(results$sys_details$ram, collapse = ", ")))) %>%
       officer::body_add_par(paste0("DBMS: ", results$dms)) %>%
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
@@ -390,7 +394,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(sprintf("The number of 'Maps To' relations is equal to %s and queried in %.2f seconds (%g s/#).",
-                                    prettyHr(n_relations), benchmark_query_time, benchmark_query_time/n_relations))
+                                    prettyHr(n_relations), benchmark_query_time, benchmark_query_time / n_relations))
 
     doc <- doc %>%
       officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2) %>%
@@ -418,7 +422,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       arrange(desc(COUNT))
     doc <- doc %>%
       officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
-      my_caption("The number of records in all vocabulary tables.", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>%
+      my_caption("The number of records in all vocabulary tables.", sourceSymbol = if (counts_optimized) {pkg.env$sources$system} else {pkg.env$sources$cdm}, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(vocabResults$vocabularyCounts)
 
     # vocabularies table
@@ -430,8 +434,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       )
     doc <- doc %>%
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(paste0("Vocabulary version: ",results$vocabularyResults$version)) %>%
-      my_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+      officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version)) %>%
+      my_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(vocabResults$conceptCounts)
   }
 
