@@ -124,14 +124,14 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$dataTablesCounts)
 
-    totalRecordsPlot <- recordsCountPlot(as.data.frame(df$totalRecords$result))
+    totalRecordsPlot <- recordsCountPlot(as.data.frame(df$totalRecords$result), log_y_axis = TRUE)
     doc <- doc %>%
       officer::body_add_break() %>%
       officer::body_add_par("Data density plots", style = pkg.env$styles$heading2) %>%
       officer::body_add_gg(totalRecordsPlot, height = 4) %>%
       my_caption("Total record count over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
-    recordsPerPersonPlot <- recordsCountPlot(as.data.frame(df$recordsPerPerson$result))
+    recordsPerPersonPlot <- recordsCountPlot(as.data.frame(df$recordsPerPerson$result), log_y_axis = TRUE)
     doc <- doc %>%
       officer::body_add_gg(recordsPerPersonPlot, height = 4) %>%
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
