@@ -47,6 +47,7 @@
 #' @param runDataTablesChecks              Boolean to determine if table checks need to be run. Default = TRUE
 #' @param runWebAPIChecks                  Boolean to determine if WebAPI checks need to be run. Default = TRUE
 #' @param runPerformanceChecks             Boolean to determine if performance checks need to be run. Default = TRUE
+#' @param runDedChecks                     Boolean to determine if DrugExposureDiagnostics checks need to be run. Default = TRUE
 #' @param smallCellCount                   To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)
 #' @param baseUrl                          WebAPI url, example: http://server.org:80/WebAPI
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
@@ -71,6 +72,7 @@ cdmOnboarding <- function(connectionDetails,
                           runDataTablesChecks = TRUE,
                           runPerformanceChecks = TRUE,
                           runWebAPIChecks = TRUE,
+                          runDedChecks = TRUE,
                           smallCellCount = 5,
                           baseUrl = "",
                           sqlOnly = FALSE,
@@ -97,6 +99,7 @@ cdmOnboarding <- function(connectionDetails,
     runDataTablesChecks = runDataTablesChecks,
     runPerformanceChecks = runPerformanceChecks,
     runWebAPIChecks = runWebAPIChecks,
+    runDedChecks = runDedChecks,
     smallCellCount = smallCellCount,
     baseUrl = baseUrl,
     sqlOnly = sqlOnly,
@@ -163,6 +166,7 @@ cdmOnboarding <- function(connectionDetails,
     runDataTablesChecks,
     runPerformanceChecks,
     runWebAPIChecks,
+    runDedChecks,
     smallCellCount,
     baseUrl,
     sqlOnly,
@@ -368,39 +372,41 @@ cdmOnboarding <- function(connectionDetails,
   }
 
   drugExposureDiagnostics <- NULL
-  if (is.null(dedIngredientIds)) {
-    dedIngredientIds <- c(1125315, 1139042, 1703687, 1119119, 1154343,
-                          528323, 954688, 968426, 1550557, 1140643, 40225722)
-  }
-  ParallelLogger::logInfo(sprintf("Starting execution of DrugExposureDiagnostics for %s ingredients...",
-                            length(dedIngredientIds)))
-  ded_start_time <- Sys.time()
-  tryCatch({
-      connection <- DatabaseConnector::connect(connectionDetails)
-      cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
-      # Reduce output lines by suppressing both warnings and messages. Only progress bar displayed.
-      suppressWarnings(suppressMessages(
-        dedResults <- DrugExposureDiagnostics::executeChecks(
-          cdm = cdm,
-          ingredients = dedIngredientIds,
-          checks = c("exposureDuration", "type", "route", "dose", "quantity"),
-          minCellCount = 5,
-          sample = 1e+06,
-          earliestStartDate = "2010-01-01"
-        )
-      ))
-      duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-      drugExposureDiagnostics <- list(result = dedResults$diagnostics_summary, duration = duration)
-      ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
-    },
-    error = function(e) {
-      ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
-    },
-    finally = {
-      DatabaseConnector::disconnect(connection)
-      rm(connection)
+  if (runDedChecks) {
+    if (is.null(dedIngredientIds)) {
+      dedIngredientIds <- c(1125315, 1139042, 1703687, 1119119, 1154343,
+                            528323, 954688, 968426, 1550557, 1140643, 40225722)
     }
-  )
+    ParallelLogger::logInfo(sprintf("Starting execution of DrugExposureDiagnostics for %s ingredients...",
+                              length(dedIngredientIds)))
+    ded_start_time <- Sys.time()
+    tryCatch({
+        connection <- DatabaseConnector::connect(connectionDetails)
+        cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
+        # Reduce output lines by suppressing both warnings and messages. Only progress bar displayed.
+        suppressWarnings(suppressMessages(
+          dedResults <- DrugExposureDiagnostics::executeChecks(
+            cdm = cdm,
+            ingredients = dedIngredientIds,
+            checks = c("exposureDuration", "type", "route", "dose", "quantity"),
+            minCellCount = 5,
+            sample = 1e+06,
+            earliestStartDate = "2010-01-01"
+          )
+        ))
+        duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
+        drugExposureDiagnostics <- list(result = dedResults$diagnostics_summary, duration = duration)
+        ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
+      },
+      error = function(e) {
+        ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
+      },
+      finally = {
+        DatabaseConnector::disconnect(connection)
+        rm(connection)
+      }
+    )
+  }
 
   ParallelLogger::logInfo("Done.")
 
