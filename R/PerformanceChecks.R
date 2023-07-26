@@ -55,6 +55,28 @@ performanceChecks <- function(connectionDetails,
   )
 }
 
+#' Hard coded list of HADES packages that CdmOnboarding checks against.
+#' Does NOT update automatically when new HADES packages are released.
+#' @return character vector with HADES package names
+#' @export
+getHADESpackages <- function() {
+    # To update the HADES package list:
+    # packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv" #nolint
+    # hadesPackageList <- read.table(packageListUrl, sep = ",", header = TRUE) #nolint
+    # packages <- hadesPackageList$name #nolint
+    # dump("packages", "") #nolint
+    c("CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
+      "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
+      "EnsemblePatientLevelPrediction", "Characterization", "Capr",
+      "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
+      "PheValuator", "CohortExplorer", "Achilles", "DataQualityDashboard",
+      "EmpiricalCalibration", "MethodEvaluation", "Andromeda", "BigKnn",
+      "BrokenAdaptiveRidge", "Cyclops", "DatabaseConnector", "Eunomia",
+      "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
+      "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
+      "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender")
+}
+
 .getDbmsVersion <- function(connectionDetails, outputFolder) {
   versionQuery <- switch(
     connectionDetails$dbms,
@@ -66,22 +88,24 @@ performanceChecks <- function(connectionDetails,
   )
 
   errorReportFile <- file.path(outputFolder, "errorDBMSversion.txt")
-  versionString <- tryCatch({
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    DatabaseConnector::querySql(
-      connection = connection,
-      sql = versionQuery,
-      progressBar = FALSE,
-      reportOverallTime = FALSE,
-      errorReportFile = errorReportFile
-    )
-  },
-  error = function(e) {
-    ParallelLogger::logWarn("> DBMS version could not be retrieved")
-    FALSE
-  },
-  finally = {
-    DatabaseConnector::disconnect(connection = connection)
-    rm(connection)
-  })
+  tryCatch({
+      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      version <- DatabaseConnector::querySql(
+        connection = connection,
+        sql = versionQuery,
+        errorReportFile = errorReportFile
+      )
+      # Expect one row, one column
+      version[1, 1]
+    },
+    error = function(e) {
+      ParallelLogger::logWarn("> DBMS version could not be retrieved:")
+      ParallelLogger::logWarn(e)
+      NULL
+    },
+    finally = {
+      DatabaseConnector::disconnect(connection = connection)
+      rm(connection)
+    }
+  )
 }

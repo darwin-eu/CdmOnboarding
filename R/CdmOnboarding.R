@@ -56,7 +56,7 @@
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @param dqdJsonPath                      Path to the json of the DQD
 #' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
-#' @param dedIngredientIds                 DEPRECATED, default ingredients are always used (`getDedIngredientIds()`).
+#' @param dedIngredientIds                 DEPRECATED, default ingredients are always used (`getDedIngredients()`).
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 cdmOnboarding <- function(connectionDetails,
@@ -253,7 +253,7 @@ cdmOnboarding <- function(connectionDetails,
       return(NULL)
     }
     if (utils::compareVersion(achillesMetadata$ACHILLES_VERSION, '1.7') < 1) {
-      ParallelLogger::logWarn(sprintf("An old Achilles version was used (v%s) to generate results, please consider installing the latest release of Achilles and rerun.", achillesMetadata$ACHILLES_VERSION)) #nolint
+      ParallelLogger::logWarn(sprintf("Results from an outdated Achilles version (v%s) were detected, please consider installing the latest release of Achilles and rerun CdmOnboarding.", achillesMetadata$ACHILLES_VERSION)) #nolint
     }
   }
 
@@ -315,29 +315,16 @@ cdmOnboarding <- function(connectionDetails,
   }
 
   # performance checks --------------------------------------------------------------------------------------------
-  packinfo <- NULL
-  sys_details <- NULL
-  hadesPackageVersions <- NULL
-  performanceResults <- NULL
   missingPackages <- NULL
+  packinfo <- NULL
+  hadesPackageVersions <- NULL
+  sys_details <- NULL
+  dmsVersion <- NULL
+  performanceResults <- NULL
   if (runPerformanceChecks) {
     ParallelLogger::logInfo("Check installed R Packages")
-    #' Update the HADES package list with:
-    #'  packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv"
-    #'  hadesPackageList <- read.table(packageListUrl, sep = ",", header = TRUE)
-    #'  packages <- hadesPackageList$name
-    #'  dump("packages", "")
-    packages <- c("CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
-                  "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
-                  "EnsemblePatientLevelPrediction", "Characterization", "Capr",
-                  "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
-                  "PheValuator", "CohortExplorer", "Achilles", "DataQualityDashboard",
-                  "EmpiricalCalibration", "MethodEvaluation", "Andromeda", "BigKnn",
-                  "BrokenAdaptiveRidge", "Cyclops", "DatabaseConnector", "Eunomia",
-                  "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
-                  "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
-                  "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender")
-    diffPackages <- setdiff(packages, rownames(installed.packages()))
+    hadesPackages <- getHADESpackages()
+    diffPackages <- setdiff(hadesPackages, rownames(installed.packages()))
     missingPackages <- paste(diffPackages, collapse = ', ')
 
     if (length(diffPackages) > 0) {
@@ -351,7 +338,7 @@ cdmOnboarding <- function(connectionDetails,
     # Sorting on LibPath to get packages in same environment together
     packinfo <- as.data.frame(installed.packages())
     packinfo <- packinfo[order(packinfo$LibPath, packinfo$Package), c("Package", "Version")]
-    hadesPackageVersions <- packinfo[packinfo$Package %in% packages, ]
+    hadesPackageVersions <- packinfo[packinfo$Package %in% hadesPackages, ]
 
     sys_details <- benchmarkme::get_sys_details(sys_info = FALSE)
     ParallelLogger::logInfo(
@@ -364,6 +351,7 @@ cdmOnboarding <- function(connectionDetails,
     )
 
     dmsVersion <- .getDbmsVersion(connectionDetails, outputFolder)
+    ParallelLogger::logInfo(sprintf('> DBMS version found: "%s"', dmsVersion))
 
     ParallelLogger::logInfo("Running Performance Checks SQL")
     performanceResults <- performanceChecks(
@@ -423,7 +411,7 @@ cdmOnboarding <- function(connectionDetails,
     cdmSource = cdmSource,
     achillesMetadata = achillesMetadata,
     dms = connectionDetails$dbms,
-    dmsVersion = dbmsVersion,
+    dmsVersion = dmsVersion,
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
     dqdResults = dqdResults,

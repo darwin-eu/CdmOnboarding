@@ -3,10 +3,11 @@
     connectionDetails,
     cdmDatabaseSchema
 ) {
-    dedIngredientIds <- getDedIngredientIds()
+    dedIngredients <- getDedIngredients()
+    dedIngredientIds <- dedIngredients$concept_id
 
     ParallelLogger::logInfo(sprintf(
-        "Starting execution of DrugExposureDiagnostics for %s ingredients...",
+        "Starting execution of DrugExposureDiagnostics for %s ingredients",
         length(dedIngredientIds)
     ))
 
@@ -41,10 +42,36 @@
     )
 }
 
-#' Returns concept_ids for drug ingredients used for DrugExposureDiagnostics check
+#' Returns data frame with concept_id and concept_name of drug ingredients
+#' used for the DrugExposureDiagnostics check
 #' @export
-getDedIngredientIds <- function() {
-     dedIngredientIds <- c(1125315, 1139042, 1703687, 1119119, 1154343,
-                           528323, 954688, 968426, 1550557, 1140643, 40225722)
-    return(dedIngredientIds)
+getDedIngredients <- function() {
+  dedIngredients <- data.frame(
+    concept_id = c(
+      528323,
+      954688,
+      968426,
+      1119119,
+      1125315,
+      1139042,
+      1140643,
+      1154343,
+      1550557,
+      1703687,
+      40225722),
+    concept_name = c(
+      "hepatitis B surface antigen vaccine",
+      "latanoprost",
+      "mesalamine",
+      "adalimumab",
+      "acetaminophen",
+      "acetylcysteine",
+      "sumatriptan",
+      "albuterol",
+      "prednisolone",
+      "acyclovir",
+      "ulipristal"
+    )
+  )
+  return(dedIngredients)
 }
