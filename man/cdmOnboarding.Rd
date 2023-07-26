@@ -80,7 +80,7 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 
 \item{optimize}{Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE}
 
-\item{dedIngredientIds}{Integer vector with ingredient concept ids to run DrugExposureDiagnostics on. When set to NULL, DED is run on a default set of ingredients.}
+\item{dedIngredientIds}{DEPRECATED, default ingredients are always used (\code{getDedIngredients()}).}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results

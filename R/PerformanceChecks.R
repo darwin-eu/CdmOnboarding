@@ -1,6 +1,6 @@
 # @file PerformanceChecks.R
 #
-# Copyright 2022 Darwin EU Coordination Center
+# Copyright 2023 Darwin EU Coordination Center
 #
 # This file is part of CdmOnboarding
 #
