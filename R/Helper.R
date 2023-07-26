@@ -1,6 +1,6 @@
 # @file Helper
 #
-# Copyright 2022 Darwin EU Coordination Center
+# Copyright 2023 Darwin EU Coordination Center
 #
 # This file is part of CdmOnboarding
 #
@@ -71,7 +71,11 @@ executeQuery <- function(
         reportOverallTime = FALSE
       )
     } else {
-      result <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
+      result <- DatabaseConnector::querySql(
+        connection = connection,
+        sql = sql,
+        errorReportFile = errorReportFile
+      )
     }
 
     duration <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
@@ -119,15 +123,23 @@ my_caption <- function(x, caption, sourceSymbol, style) {
 }
 
 my_body_add_table <- function(x, value, pos = "after", header = TRUE,
-          alignment = NULL, stylenames = table_stylenames(), first_row = TRUE,
-          first_column = FALSE, last_row = FALSE, last_column = FALSE,
+          alignment = NULL, first_row = TRUE, first_column = FALSE, last_row = FALSE, last_column = FALSE,
           no_hband = FALSE, no_vband = TRUE, align = "left", auto_format = TRUE) {
-  pt <- officer::prop_table(style = pkg.env$styles$table, layout = officer::table_layout(),
-                   width = officer::table_width(), stylenames = stylenames,
-                   tcf = officer::table_conditional_formatting(
-                     first_row = first_row, first_column = first_column, last_row = last_row,
-                     last_column = last_column, no_hband = no_hband, no_vband = no_vband),
-                   align = align)
+  pt <- officer::prop_table(
+    style = pkg.env$styles$table,
+    layout = officer::table_layout(),
+    width = officer::table_width(),
+    stylenames = officer::table_stylenames(),
+    tcf = officer::table_conditional_formatting(
+      first_row = first_row,
+      first_column = first_column,
+      last_row = last_row,
+      last_column = last_column,
+      no_hband = no_hband,
+      no_vband = no_vband
+    ),
+    align = align
+  )
 
   if (auto_format) {
     # Align left if no alignment is given
@@ -144,13 +156,20 @@ my_body_add_table <- function(x, value, pos = "after", header = TRUE,
     }
   }
 
-  bt <- officer::block_table(x = value, header = header, properties = pt,
-                    alignment = alignment)
+  bt <- officer::block_table(
+    x = value,
+    header = header,
+    properties = pt,
+    alignment = alignment
+  )
   xml_elt <- officer::to_wml(bt, add_ns = TRUE, base_document = x)
   officer::body_add_xml(x = x, str = xml_elt, pos = pos)
 }
 
-my_body_add_table_runtime <- function(x, value, ...) {
+my_body_add_table_runtime <- function(x, value, duration = NULL, ...) {
+  if (is.null(duration)) {
+    duration <- value$duration
+  }
   my_body_add_table(x, value$result, ...) %>%
     officer::body_add_par(sprintf("Query executed in %.2f seconds", value$duration), style = pkg.env$styles$footnote)
 }
@@ -199,13 +218,17 @@ my_mapped_section <- function(x, data, domain, smallCellCount) {
 }
 
 
-recordsCountPlot <- function(results) {
+recordsCountPlot <- function(results, log_y_axis = FALSE) {
   temp <- results %>%
     dplyr::rename(Date = X_CALENDAR_MONTH, Domain = SERIES_NAME, Count = Y_RECORD_COUNT) %>%
     dplyr::mutate(Date = lubridate::parse_date_time(Date, "ym"))
   plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) +
     geom_line(aes(color = Domain)) +
     scale_colour_hue(l = 40)
+  if (log_y_axis) {
+    plot <- plot + scale_y_log10()
+  }
+  return(plot)
 }
 
 #' Bundles the results in a zip file

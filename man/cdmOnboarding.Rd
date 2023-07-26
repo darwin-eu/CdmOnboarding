@@ -7,7 +7,7 @@
 cdmOnboarding(
   connectionDetails,
   cdmDatabaseSchema,
-  resultsDatabaseSchema = cdmDatabaseSchema,
+  resultsDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema,
   oracleTempSchema = resultsDatabaseSchema,
@@ -19,6 +19,7 @@ cdmOnboarding(
   runDataTablesChecks = TRUE,
   runPerformanceChecks = TRUE,
   runWebAPIChecks = TRUE,
+  runDedChecks = TRUE,
   smallCellCount = 5,
   baseUrl = "",
   sqlOnly = FALSE,
@@ -42,7 +43,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{scratchDatabaseSchema}{Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.}
 
-\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
+On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
 
@@ -62,6 +64,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 
 \item{runWebAPIChecks}{Boolean to determine if WebAPI checks need to be run. Default = TRUE}
 
+\item{runDedChecks}{Boolean to determine if DrugExposureDiagnostics checks need to be run. Default = TRUE}
+
 \item{smallCellCount}{To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)}
 
 \item{baseUrl}{WebAPI url, example: http://server.org:80/WebAPI}
@@ -76,7 +80,7 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 
 \item{optimize}{Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE}
 
-\item{dedIngredientIds}{Integer vector with ingredient concept ids to run DrugExposureDiagnostics on. When set to NULL, DED is run on a default set of ingredients.}
+\item{dedIngredientIds}{DEPRECATED, default ingredients are always used (\code{getDedIngredients()}).}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{                            An object of type \code{achillesResults} containing details for connecting to the database containing the results

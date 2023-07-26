@@ -3,7 +3,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
-^extra$
+^extras$
 ^output$
 ^errorReport.+\.txt$
 ^.+session\.sql$

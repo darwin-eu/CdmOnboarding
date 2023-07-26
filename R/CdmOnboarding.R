@@ -1,6 +1,6 @@
 # @file CdmOnboarding
 #
-# Copyright 2022 Darwin EU Coordination Center
+# Copyright 2023 Darwin EU Coordination Center
 #
 # This file is part of CdmOnboarding
 #
@@ -37,7 +37,8 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param scratchDatabaseSchema            Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
-#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.
 #' @param databaseId                       ID of your database, this will be used as subfolder for the results and naming of the report
 #' @param databaseName		                 String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.
@@ -47,6 +48,7 @@
 #' @param runDataTablesChecks              Boolean to determine if table checks need to be run. Default = TRUE
 #' @param runWebAPIChecks                  Boolean to determine if WebAPI checks need to be run. Default = TRUE
 #' @param runPerformanceChecks             Boolean to determine if performance checks need to be run. Default = TRUE
+#' @param runDedChecks                     Boolean to determine if DrugExposureDiagnostics checks need to be run. Default = TRUE
 #' @param smallCellCount                   To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)
 #' @param baseUrl                          WebAPI url, example: http://server.org:80/WebAPI
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
@@ -54,12 +56,12 @@
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @param dqdJsonPath                      Path to the json of the DQD
 #' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
-#' @param dedIngredientIds                 Integer vector with ingredient concept ids to run DrugExposureDiagnostics on. When set to NULL, DED is run on a default set of ingredients.
+#' @param dedIngredientIds                 DEPRECATED, default ingredients are always used (`getDedIngredients()`).
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 cdmOnboarding <- function(connectionDetails,
                           cdmDatabaseSchema,
-                          resultsDatabaseSchema = cdmDatabaseSchema,
+                          resultsDatabaseSchema,
                           scratchDatabaseSchema = resultsDatabaseSchema,
                           vocabDatabaseSchema = cdmDatabaseSchema,
                           oracleTempSchema = resultsDatabaseSchema,
@@ -71,6 +73,7 @@ cdmOnboarding <- function(connectionDetails,
                           runDataTablesChecks = TRUE,
                           runPerformanceChecks = TRUE,
                           runWebAPIChecks = TRUE,
+                          runDedChecks = TRUE,
                           smallCellCount = 5,
                           baseUrl = "",
                           sqlOnly = FALSE,
@@ -97,14 +100,14 @@ cdmOnboarding <- function(connectionDetails,
     runDataTablesChecks = runDataTablesChecks,
     runPerformanceChecks = runPerformanceChecks,
     runWebAPIChecks = runWebAPIChecks,
+    runDedChecks = runDedChecks,
     smallCellCount = smallCellCount,
     baseUrl = baseUrl,
     sqlOnly = sqlOnly,
     outputFolder = outputFolder,
     verboseMode = verboseMode,
     dqdJsonPath = dqdJsonPath,
-    optimize = optimize,
-    dedIngredientIds = dedIngredientIds
+    optimize = optimize
   )
 
   if (is.null(results)) {
@@ -152,10 +155,10 @@ cdmOnboarding <- function(connectionDetails,
 .execute <- function(
     connectionDetails,
     cdmDatabaseSchema,
-    resultsDatabaseSchema = cdmDatabaseSchema,
-    scratchDatabaseSchema = resultsDatabaseSchema,
-    vocabDatabaseSchema = cdmDatabaseSchema,
-    oracleTempSchema = resultsDatabaseSchema,
+    resultsDatabaseSchema,
+    scratchDatabaseSchema,
+    vocabDatabaseSchema,
+    oracleTempSchema,
     databaseId,
     databaseName,
     databaseDescription,
@@ -163,14 +166,14 @@ cdmOnboarding <- function(connectionDetails,
     runDataTablesChecks,
     runPerformanceChecks,
     runWebAPIChecks,
+    runDedChecks,
     smallCellCount,
     baseUrl,
     sqlOnly,
     outputFolder,
     verboseMode,
     dqdJsonPath,
-    optimize,
-    dedIngredientIds) {
+    optimize) {
   # Log execution -------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if (!dir.exists(outputFolder)) {
@@ -209,6 +212,7 @@ cdmOnboarding <- function(connectionDetails,
     ))
     return(NULL)
   }
+
   cdmSource$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
   cdmSource$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
   cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
@@ -248,10 +252,29 @@ cdmOnboarding <- function(connectionDetails,
       ))
       return(NULL)
     }
+    if (utils::compareVersion(achillesMetadata$ACHILLES_VERSION, '1.7') < 1) {
+      ParallelLogger::logWarn(sprintf("Results from an outdated Achilles version (v%s) were detected, please consider installing the latest release of Achilles and rerun CdmOnboarding.", achillesMetadata$ACHILLES_VERSION)) #nolint
+    }
   }
 
+  # Check whether results for required Achilles analyses is available. Generate soft warning.
+  # At least require person, obs. period, condition and drug exposure. Other domains can be empty.
+  expectedAnalysisIds <- c(105, 110, 111, 117, 403, 420, 703, 720)
+  analysisIdsAvailable <- .getAvailableAchillesAnalysisIds(connectionDetails, resultsDatabaseSchema)
+  missingAnalysisIds <- setdiff(expectedAnalysisIds, analysisIdsAvailable)
+  if (length(missingAnalysisIds) > 0) {
+      ParallelLogger::logWarn(
+          sprintf("Missing Achilles analysis ids in result tables: %s.",
+          paste(missingAnalysisIds, collapse = ", "))
+      )
+      answer <- readline("> If this is expected, press enter to continue. If not, abort (ctrl-c) and rerun Achilles including above analyses.")
+  }
+
+  dqdResults <- NULL
   if (is.null(dqdJsonPath)) {
     ParallelLogger::logWarn("No dqdJsonPath specfied, data quality section will be empty.")
+  } else {
+    dqdResults <- .processDqdResults(dqdJsonPath)
   }
 
   # Establish folder paths -------------------------------------------------------------------------------------
@@ -292,28 +315,16 @@ cdmOnboarding <- function(connectionDetails,
   }
 
   # performance checks --------------------------------------------------------------------------------------------
-  packinfo <- NULL
-  sys_details <- NULL
-  hadesPackageVersions <- NULL
-  performanceResults <- NULL
   missingPackages <- NULL
+  packinfo <- NULL
+  hadesPackageVersions <- NULL
+  sys_details <- NULL
+  dmsVersion <- NULL
+  performanceResults <- NULL
   if (runPerformanceChecks) {
     ParallelLogger::logInfo("Check installed R Packages")
-    #' Update the HADES package list with:
-    #'  packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv"
-    #'  hadesPackageList <- read.table(packageListUrl, sep = ",", header = TRUE)
-    #'  packages <- hadesPackageList$name
-    #'  dump("packages", "")
-    packages <- c("CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
-                  "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
-                  "EnsemblePatientLevelPrediction", "Characterization", "Capr",
-                  "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
-                  "PheValuator", "CohortExplorer", "DataQualityDashboard", "EmpiricalCalibration",
-                  "MethodEvaluation", "Andromeda", "BigKnn", "Cyclops", "DatabaseConnector",
-                  "Eunomia", "FeatureExtraction", "Hydra", "IterativeHardThresholding",
-                  "OhdsiSharing", "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
-                  "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender")
-    diffPackages <- setdiff(packages, rownames(installed.packages()))
+    hadesPackages <- getHADESpackages()
+    diffPackages <- setdiff(hadesPackages, rownames(installed.packages()))
     missingPackages <- paste(diffPackages, collapse = ', ')
 
     if (length(diffPackages) > 0) {
@@ -327,9 +338,9 @@ cdmOnboarding <- function(connectionDetails,
     # Sorting on LibPath to get packages in same environment together
     packinfo <- as.data.frame(installed.packages())
     packinfo <- packinfo[order(packinfo$LibPath, packinfo$Package), c("Package", "Version")]
-    hadesPackageVersions <- packinfo[packinfo$Package %in% packages,]
+    hadesPackageVersions <- packinfo[packinfo$Package %in% hadesPackages, ]
 
-    sys_details <- benchmarkme::get_sys_details(sys_info=FALSE)
+    sys_details <- benchmarkme::get_sys_details(sys_info = FALSE)
     ParallelLogger::logInfo(
       sprintf(
         "Running Performance Checks on %s cpu with %s cores, and %s ram.",
@@ -338,6 +349,9 @@ cdmOnboarding <- function(connectionDetails,
         prettyunits::pretty_bytes(as.numeric(sys_details$ram))
       )
     )
+
+    dmsVersion <- .getDbmsVersion(connectionDetails, outputFolder)
+    ParallelLogger::logInfo(sprintf('> DBMS version found: "%s"', dmsVersion))
 
     ParallelLogger::logInfo("Running Performance Checks SQL")
     performanceResults <- performanceChecks(
@@ -365,57 +379,13 @@ cdmOnboarding <- function(connectionDetails,
     )
   }
 
-  dqdResults <- NULL
-  if (!is.null(dqdJsonPath)) {
-    ParallelLogger::logInfo("Reading DataQualityDashboard results")
-    tryCatch({
-      df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = TRUE)
-      dqdResults <- list(
-        version = df$Metadata$DQD_VERSION[1],  # if multiple cdm_souce records, then there can be multiple DQD versions
-        overview = df$Overview,
-        startTimestamp = df$startTimestamp,
-        executionTime = df$executionTime
-      )
-      ParallelLogger::logInfo(sprintf("> Succesfully extracted DQD results overview from '%s'", dqdJsonPath))
-      }, error = function(e) {
-        ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
-      })
-  }
-
   drugExposureDiagnostics <- NULL
-  if (is.null(dedIngredientIds)) {
-    dedIngredientIds <- c(1125315, 1139042, 1703687, 1119119, 1154343,
-                          528323, 954688, 968426, 1550557, 1140643, 40225722)
+  if (runDedChecks) {
+    drugExposureDiagnostics <- .runDedChecks(
+      connectionDetails,
+      cdmDatabaseSchema
+    )
   }
-  ParallelLogger::logInfo(sprintf("Starting execution of DrugExposureDiagnostics for %s ingredients...",
-                            length(dedIngredientIds)))
-  ded_start_time <- Sys.time()
-  tryCatch({
-      connection <- DatabaseConnector::connect(connectionDetails)
-      cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
-      # Reduce output lines by suppressing both warnings and messages. Only progress bar displayed.
-      suppressWarnings(suppressMessages(
-        dedResults <- DrugExposureDiagnostics::executeChecks(
-          cdm = cdm,
-          ingredients = dedIngredientIds,
-          checks = c("exposureDuration", "type", "route", "dose", "quantity"),
-          minCellCount = 5,
-          sample = 1e+06,
-          earliestStartDate = "2010-01-01"
-        )
-      ))
-      drugExposureDiagnostics <- dedResults$diagnostics_summary
-      ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.",
-        as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")))
-    },
-    error = function(e) {
-      ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
-    },
-    finally = {
-      DatabaseConnector::disconnect(connection)
-      rm(connection)
-    }
-  )
 
   ParallelLogger::logInfo("Done.")
 
@@ -432,7 +402,7 @@ cdmOnboarding <- function(connectionDetails,
     databaseDescription = databaseDescription,
     vocabularyResults = vocabularyResults,
     dataTablesResults = dataTablesResults,
-    packinfo=packinfo,
+    packinfo = packinfo,
     hadesPackageVersions = hadesPackageVersions,
     missingPackages = missingPackages,
     performanceResults = performanceResults,
@@ -441,6 +411,7 @@ cdmOnboarding <- function(connectionDetails,
     cdmSource = cdmSource,
     achillesMetadata = achillesMetadata,
     dms = connectionDetails$dbms,
+    dmsVersion = dmsVersion,
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
     dqdResults = dqdResults,
@@ -448,7 +419,7 @@ cdmOnboarding <- function(connectionDetails,
   )
 
   tryCatch({
-      saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s.rds", databaseId)))
+      saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s_%s.rds", databaseId, format(Sys.time(), "%Y%m%d"))))
       ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
     },
     error = function(e) {
@@ -577,4 +548,49 @@ cdmOnboarding <- function(connectionDetails,
     rm(connection)
   })
   return(achillesMetadata)
+}
+
+.processDqdResults <- function(dqdJsonPath) {
+  ParallelLogger::logInfo("Reading DataQualityDashboard results")
+  tryCatch({
+    df <- jsonlite::read_json(path = dqdJsonPath, simplifyVector = TRUE)
+    dqdResults <- list(
+      version = df$Metadata$DQD_VERSION[1],  # if multiple cdm_source records, then there can be multiple DQD versions
+      overview = df$Overview,
+      startTimestamp = df$startTimestamp,
+      executionTime = df$executionTime
+    )
+    ParallelLogger::logInfo(sprintf("> Succesfully extracted DQD results overview from '%s'", dqdJsonPath))
+    }, error = function(e) {
+      ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
+    }
+  )
+  return(dqdResults)
+}
+
+.getAvailableAchillesAnalysisIds <- function(connectionDetails, resultsDatabaseSchema) {
+    sql <- SqlRender::loadRenderTranslateSql(
+        sqlFilename = "getAchillesAnalyses.sql",
+        packageName = "DashboardExport",
+        dbms = connectionDetails$dbms,
+        results_database_schema = resultsDatabaseSchema
+    )
+
+    connection <- DatabaseConnector::connect(connectionDetails)
+    result <- tryCatch({
+            DatabaseConnector::querySql(
+                connection = connection,
+                sql = sql
+            )
+        },
+        error = function(e) {
+            ParallelLogger::logError("Could not get available achilles analyses")
+            ParallelLogger::logError(e)
+        },
+        finally = {
+            DatabaseConnector::disconnect(connection = connection)
+            rm(connection)
+        }
+    )
+    result$ANALYSIS_ID
 }
