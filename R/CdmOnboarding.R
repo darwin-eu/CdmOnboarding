@@ -56,7 +56,7 @@
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @param dqdJsonPath                      Path to the json of the DQD
 #' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
-#' @param dedIngredientIds                 Integer vector with ingredient concept ids to run DrugExposureDiagnostics on. When set to NULL, DED is run on a default set of ingredients.
+#' @param dedIngredientIds                 DEPRECATED, default ingredients are always used (`getDedIngredientIds()`).
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 cdmOnboarding <- function(connectionDetails,
@@ -107,8 +107,7 @@ cdmOnboarding <- function(connectionDetails,
     outputFolder = outputFolder,
     verboseMode = verboseMode,
     dqdJsonPath = dqdJsonPath,
-    optimize = optimize,
-    dedIngredientIds = dedIngredientIds
+    optimize = optimize
   )
 
   if (is.null(results)) {
@@ -174,8 +173,7 @@ cdmOnboarding <- function(connectionDetails,
     outputFolder,
     verboseMode,
     dqdJsonPath,
-    optimize,
-    dedIngredientIds) {
+    optimize) {
   # Log execution -------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
   if (!dir.exists(outputFolder)) {
@@ -393,38 +391,9 @@ cdmOnboarding <- function(connectionDetails,
 
   drugExposureDiagnostics <- NULL
   if (runDedChecks) {
-    if (is.null(dedIngredientIds)) {
-      dedIngredientIds <- c(1125315, 1139042, 1703687, 1119119, 1154343,
-                            528323, 954688, 968426, 1550557, 1140643, 40225722)
-    }
-    ParallelLogger::logInfo(sprintf("Starting execution of DrugExposureDiagnostics for %s ingredients...",
-                              length(dedIngredientIds)))
-    ded_start_time <- Sys.time()
-    tryCatch({
-        connection <- DatabaseConnector::connect(connectionDetails)
-        cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
-        # Reduce output lines by suppressing both warnings and messages. Only progress bar displayed.
-        suppressWarnings(suppressMessages(
-          dedResults <- DrugExposureDiagnostics::executeChecks(
-            cdm = cdm,
-            ingredients = dedIngredientIds,
-            checks = c("exposureDuration", "type", "route", "dose", "quantity"),
-            minCellCount = 5,
-            sample = 1e+06,
-            earliestStartDate = "2010-01-01"
-          )
-        ))
-        duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-        drugExposureDiagnostics <- list(result = dedResults$diagnostics_summary, duration = duration)
-        ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
-      },
-      error = function(e) {
-        ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
-      },
-      finally = {
-        DatabaseConnector::disconnect(connection)
-        rm(connection)
-      }
+    drugExposureDiagnostics <- .runDedChecks(
+      connectionDetails,
+      cdmDatabaseSchema
     )
   }
 
