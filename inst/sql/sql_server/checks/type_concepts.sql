@@ -1,7 +1,7 @@
 select
   domain,
   type_concept_id,
-  concept_name + ' (' + cast(type_concept_id as varchar) + ')' as type_concept_name,
+  concept_name + ' (' + standard_concept + ')' as type_concept_name,
   floor((record_count+99)/100)*100 as count
 from (
   select 'Observation Period' as domain, period_type_concept_id AS type_concept_id, count_big(*) as record_count
