@@ -389,32 +389,43 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
     doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(sprintf("The number of 'Maps To' relations is equal to %s and queried in %.2f seconds (%g s/#).",
-                                    prettyHr(n_relations), benchmark_query_time, benchmark_query_time / n_relations))
+      officer::body_add_par(sprintf(
+        "The number of 'Maps To' relations is equal to %s and queried in %.2f seconds (%g s/#).",
+        prettyHr(n_relations),
+        benchmark_query_time,
+        benchmark_query_time / n_relations
+      ))
 
     doc <- doc %>%
       officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2)
 
     # If Achilles version 1.7, then timings not well reported (introduced after 1.6.3, fixed in 1.7.1)
     if (results$achillesMetadata$ACHILLES_VERSION == '1.7') {
-      doc <- doc %>% officer::body_add_par("WARNING: For Achilles v1.7, the run time is not converted to seconds and the unit was not reported. Here, we assume they are all in seconds. This might not be accurate.") #nolint
+      doc <- doc %>% officer::body_add_par("WARNING: Achilles v1.7 was used. The run time is NOT standardised to one unit. Here, we assume they are all in seconds. This might not be accurate.") #nolint
     }
+
     arTimings <- results$performanceResults$achillesTiming$result
+    arTimings <- arTimings %>% arrange(arTimings$ID)
     if (!is.null(arTimings)) {
       arTimings$ID <- as.character(arTimings$ID)
       if (utils::compareVersion(results$achillesMetadata$ACHILLES_VERSION, '1.6.3') < 1) {
-        doc <- doc %>% my_caption("Execution time of Achilles analyses")
+        # version 1.6.3 contains unit, cannot convert to numeric.
+        doc <- doc %>% my_caption("Execution time of Achilles analyses.")
       } else {
         arTimings$DURATION <- as.numeric(arTimings$DURATION)
         longestAnalysis <- arTimings %>% slice_max(DURATION, n = 1)
         doc <- doc %>%
-          my_caption(sprintf("Execution time of Achilles analyses. Total: %s. Median: %s. Longest duration: analysis %s, %s.",
-                        prettyunits::pretty_sec(sum(arTimings$DURATION)),
-                        prettyunits::pretty_sec(stats::median(arTimings$DURATION)),
-                        longestAnalysis$ID,
-                        prettyunits::pretty_sec(longestAnalysis$DURATION)),
-                    sourceSymbol = pkg.env$sources$achilles,
-                    style = pkg.env$styles$tableCaption)
+          my_caption(
+            sprintf(
+              "Execution time of Achilles analyses. Total: %s. Median: %s. Longest duration: %s (analysis %s).",
+              prettyunits::pretty_sec(sum(arTimings$DURATION)),
+              prettyunits::pretty_sec(stats::median(arTimings$DURATION)),
+              prettyunits::pretty_sec(longestAnalysis$DURATION),
+              longestAnalysis$ID
+            ),
+            sourceSymbol = pkg.env$sources$achilles,
+            style = pkg.env$styles$tableCaption
+          )
       }
       doc <- doc %>% my_body_add_table_runtime(results$performanceResults$achillesTiming)
     } else {
