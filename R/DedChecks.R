@@ -11,10 +11,12 @@
         length(dedIngredientIds)
     ))
 
-    ded_start_time <- Sys.time()
     tryCatch({
         connection <- DatabaseConnector::connect(connectionDetails)
         cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
+
+        ded_start_time <- Sys.time()
+
         # Reduce output lines by suppressing both warnings and messages. Only progress bars displayed.
         suppressWarnings(suppressMessages(
           dedResults <- DrugExposureDiagnostics::executeChecks(
@@ -26,10 +28,11 @@
             earliestStartDate = "2010-01-01"
           )
         ))
+
         duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-        drugExposureDiagnostics <- list(result = dedResults$diagnostics_summary, duration = duration)
         ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
-        dedResults
+        # Return result with duration
+        list(result = dedResults$diagnostics_summary, duration = duration)
       },
       error = function(e) {
         ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
