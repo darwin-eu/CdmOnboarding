@@ -382,6 +382,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par(paste0("System CPU number of cores: ", results$sys_details$cpu$no_of_cores, collapse = ", ")) %>%
       officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(results$sys_details$ram, collapse = ", ")))) %>%
       officer::body_add_par(paste0("DBMS: ", results$dms)) %>%
+      officer::body_add_par(paste0("DBMS version: ", results$dms_version)) %>%
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
 

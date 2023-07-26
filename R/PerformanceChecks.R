@@ -54,3 +54,34 @@ performanceChecks <- function(connectionDetails,
     performanceBenchmark = performanceBenchmark
   )
 }
+
+.getDbmsVersion <- function(connectionDetails, outputFolder) {
+  versionQuery <- switch(
+    connectionDetails$dbms,
+    "postgresql" = "SELECT version();",
+    "redshift" = "SELECT version();",
+    "sql server" = "SELECT @@version;",
+    "oracle" = "SELECT * FROM v$version WHERE banner LIKE 'Oracle%';",
+    "snowflake" = "SELECT CURRENT_VERSION();"
+  )
+
+  errorReportFile <- file.path(outputFolder, "errorDBMSversion.txt")
+  versionString <- tryCatch({
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    DatabaseConnector::querySql(
+      connection = connection,
+      sql = versionQuery,
+      progressBar = FALSE,
+      reportOverallTime = FALSE,
+      errorReportFile = errorReportFile
+    )
+  },
+  error = function(e) {
+    ParallelLogger::logWarn("> DBMS version could not be retrieved")
+    FALSE
+  },
+  finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
+}

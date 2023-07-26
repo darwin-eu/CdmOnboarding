@@ -363,6 +363,8 @@ cdmOnboarding <- function(connectionDetails,
       )
     )
 
+    dmsVersion <- .getDbmsVersion(connectionDetails, outputFolder)
+
     ParallelLogger::logInfo("Running Performance Checks SQL")
     performanceResults <- performanceChecks(
       connectionDetails = connectionDetails,
@@ -421,6 +423,7 @@ cdmOnboarding <- function(connectionDetails,
     cdmSource = cdmSource,
     achillesMetadata = achillesMetadata,
     dms = connectionDetails$dbms,
+    dmsVersion = dbmsVersion,
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
     dqdResults = dqdResults,

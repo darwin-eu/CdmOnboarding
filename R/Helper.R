@@ -71,7 +71,11 @@ executeQuery <- function(
         reportOverallTime = FALSE
       )
     } else {
-      result <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
+      result <- DatabaseConnector::querySql(
+        connection = connection,
+        sql = sql,
+        errorReportFile = errorReportFile
+      )
     }
 
     duration <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
