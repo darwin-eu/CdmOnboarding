@@ -414,7 +414,9 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         doc <- doc %>% my_caption("Execution time of Achilles analyses.")
       } else {
         arTimings$DURATION <- as.numeric(arTimings$DURATION)
-        longestAnalysis <- arTimings %>% slice_max(DURATION, n = 1)
+        # TODO: condition if no durations available
+        # all(is.na(arTimings$DURATION))
+        longestAnalysis <- arTimings %>% slice_max(DURATION, n = 1, na_rm = TRUE)
         doc <- doc %>%
           my_caption(
             sprintf(
