@@ -102,7 +102,7 @@ PDF versions of the documentation are available:
 
 # Support and contributing
 This package is maintained by the Darwin EU Coordination Centre as part of its quality control procedures.
-We use the <a href="https://github.com/darwin-eu/CdmOnbording/issues">GitHub issue tracker</a> for all bugs/issues/enhancements/questions/feedback
+We use the <a href="https://github.com/darwin-eu/CdmOnboarding/issues">GitHub issue tracker</a> for all bugs/issues/enhancements/questions/feedback
 Additions are welcome through pull requests. 
 We suggest to first create an issue and discuss with the maintainer before implementing additional functionality.
 
