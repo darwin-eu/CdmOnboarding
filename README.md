@@ -6,7 +6,9 @@ The DARWIN EU Coordination Center (CC) is resposonsible for building a data netw
 
 The goal of the onboarding report is to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the DARWIN EU® data network and participate in research studies.
 
-An example of an onboarding report for a OMOP Synthea database can be found in [extras/CdmOnbaording-Synthea.docx](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding-Synthea.docx).
+An example of an onboarding report for a OMOP Synthea database can be found in [extras/CdmOnboarding-Synthea.docx](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras).
+
+Main repository on [DARWIN-EU/CdmOnboarding](https://github.com/darwin-eu/cdmonboarding).
 
 # CdmOnboarding Checks
 The CdmOnboarding R Package performs the following checks on top of the required [Data Quality Dashboard](https://github.com/OHDSI/DataQualityDashboard) step.
