@@ -40,7 +40,7 @@ Imports:
     tidyr,
     jsonlite,
     stats,
-    DrugExposureDiagnostics (>= 0.4.2),
+    DrugExposureDiagnostics (>= 0.4.7),
     CDMConnector
 Suggests:
     flextable,
