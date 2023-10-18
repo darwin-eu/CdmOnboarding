@@ -146,6 +146,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
     doc <- doc %>%
       officer::body_add_par("") %>%
+      officer::body_add_par("Observation Period", style = pkg.env$styles$heading2) %>%
       officer::body_add_gg(plot, height = 4) %>%
       my_caption(
         sprintf("Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
@@ -160,7 +161,6 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("")
 
     doc <- doc %>%
-      officer::body_add_par("Observation Period", style = pkg.env$styles$heading2) %>%
       my_caption("Length of first observation period (days).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$observationPeriodLength)
 
