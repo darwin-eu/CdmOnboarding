@@ -47,7 +47,7 @@
           dedResults <- DrugExposureDiagnostics::executeChecks(
             cdm = cdm,
             ingredients = dedIngredientIds,
-            checks = c("exposureDuration", "type", "route", "dose", "quantity"),
+            checks = c("exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
             minCellCount = 5,
             sample = 1e+06,
             earliestStartDate = "2010-01-01"
@@ -57,7 +57,7 @@
         duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
         ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
         # Return result with duration
-        list(result = dedResults$diagnostics_summary, duration = duration)
+        list(result = dedResults$diagnosticsSummary, duration = duration)
       },
       error = function(e) {
         ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
