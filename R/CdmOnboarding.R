@@ -560,7 +560,7 @@ cdmOnboarding <- function(connectionDetails,
       startTimestamp = df$startTimestamp,
       executionTime = df$executionTime
     )
-    ParallelLogger::logInfo(sprintf("> Succesfully extracted DQD results overview from '%s'", dqdJsonPath))
+    ParallelLogger::logInfo(sprintf("> Successfully extracted DQD results overview from '%s'", dqdJsonPath))
     }, error = function(e) {
       ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
     }
