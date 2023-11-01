@@ -195,7 +195,10 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   vocabResults <- results$vocabularyResults
   if (!is.null(vocabResults)) {
     doc <- doc %>% officer::body_add_par(
-      sprtinf("Vocabulary version: %s", results$vocabularyResults$version)
+      sprintf(
+        "Vocabulary version: %s",
+        results$vocabularyResults$version
+      )
     )
 
     # Mapping Completeness
