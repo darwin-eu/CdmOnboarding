@@ -571,7 +571,7 @@ cdmOnboarding <- function(connectionDetails,
 .getAvailableAchillesAnalysisIds <- function(connectionDetails, resultsDatabaseSchema) {
     sql <- SqlRender::loadRenderTranslateSql(
         sqlFilename = "getAchillesAnalyses.sql",
-        packageName = "DashboardExport",
+        packageName = "CdmOnboarding",
         dbms = connectionDetails$dbms,
         results_database_schema = resultsDatabaseSchema
     )
