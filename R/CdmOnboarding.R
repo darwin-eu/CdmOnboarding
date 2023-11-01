@@ -242,9 +242,9 @@ cdmOnboarding <- function(connectionDetails,
   # Check whether Achilles output is available and get Achilles run info ---------------------------------------
   achillesMetadata <- NULL
   if (!sqlOnly) {
+    achillesTablesExists <- .checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)
     achillesMetadata <- .getAchillesMetadata(connectionDetails, resultsDatabaseSchema, outputFolder)
-    achillesTableExists <- .checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema, outputFolder)
-    if (is.null(achillesMetadata) || !achillesTableExists) {
+    if (is.null(achillesMetadata) || !achillesTablesExists) {
       ParallelLogger::logError("The output from the Achilles analyses is required.")
       ParallelLogger::logError(sprintf(
         "Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').",
@@ -475,49 +475,35 @@ cdmOnboarding <- function(connectionDetails,
   return(cdmSource)
 }
 
-.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
+.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema) {
   required_achilles_tables <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
-  errorReportFile <- file.path(outputFolder, "errorAchillesExistsSql.txt")
-  achilles_tables_exist <- tryCatch({
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    for (x in required_achilles_tables) {
-      sql <- SqlRender::translate(
-               SqlRender::render(
-                 "SELECT COUNT(*) FROM @resultsDatabaseSchema.@table",
-                 resultsDatabaseSchema = resultsDatabaseSchema,
-                 table = x
-               ),
-               targetDialect = 'postgresql'
-             )
-      DatabaseConnector::executeSql(
-        connection = connection,
-        sql = sql,
-        progressBar = FALSE,
-        reportOverallTime = FALSE,
-        errorReportFile = errorReportFile
+
+  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = connection))
+
+  achilles_tables_exist <- TRUE
+  for (table in required_achilles_tables) {
+    table_exists <- DatabaseConnector::existsTable(connection, resultsDatabaseSchema, table)
+    if (!table_exists) {
+      ParallelLogger::logWarn(
+        sprintf("Achilles table '%s.%s' has not been found", resultsDatabaseSchema, table)
       )
     }
-    TRUE
-  },
-  error = function(e) {
-    ParallelLogger::logWarn(sprintf("> The Achilles tables have not been found (%s). Please see error report in %s",
-                            paste(required_achilles_tables, collapse = ', '),
-                            errorReportFile))
-    FALSE
-  },
-  finally = {
-    DatabaseConnector::disconnect(connection = connection)
-    rm(connection)
-  })
+    achilles_tables_exist <- achilles_tables_exist && table_exists
+  }
+
   return(achilles_tables_exist)
 }
 
 .getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks", "get_achilles_metadata.sql"),
-                                           packageName = "CdmOnboarding",
-                                           dbms = connectionDetails$dbms,
-                                           warnOnMissingParameters = FALSE,
-                                           resultsDatabaseSchema = resultsDatabaseSchema)
+  sql <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = file.path("checks", "get_achilles_metadata.sql"),
+    packageName = "CdmOnboarding",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    resultsDatabaseSchema = resultsDatabaseSchema
+  )
+
   errorReportFile <- file.path(outputFolder, "getAchillesMetadataError.txt")
   achillesMetadata <- tryCatch({
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
