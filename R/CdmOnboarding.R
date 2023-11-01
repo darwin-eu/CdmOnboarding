@@ -242,9 +242,9 @@ cdmOnboarding <- function(connectionDetails,
   # Check whether Achilles output is available and get Achilles run info ---------------------------------------
   achillesMetadata <- NULL
   if (!sqlOnly) {
+    achillesTablesExists <- .checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)
     achillesMetadata <- .getAchillesMetadata(connectionDetails, resultsDatabaseSchema, outputFolder)
-    achillesTableExists <- .checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema, outputFolder)
-    if (is.null(achillesMetadata) || !achillesTableExists) {
+    if (is.null(achillesMetadata) || !achillesTablesExists) {
       ParallelLogger::logError("The output from the Achilles analyses is required.")
       ParallelLogger::logError(sprintf(
         "Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').",
@@ -475,7 +475,7 @@ cdmOnboarding <- function(connectionDetails,
   return(cdmSource)
 }
 
-.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
+.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema) {
   required_achilles_tables <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
 
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -486,7 +486,7 @@ cdmOnboarding <- function(connectionDetails,
     table_exists <- DatabaseConnector::existsTable(connection, resultsDatabaseSchema, table)
     if (!table_exists) {
       ParallelLogger::logWarn(
-        sprintf("Achilles table %s has not been found", table)
+        sprintf("Achilles table '%s.%s' has not been found", resultsDatabaseSchema, table)
       )
     }
     achilles_tables_exist <- achilles_tables_exist && table_exists
