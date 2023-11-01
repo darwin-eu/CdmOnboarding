@@ -144,16 +144,19 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(df$conceptsPerPerson)
 
     plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
+    n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
+    active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
     doc <- doc %>%
       officer::body_add_par("") %>%
       officer::body_add_par("Observation Period", style = pkg.env$styles$heading2) %>%
       officer::body_add_gg(plot, height = 4) %>%
       my_caption(
-        sprintf("Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
-                pkg.env$sources$achilles,
-                if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) results$cdmSource$SOURCE_RELEASE_DATE else results$cdmSource$CDM_RELEASE_DATE,
-                prettyHr(df$activePersons$result$COUNT),
-                pkg.env$sources$cdm
+        sprintf(
+          "Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
+          pkg.env$sources$achilles,
+          active_index_date,
+          prettyHr(n_active_persons),
+          pkg.env$sources$cdm
         ),
         sourceSymbol = '',  # already in caption text
         style = pkg.env$styles$figureCaption
