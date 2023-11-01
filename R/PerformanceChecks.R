@@ -84,7 +84,9 @@ getHADESpackages <- function() {
     "redshift" = "SELECT version();",
     "sql server" = "SELECT @@version;",
     "oracle" = "SELECT * FROM v$version WHERE banner LIKE 'Oracle%';",
-    "snowflake" = "SELECT CURRENT_VERSION();"
+    "snowflake" = "SELECT CURRENT_VERSION();",
+    "sqlite" = "SELECT SQLITE_VERSION();",
+    "ERROR"
   )
 
   errorReportFile <- file.path(outputFolder, "errorDBMSversion.txt")
