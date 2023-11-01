@@ -194,7 +194,9 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   vocabResults <- results$vocabularyResults
   if (!is.null(vocabResults)) {
-    doc <- doc %>% officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version))
+    doc <- doc %>% officer::body_add_par(
+      sprtinf("Vocabulary version: %s", results$vocabularyResults$version)
+    )
 
     # Mapping Completeness
     vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%
@@ -389,7 +391,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
 
-    n_relations <- results$performanceResults$performanceBenchmark$result$COUNT
+    n_relations <- results$performanceResults$performanceBenchmark$result
     benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
     doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
@@ -464,7 +466,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       )
     doc <- doc %>%
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version)) %>%
+      officer::body_add_par(sprintf("Vocabulary version: %s", results$vocabularyResults$version)) %>%
       my_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(vocabResults$conceptCounts)
   }
