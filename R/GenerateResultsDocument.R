@@ -398,6 +398,10 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       ))
 
     doc <- doc %>%
+      officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2) %>%
+      my_body_add_table(results$performanceResults$appliedIndexes$result)
+
+    doc <- doc %>%
       officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2)
 
     # If Achilles version 1.7, then timings not well reported (introduced after 1.6.3, fixed in 1.7.1)

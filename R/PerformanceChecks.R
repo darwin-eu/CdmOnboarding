@@ -49,9 +49,13 @@ performanceChecks <- function(connectionDetails,
   performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
                                        connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
 
+  appliedIndexes <- executeQuery(outputFolder, "applied_indexes.sql", "Retrieving which indexes are applied",
+                                connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+
   list(
     achillesTiming = achillesTiming,
-    performanceBenchmark = performanceBenchmark
+    performanceBenchmark = performanceBenchmark,
+    appliedIndexes = appliedIndexes
   )
 }
 
