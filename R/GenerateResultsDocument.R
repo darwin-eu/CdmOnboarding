@@ -144,16 +144,19 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(df$conceptsPerPerson)
 
     plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
+    n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
+    active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
     doc <- doc %>%
       officer::body_add_par("") %>%
       officer::body_add_par("Observation Period", style = pkg.env$styles$heading2) %>%
       officer::body_add_gg(plot, height = 4) %>%
       my_caption(
-        sprintf("Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
-                pkg.env$sources$achilles,
-                if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) results$cdmSource$SOURCE_RELEASE_DATE else results$cdmSource$CDM_RELEASE_DATE,
-                prettyHr(df$activePersons$result$COUNT),
-                pkg.env$sources$cdm
+        sprintf(
+          "Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
+          pkg.env$sources$achilles,
+          active_index_date,
+          prettyHr(n_active_persons),
+          pkg.env$sources$cdm
         ),
         sourceSymbol = '',  # already in caption text
         style = pkg.env$styles$figureCaption
@@ -191,7 +194,12 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   vocabResults <- results$vocabularyResults
   if (!is.null(vocabResults)) {
-    doc <- doc %>% officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version))
+    doc <- doc %>% officer::body_add_par(
+      sprintf(
+        "Vocabulary version: %s",
+        results$vocabularyResults$version
+      )
+    )
 
     # Mapping Completeness
     vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%
@@ -386,7 +394,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
 
-    n_relations <- results$performanceResults$performanceBenchmark$result$COUNT
+    n_relations <- results$performanceResults$performanceBenchmark$result
     benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
     doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
@@ -461,7 +469,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       )
     doc <- doc %>%
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version)) %>%
+      officer::body_add_par(sprintf("Vocabulary version: %s", results$vocabularyResults$version)) %>%
       my_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(vocabResults$conceptCounts)
   }
