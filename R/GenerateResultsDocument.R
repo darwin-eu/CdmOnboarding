@@ -123,7 +123,10 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("The number of records in all clinical data tables",
         sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm,
         style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$dataTablesCounts)
+      my_body_add_table_runtime(df$dataTablesCounts) %>%
+      officer::body_add_par("Mortality statistics", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par(sprintf("The overall Mortality rate, the percentage of the number of death records divided by the total numbers of persons is %s", df$overallMortality$result) %>%
+    ))
 
     totalRecordsPlot <- recordsCountPlot(as.data.frame(df$totalRecords$result), log_y_axis = TRUE)
     doc <- doc %>%

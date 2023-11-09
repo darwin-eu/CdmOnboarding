@@ -83,6 +83,8 @@ dataTablesChecks <- function(connectionDetails,
                                connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema, vocabDatabaseSchema = vocabDatabaseSchema)
   tableDateRange <- executeQuery(outputFolder, "data_tables_date_range.sql", "Date range query executed successfully",
                                  connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
+  overallMortality <- executeQuery(outputFolder, "mortality_percentage.sql", "Overall mortality rate query executed successfully",
+                                   connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
 
   list(
     dataTablesCounts = dataTablesCounts,
@@ -93,6 +95,7 @@ dataTablesChecks <- function(connectionDetails,
     activePersons = activePersons,
     observedByMonth = observedByMonth,
     typeConcepts = typeConcepts,
-    tableDateRange = tableDateRange
+    tableDateRange = tableDateRange,
+    overallMortality = overallMortality
   )
 }
