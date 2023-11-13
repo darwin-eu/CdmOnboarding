@@ -1,5 +1,5 @@
 test_that("DQD Json", {
-  # Run a minimal DQD to generate file
+  # Run a minimal DQD
   library(DataQualityDashboard)
   dqdOutputFile <- 'dqd_test.json'
   dqd_result <- DataQualityDashboard::executeDqChecks(
