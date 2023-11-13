@@ -9,3 +9,4 @@
 ^.+session\.sql$
 ^\.vscode$
 ^\.lintr$
+^\.github$
