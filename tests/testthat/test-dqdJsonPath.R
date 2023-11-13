@@ -1,10 +1,22 @@
 test_that("DQD Json", {
-  # TODO: run DQD, write file to params$outputFolder
+  # Run a minimal DQD to generate file
+  library(DataQualityDashboard)
+  dqdOutputFile <- 'dqd_test.json'
+  dqd_result <- DataQualityDashboard::executeDqChecks(
+    connectionDetails = params$connectionDetails,
+    cdmDatabaseSchema = params$cdmDatabaseSchema,
+    resultsDatabaseSchema = params$resultsDatabaseSchema,
+    cdmSourceName = params$databaseId,
+    outputFolder = params$outputFolder,
+    outputFile = dqdOutputFile,
+    checkLevels = "TABLE"
+  )
+
   results <- do.call(
     CdmOnboarding::cdmOnboarding,
     c(
       params,
-      dqdJsonPath = '',
+      dqdJsonPath = file.path(params$outputFolder, dqdOutputFile),
       runDataTablesChecks = FALSE,
       runVocabularyChecks = FALSE,
       runPerformanceChecks = FALSE,

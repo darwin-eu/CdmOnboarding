@@ -4,7 +4,7 @@ params <- list(
     cdmDatabaseSchema = 'main',
     resultsDatabaseSchema = 'main',
     databaseId = 'Eunomia',
-    outputFolder = testthat::test_path(),
+    outputFolder = testthat::test_path('test_output'),
     baseUrl = "localhost:8080/WebAPI/"
 )
 
