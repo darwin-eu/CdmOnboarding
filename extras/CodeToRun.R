@@ -57,12 +57,12 @@ server <- Sys.getenv("DB_SERVER")
 port <- Sys.getenv("DB_PORT")
 pathToDriver <- Sys.getenv("PATH_TO_DRIVER")
 connectionDetails <- DatabaseConnector::createConnectionDetails(
-dbms = dbms,
-server = server,
-port = port,
-user = user,
-password = password,
-pathToDriver = pathToDriver
+  dbms = dbms,
+  server = server,
+  port = port,
+  user = user,
+  password = password,
+  pathToDriver = pathToDriver
 )
 
 # Details for connecting to the CDM
@@ -89,25 +89,25 @@ verboseMode <- TRUE
 # SECTION 3: Run the package
 # *******************************************************
 results <- CdmOnboarding::cdmOnboarding(
-connectionDetails = connectionDetails,
-cdmDatabaseSchema = cdmDatabaseSchema,
-resultsDatabaseSchema = resultsDatabaseSchema,
-vocabDatabaseSchema = vocabDatabaseSchema,
-oracleTempSchema = oracleTempSchema,
-databaseId = databaseId,
-authors = authors,
-smallCellCount = smallCellCount,
-baseUrl = baseUrl,
-outputFolder = outputFolder,
-dqdJsonPath = dqdJsonPath
+  connectionDetails = connectionDetails,
+  cdmDatabaseSchema = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  vocabDatabaseSchema = vocabDatabaseSchema,
+  oracleTempSchema = oracleTempSchema,
+  databaseId = databaseId,
+  authors = authors,
+  smallCellCount = smallCellCount,
+  baseUrl = baseUrl,
+  outputFolder = outputFolder,
+  dqdJsonPath = dqdJsonPath
 )
 
 # cdmOnboarding() should already generate the resultsdocument.
 # Use this to regenerate upon error (results object should be returned anyway)
 if (FALSE) {
   CdmOnboarding::generateResultsDocument(
-  results = results,
-  outputFolder = outputFolder,
-  authors = authors
+    results = results,
+    outputFolder = outputFolder,
+    authors = authors
   )
 }
