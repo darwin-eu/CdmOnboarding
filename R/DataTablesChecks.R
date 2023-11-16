@@ -96,6 +96,6 @@ dataTablesChecks <- function(connectionDetails,
     observedByMonth = observedByMonth,
     typeConcepts = typeConcepts,
     tableDateRange = tableDateRange,
-    overallMortality = overallMortality
+    overallMortality = overallMortality,
   )
 }
