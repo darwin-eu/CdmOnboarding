@@ -1,0 +1,5 @@
+SELECT 
+    extract(day from condition_start_date) AS day_of_month,
+    COUNT(*)
+FROM cdm.condition_occurrence 
+group by 1
