@@ -217,20 +217,6 @@ my_mapped_section <- function(x, data, domain, smallCellCount) {
   my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
 }
 
-
-recordsCountPlot <- function(results, log_y_axis = FALSE) {
-  temp <- results %>%
-    dplyr::rename(Date = X_CALENDAR_MONTH, Domain = SERIES_NAME, Count = Y_RECORD_COUNT) %>%
-    dplyr::mutate(Date = lubridate::parse_date_time(Date, "ym"))
-  plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) +
-    geom_line(aes(color = Domain)) +
-    scale_colour_hue(l = 40)
-  if (log_y_axis) {
-    plot <- plot + scale_y_log10()
-  }
-  return(plot)
-}
-
 #' Bundles the results in a zip file
 #'
 #' @description
