@@ -168,12 +168,13 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(df$observationPeriodLength)
 
     df$typeConcepts$result <- df$typeConcepts$result %>%
-                        tidyr::pivot_wider(
-                          id_cols = TYPE_CONCEPT_NAME,
-                          names_from = DOMAIN,
-                          values_from = COUNT,
-                          values_fill = "0",
-                          values_fn = prettyHr)
+      tidyr::pivot_wider(
+        id_cols = TYPE_CONCEPT_NAME,
+        names_from = DOMAIN,
+        values_from = COUNT,
+        values_fill = "0",
+        values_fn = prettyHr
+      )
     doc <- doc %>%
       officer::body_add_par("Type Concepts", style = pkg.env$styles$heading2) %>%
       my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
@@ -183,6 +184,41 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l', 'r', 'r'))
+
+    if (!is.null(df$dayOfTheWeek$result)) {
+      # TODO: % instead of raw count
+      df$dayOfTheWeek$result <- df$dayOfTheWeek$result %>%
+        tidyr::pivot_wider(
+          id_cols = DAY_OF_THE_WEEK,
+          names_from = DOMAIN,
+          values_from = N_RECORDS,
+          values_fill = "0",
+          values_fn = prettyHr
+        )
+      doc <- doc %>%
+        my_caption("Day of the Week distribution of event start dates after 1900-01-01. 0 = Monday", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+        my_body_add_table_runtime(df$dayOfTheWeek, first_column = TRUE)
+    } else {
+      doc <- doc %>%
+        my_caption("No Day of the Week results.", style = pkg.env$styles$tableCaption)
+    }
+
+    if (!is.null(df$dayOfTheMonth$result)) {
+      df$dayOfTheMonth$result <- df$dayOfTheMonth$result %>%
+        tidyr::pivot_wider(
+          id_cols = DAY_OF_THE_MONTH,
+          names_from = DOMAIN,
+          values_from = N_RECORDS,
+          values_fill = "0",
+          values_fn = prettyHr
+        )
+      doc <- doc %>%
+        my_caption("Day of the Month distribution of event start dates after 1900-01-01.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+        my_body_add_table_runtime(df$dayOfTheMonth, first_column = TRUE)
+    } else {
+      doc <- doc %>%
+        my_caption("No Day of the Month results.", style = pkg.env$styles$tableCaption)
+    }
 
     doc <- doc %>% officer::body_add_break()
   }

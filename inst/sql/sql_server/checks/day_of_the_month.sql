@@ -2,56 +2,56 @@ SELECT
     'Condition' AS domain,
     day(condition_start_date) AS day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM cdm.condition_occurrence 
+FROM @cdmDatabaseSchema.condition_occurrence 
 GROUP BY 1,2
 UNION
 SELECT 
     'Drug' AS domain,
     day(drug_exposure_start_date) AS day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM cdm.drug_exposure 
+FROM @cdmDatabaseSchema.drug_exposure 
 GROUP BY 1,2
 UNION
 SELECT 
     'Procedure' AS domain,
     day(procedure_date) AS day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM cdm.procedure_occurrence 
+FROM @cdmDatabaseSchema.procedure_occurrence 
 GROUP BY 1,2
 UNION
 SELECT 
     'Measurement' AS domain,
     day(measurement_date) AS day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM cdm.measurement 
+FROM @cdmDatabaseSchema.measurement 
 GROUP BY 1,2
 UNION
 SELECT 
     'Observation' AS domain,
     day(observation_date) AS day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM cdm.observation 
+FROM @cdmDatabaseSchema.observation 
 GROUP BY 1,2
 UNION
 SELECT 
     'Device' AS domain,
     day(device_exposure_start_date) AS day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM cdm.device_exposure 
+FROM @cdmDatabaseSchema.device_exposure 
 GROUP BY 1,2
 UNION
 SELECT 
     'Visit' AS domain,
     day(visit_start_date) AS day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM cdm.visit_occurrence
+FROM @cdmDatabaseSchema.visit_occurrence
 GROUP BY 1,2
 UNION
 SELECT 
     'Visit Detail' AS domain,
     day(visit_detail_start_date) AS day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM cdm.visit_detail
+FROM @cdmDatabaseSchema.visit_detail
 GROUP BY 1,2
 UNION
 SELECT 
