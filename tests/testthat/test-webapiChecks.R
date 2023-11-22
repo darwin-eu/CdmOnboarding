@@ -11,6 +11,6 @@ test_that("Vocabulary Tables Checks", {
       runDedChecks = FALSE
     )
   )
-  
+
   testthat::expect_type(results$webAPIversion, 'character')
 })

@@ -11,6 +11,17 @@ test_that("Vocabulary Tables Checks", {
       runDedChecks = FALSE
     )
   )
-  
+
   testthat::expect_type(results$vocabularyResults, 'list')
+  testthat::expect_named(results$vocabularyResults, c(
+    "version", "mappingTempTableCreation", "mappingCompleteness", 
+    "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements", 
+    "unmappedObservations", "unmappedProcedures", "unmappedDevices", 
+    "unmappedVisits", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedDrugRoute", 
+    "mappedDrugs", "mappedConditions", "mappedMeasurements", "mappedObservations", 
+    "mappedProcedures", "mappedDevices", "mappedVisits", "mappedUnitsMeas", 
+    "mappedUnitsObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts", 
+    "sourceConceptFrequency", "sourceConceptMap"
+    )
+  )
 })

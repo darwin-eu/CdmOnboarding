@@ -11,6 +11,7 @@ test_that("Performance Checks", {
       runDedChecks = FALSE
     )
   )
-  
+
   testthat::expect_type(results$performanceResults, 'list')
+  testthat::expect_named(results$performanceResults, c("achillesTiming", "performanceBenchmark"))
 })

@@ -10,6 +10,12 @@ test_that("Drug Exposure Diagnostics Checks", {
       runDedChecks = TRUE
     )
   )
-  
-  testthat::expect_type(results$drugExposureDiagnostics, 'list')
+
+  dedResults <- results$drugExposureDiagnostics
+
+  testthat::expect_type(dedResults, 'list')
+    testthat::expect_true(
+      !is.null(dedResults$result),
+      info = paste("The result in drugExposureDiagnostics is null")
+    )
 })
