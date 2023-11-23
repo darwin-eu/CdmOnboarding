@@ -194,12 +194,20 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   vocabResults <- results$vocabularyResults
   if (!is.null(vocabResults)) {
-    doc <- doc %>% officer::body_add_par(
-      sprintf(
-        "Vocabulary version: %s",
-        results$vocabularyResults$version
+    doc <- doc %>%
+      officer::body_add_par(
+        sprintf(
+          "Vocabulary version: %s",
+          results$vocabularyResults$version
+        )
+      ) %>%
+      officer::body_add_par(
+        sprintf(
+          "Preprocessing query executed in %.2f seconds",
+          results$vocabularyResults$mappingTempTableCreation$duration
+        ),
+        style = pkg.env$styles$footnote
       )
-    )
 
     # Mapping Completeness
     vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%

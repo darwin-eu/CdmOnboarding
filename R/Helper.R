@@ -170,6 +170,7 @@ my_body_add_table_runtime <- function(x, value, duration = NULL, ...) {
   if (is.null(duration)) {
     duration <- value$duration
   }
+  # TODO: if $result null, add a warning message instead of failing. Report all missing values at the end of execution.
   my_body_add_table(x, value$result, ...) %>%
     officer::body_add_par(sprintf("Query executed in %.2f seconds", value$duration), style = pkg.env$styles$footnote)
 }
