@@ -125,14 +125,16 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$dataTablesCounts)
 
-    totalRecordsPlot <- recordsCountPlot(as.data.frame(df$totalRecords$result), log_y_axis = TRUE)
     doc <- doc %>%
       officer::body_add_break() %>%
-      officer::body_add_par("Data density plots", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par("Data density plots", style = pkg.env$styles$heading2)
+
+    totalRecordsPlot <- .recordsCountPlot(as.data.frame(df$totalRecords$result), log_y_axis = TRUE)
+    doc <- doc %>%
       officer::body_add_gg(totalRecordsPlot, height = 4) %>%
       my_caption("Total record count over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
-    recordsPerPersonPlot <- recordsCountPlot(as.data.frame(df$recordsPerPerson$result), log_y_axis = TRUE)
+    recordsPerPersonPlot <- .recordsCountPlot(as.data.frame(df$recordsPerPerson$result), log_y_axis = TRUE)
     doc <- doc %>%
       officer::body_add_gg(recordsPerPersonPlot, height = 4) %>%
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
@@ -143,7 +145,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("The number of distinct concepts per person per OMOP data domains. Only persons with at least one record in that domain are included in the calculation.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(df$conceptsPerPerson)
 
-    plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
+    plot <- .recordsCountPlot(as.data.frame(df$observedByMonth$result))
     n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
     active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
     doc <- doc %>%
@@ -168,12 +170,13 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(df$observationPeriodLength)
 
     df$typeConcepts$result <- df$typeConcepts$result %>%
-                        tidyr::pivot_wider(
-                          id_cols = TYPE_CONCEPT_NAME,
-                          names_from = DOMAIN,
-                          values_from = COUNT,
-                          values_fill = "0",
-                          values_fn = prettyHr)
+      tidyr::pivot_wider(
+        id_cols = TYPE_CONCEPT_NAME,
+        names_from = DOMAIN,
+        values_from = COUNT,
+        values_fill = "0",
+        values_fn = prettyHr
+      )
     doc <- doc %>%
       officer::body_add_par("Type Concepts", style = pkg.env$styles$heading2) %>%
       my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
@@ -183,6 +186,28 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l', 'r', 'r'))
+
+    if (!is.null(df$dayOfTheWeek$result)) {
+      dayOfTheWeekPlot <- .heatMapPlot(df$dayOfTheWeek$result, "DAY_OF_THE_WEEK")
+      doc <- doc %>%
+        officer::body_add_gg(dayOfTheWeekPlot, height = 5) %>%
+        my_caption("Day of the Week distribution of event start dates after 1900-01-01. 1 = Monday", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$figureCaption) %>%
+        officer::body_add_par(sprintf("Query executed in %.2f seconds", df$dayOfTheMonth$duration), style = pkg.env$styles$footnote)
+    } else {
+      doc <- doc %>%
+        my_caption("No Day of the Week results.", style = pkg.env$styles$tableCaption)
+    }
+
+    if (!is.null(df$dayOfTheMonth$result)) {
+      dayOfTheMonthPlot <- .heatMapPlot(df$dayOfTheMonth$result, "DAY_OF_THE_MONTH")
+      doc <- doc %>%
+        officer::body_add_gg(dayOfTheMonthPlot, height = 8) %>%
+        my_caption("Day of the Month distribution of event start dates after 1900-01-01.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$figureCaption) %>%
+        officer::body_add_par(sprintf("Query executed in %.2f seconds", df$dayOfTheMonth$duration), style = pkg.env$styles$footnote)
+    } else {
+      doc <- doc %>%
+        my_caption("No Day of the Month results.", style = pkg.env$styles$tableCaption)
+    }
 
     doc <- doc %>% officer::body_add_break()
   }

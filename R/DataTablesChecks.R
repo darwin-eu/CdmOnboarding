@@ -83,6 +83,10 @@ dataTablesChecks <- function(connectionDetails,
                                connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema, vocabDatabaseSchema = vocabDatabaseSchema)
   tableDateRange <- executeQuery(outputFolder, "data_tables_date_range.sql", "Date range query executed successfully",
                                  connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
+  dayOfTheWeek <- executeQuery(outputFolder, "day_of_the_week.sql", "Day of the week query executed successfully",
+                               connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
+  dayOfTheMonth <- executeQuery(outputFolder, "day_of_the_month.sql", "Day of the month query executed successfully",
+                                connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
 
   list(
     dataTablesCounts = dataTablesCounts,
@@ -93,6 +97,8 @@ dataTablesChecks <- function(connectionDetails,
     activePersons = activePersons,
     observedByMonth = observedByMonth,
     typeConcepts = typeConcepts,
-    tableDateRange = tableDateRange
+    tableDateRange = tableDateRange,
+    dayOfTheWeek = dayOfTheWeek,
+    dayOfTheMonth = dayOfTheMonth
   )
 }
