@@ -1,21 +1,14 @@
 test_that("Drug Exposure Diagnostics Checks", {
-  results <- do.call(
-    CdmOnboarding::cdmOnboarding,
-    c(
-      params,
-      runDataTablesChecks = FALSE,
-      runVocabularyChecks = FALSE,
-      runPerformanceChecks = FALSE,
-      runWebAPIChecks = FALSE,
-      runDedChecks = TRUE
-    )
+  # TODO: fails on Eunomia because DatabaseConnectorDbiConnection connection not supported
+  # Will be fixed by #103
+  dedResults <- CdmOnboarding:::.runDedChecks(
+    connectionDetails = params$connectionDetails,
+    cdmDatabaseSchema = params$cdmDatabaseSchema
   )
 
-  dedResults <- results$drugExposureDiagnostics
-
   testthat::expect_type(dedResults, 'list')
-    testthat::expect_true(
+  testthat::expect_true(
       !is.null(dedResults$result),
       info = paste("The result in drugExposureDiagnostics is null")
-    )
+  )
 })

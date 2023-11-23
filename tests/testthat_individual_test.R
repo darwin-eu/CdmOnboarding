@@ -6,8 +6,10 @@ options(warn = -1)
 
 # Individual tests
 testthat::test_file('test-dataTablesChecks.R')
+testthat::test_file('test-dataTablesChecksOptimize.R')
 
 testthat::test_file('test-vocabularyChecks.R')
+testthat::test_file('test-vocabularyChecksOptimize.R')
 
 testthat::test_file('test-dedChecks.R')
 

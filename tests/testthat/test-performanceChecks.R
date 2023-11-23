@@ -1,17 +1,11 @@
 test_that("Performance Checks", {
-  results <- do.call(
-    CdmOnboarding::cdmOnboarding,
-    c(
-      params,
-      dqdJsonPath = NULL,
-      runDataTablesChecks = FALSE,
-      runVocabularyChecks = FALSE,
-      runPerformanceChecks = TRUE,
-      runWebAPIChecks = FALSE,
-      runDedChecks = FALSE
-    )
+  performanceResults <- CdmOnboarding::performanceChecks(
+    connectionDetails = params$connectionDetails,
+    resultsDatabaseSchema = params$resultsDatabaseSchema,
+    vocabDatabaseSchema = params$cdmDatabaseSchema,
+    outputFolder = params$outputFolder
   )
 
-  testthat::expect_type(results$performanceResults, 'list')
-  testthat::expect_named(results$performanceResults, c("achillesTiming", "performanceBenchmark"))
+  testthat::expect_type(performanceResults, 'list')
+  testthat::expect_named(performanceResults, c("achillesTiming", "performanceBenchmark"))
 })

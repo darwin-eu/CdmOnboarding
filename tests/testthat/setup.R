@@ -7,6 +7,7 @@ params <- list(
     cdmDatabaseSchema = 'main',
     resultsDatabaseSchema = 'main',
     databaseId = 'Eunomia',
+    cdmVersion = '5.3',
     outputFolder = testthat::test_path('test_output'),
     baseUrl = "localhost:8080/WebAPI/"
 )
@@ -54,4 +55,5 @@ if (file.exists(file.path(params$outputFolder, 'eunomia_achilles_data.rds'))) {
   )
   DatabaseConnector::disconnect(connection)
   saveRDS(achilles_data, file.path(params$outputFolder, 'eunomia_achilles_data.rds'))
+  #TODO: clean up of achilles data rds for run on Github Actions
 }

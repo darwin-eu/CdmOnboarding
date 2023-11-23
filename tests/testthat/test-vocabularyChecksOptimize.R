@@ -1,19 +1,20 @@
-test_that("Vocabulary Tables Checks", {
+test_that("Vocabulary Tables Checks with Optimize", {
   vocabularyResults <- CdmOnboarding::vocabularyChecks(
     connectionDetails = params$connectionDetails,
     cdmDatabaseSchema = params$cdmDatabaseSchema,
-    outputFolder = params$outputFolder
+    outputFolder = params$outputFolder,
+    optimize = TRUE
   )
 
   testthat::expect_type(vocabularyResults, 'list')
   testthat::expect_named(vocabularyResults, c(
-    "version", "mappingTempTableCreation", "mappingCompleteness", 
-    "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements", 
-    "unmappedObservations", "unmappedProcedures", "unmappedDevices", 
-    "unmappedVisits", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedDrugRoute", 
-    "mappedDrugs", "mappedConditions", "mappedMeasurements", "mappedObservations", 
-    "mappedProcedures", "mappedDevices", "mappedVisits", "mappedUnitsMeas", 
-    "mappedUnitsObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts", 
+    "version", "mappingTempTableCreation", "mappingCompleteness",
+    "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements",
+    "unmappedObservations", "unmappedProcedures", "unmappedDevices",
+    "unmappedVisits", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedDrugRoute",
+    "mappedDrugs", "mappedConditions", "mappedMeasurements", "mappedObservations",
+    "mappedProcedures", "mappedDevices", "mappedVisits", "mappedUnitsMeas",
+    "mappedUnitsObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts",
     "sourceConceptFrequency", "sourceConceptMap"
     )
   )
