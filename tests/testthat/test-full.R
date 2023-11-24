@@ -12,21 +12,18 @@ test_that("Full CdmOnboarding executable", {
     checkLevels = "TABLE"
   )
 
-  results <- do.call(
-    CdmOnboarding::cdmOnboarding,
-    c(
-      params,
-      dqdJsonPath = file.path(params$outputFolder, dqdOutputFile),
-      runDataTablesChecks = TRUE,
-      runVocabularyChecks = TRUE,
-      runPerformanceChecks = TRUE,
-      runWebAPIChecks = TRUE,
-      runDedChecks = TRUE
-    )
+  results <- CdmOnboarding::cdmOnboarding(
+    connectionDetails = params$connectionDetails,
+    cdmDatabaseSchema = params$cdmDatabaseSchema,
+    resultsDatabaseSchema = params$resultsDatabaseSchema,
+    databaseId = params$databaseId,
+    outputFolder = params$outputFolder,
+    baseUrl = params$baseUrl,
+    dqdJsonPath = file.path(params$outputFolder, dqdOutputFile)
   )
 
   # Result returned, rds written, docx written.
   testthat::expect_type(results, 'list')
-  testthat::expect_length(list.files(params$outputFolder, pattern = '*.rds'), 1)  
-  testthat::expect_length(list.files(params$outputFolder, pattern = '*.docx'), 1)  
+  testthat::expect_length(list.files(params$outputFolder, pattern = '*.rds'), 1)
+  testthat::expect_length(list.files(params$outputFolder, pattern = '*.docx'), 1)
 })

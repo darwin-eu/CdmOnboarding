@@ -14,7 +14,7 @@ params <- list(
     databaseId = 'Eunomia',
     cdmVersion = '5.3',
     outputFolder = testthat::test_path('test_output'),
-    baseUrl = "localhost:8080/WebAPI/"
+    baseUrl = "localhost:8080/WebAPI"
 )
 
 # Load Achilles results

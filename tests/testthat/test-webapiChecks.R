@@ -1,4 +1,4 @@
-test_that("Vocabulary Tables Checks", {
+test_that("WebAPI Checks", {
   results <- do.call(
     CdmOnboarding::cdmOnboarding,
     c(

@@ -169,6 +169,20 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Length of first observation period (days).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$observationPeriodLength)
 
+    doc <- doc %>%
+      my_caption("Number of observation periods per person.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table_runtime(df$observationPeriodsPerPerson)
+
+    # Note: remove once implemented as DQD check, https://github.com/OHDSI/DataQualityDashboard/issues/510
+    df$observationPeriodOverlap$result <- df$observationPeriodOverlap$result %>%
+      summarise(
+        n_persons = n(),
+        n_overlaps = sum(N_OVERLAPPING_PAIRS)
+      )
+    doc <- doc %>%
+      my_caption("Number of persons with and total number of overlapping observation periods.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table_runtime(df$observationPeriodOverlap)
+
     df$typeConcepts$result <- df$typeConcepts$result %>%
       tidyr::pivot_wider(
         id_cols = TYPE_CONCEPT_NAME,
