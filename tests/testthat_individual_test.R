@@ -5,6 +5,9 @@ setwd('tests/testthat')
 options(warn = -1)
 
 # Individual tests
+devtools::install(quick = TRUE, upgrade = 'never')
+devtools::reload()
+
 testthat::test_file('test-dataTablesChecks.R')
 testthat::test_file('test-dataTablesChecksOptimize.R')
 
