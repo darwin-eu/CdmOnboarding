@@ -23,7 +23,7 @@
 executeQuery <- function(
   outputFolder,
   sqlFileName,
-  successMessage,
+  successMessage = NULL,
   connectionDetails = NULL,
   sqlOnly = FALSE,
   activeConnection = NULL,
@@ -35,7 +35,11 @@ executeQuery <- function(
     dbms <- activeConnection@dbms
   }
 
-  sql <-   do.call(
+  if (is.null(successMessage)) {
+    successMessage <- sprintf("'%s' executed successfully", sqlFileName)
+  }
+
+  sql <- do.call(
     SqlRender::loadRenderTranslateSql,
     c(
       sqlFilename = file.path("checks", sqlFileName),
