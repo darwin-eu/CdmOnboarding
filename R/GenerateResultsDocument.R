@@ -165,8 +165,12 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       ) %>%
       officer::body_add_par("")
 
+    df$observationPeriodLength$result <- rbind(
+      df$observationPeriodLength$result,
+      round(df$observationPeriodLength$result / 365, 1)
+    )
     doc <- doc %>%
-      my_caption("Length of first observation period (days).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
+      my_caption("Length of first observation period (days, years).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$observationPeriodLength)
 
     doc <- doc %>%
