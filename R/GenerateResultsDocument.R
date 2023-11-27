@@ -125,12 +125,12 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$dataTablesCounts)
 
-    overallMortality <- df$overallMortality$result
+    df$dataTablesCounts$result <- df$dataTablesCounts$result %>% filter(df$dataTablesCounts$result$TABLENAME %in% c('person', 'death'))
+    overallMortality <- round(df$dataTablesCounts$result$COUNT[2]/df$dataTablesCounts$result$COUNT[1], 2) * 100
 
     doc <- doc %>%
       officer::body_add_par("Mortality statistics", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(sprintf("The overall Mortality rate, the percentage of the number of death records divided by the total numbers of persons is %s .", overallMortality))
-      my_body_add_table(df$deathCount$result)
+      officer::body_add_par(sprintf("The overall Mortality rate, the percentage of the number of death records divided by the total numbers of persons is %s procent.", overallMortality))
 
     totalRecordsPlot <- recordsCountPlot(as.data.frame(df$totalRecords$result), log_y_axis = TRUE)
     doc <- doc %>%
