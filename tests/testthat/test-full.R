@@ -1,0 +1,32 @@
+test_that("Full CdmOnboarding executable", {
+  # Run a minimal DQD
+  library(DataQualityDashboard)
+  dqdOutputFile <- 'dqd_test.json'
+  dqd_result <- DataQualityDashboard::executeDqChecks(
+    connectionDetails = params$connectionDetails,
+    cdmDatabaseSchema = params$cdmDatabaseSchema,
+    resultsDatabaseSchema = params$resultsDatabaseSchema,
+    cdmSourceName = params$databaseId,
+    outputFolder = params$outputFolder,
+    outputFile = dqdOutputFile,
+    checkLevels = "TABLE"
+  )
+
+  results <- do.call(
+    CdmOnboarding::cdmOnboarding,
+    c(
+      params,
+      dqdJsonPath = file.path(params$outputFolder, dqdOutputFile),
+      runDataTablesChecks = TRUE,
+      runVocabularyChecks = TRUE,
+      runPerformanceChecks = TRUE,
+      runWebAPIChecks = TRUE,
+      runDedChecks = TRUE
+    )
+  )
+
+  # Result returned, rds written, docx written.
+  testthat::expect_type(results, 'list')
+  testthat::expect_length(list.files(params$outputFolder, pattern = '*.rds'), 1)  
+  testthat::expect_length(list.files(params$outputFolder, pattern = '*.docx'), 1)  
+})

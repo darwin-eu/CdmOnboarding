@@ -45,6 +45,9 @@ Imports:
 Suggests:
     flextable,
     devtools,
-    knitr
+    knitr,
+    testthat (>= 3.0.0),
+    Eunomia
 Remotes:
     OHDSI/ROhdsiWebApi
+Config/testthat/edition: 3
