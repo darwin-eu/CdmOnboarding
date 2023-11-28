@@ -132,7 +132,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("Mortality statistics", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(sprintf("The overall Mortality rate, the percentage of the number of death records divided by the total numbers of persons is %s procent.", overallMortality))
 
-    totalRecordsPlot <- recordsCountPlot(as.data.frame(df$totalRecords$result), log_y_axis = TRUE)
+    totalDeath <- df$totalRecords$result %>% filter(df$totalRecords$result$SERIES_NAME %in% 'Death')
+    totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
+    doc <- doc %>%
+      officer::body_add_gg(totalDeathPlot, height = 4) %>%
+      my_caption("Total record count over time for Death domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
     doc <- doc %>%
       officer::body_add_break() %>%
