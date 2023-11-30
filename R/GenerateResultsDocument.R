@@ -125,19 +125,6 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$dataTablesCounts)
 
-    df$dataTablesCounts$result <- df$dataTablesCounts$result %>% filter(df$dataTablesCounts$result$TABLENAME %in% c('person', 'death'))
-    overallMortality <- round(df$dataTablesCounts$result$COUNT[2]/df$dataTablesCounts$result$COUNT[1], 2) * 100
-
-    doc <- doc %>%
-      officer::body_add_par("Mortality statistics", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(sprintf("The overall Mortality rate, the percentage of the number of death records divided by the total numbers of persons is %s procent.", overallMortality))
-
-    totalDeath <- df$totalRecords$result %>% filter(df$totalRecords$result$SERIES_NAME %in% 'Death')
-    totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
-    doc <- doc %>%
-      officer::body_add_gg(totalDeathPlot, height = 4) %>%
-      my_caption("Total record count over time for Death domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
-
     doc <- doc %>%
       officer::body_add_break() %>%
       officer::body_add_par("Data density plots", style = pkg.env$styles$heading2)
@@ -151,6 +138,34 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_gg(recordsPerPersonPlot, height = 4) %>%
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
+
+    # Mortality
+    personCount <- df$dataTablesCounts$result %>%
+      filter(TABLENAME == 'person') %>%
+      pull(COUNT)
+    deathCount <- df$dataTablesCounts$result %>%
+      filter(TABLENAME == 'death') %>%
+      pull(COUNT)
+    overallMortality <- round(deathCount / personCount * 100, 2)
+
+    if (deathCount > 0) {
+      totalDeath <- df$totalRecords$result %>% filter(df$totalRecords$result$SERIES_NAME %in% 'Death')
+      totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
+      doc <- doc %>%
+        officer::body_add_gg(totalDeathPlot, height = 4)
+    } else {
+      doc <- doc %>%
+        officer::body_add_par("No death records found.", style = pkg.env$styles$highlight)
+    }
+    doc <- doc %>%
+      my_caption(
+        sprintf(
+          "Monthly mortality over time for Death domain. Overall mortality: %s%%.",
+          overallMortality
+        ),
+        sourceSymbol = pkg.env$sources$achilles,
+        style = pkg.env$styles$figureCaption
+      )
 
     doc <- doc %>%
       officer::body_add_break() %>%
