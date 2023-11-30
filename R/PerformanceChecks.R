@@ -76,6 +76,9 @@ getHADESpackages <- function() {
       "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
       "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
       "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender")
+    # cran = c(
+    #     "SqlRender", "DatabaseConnector", "DatabaseConnectorJars"
+    #  )
 }
 
 #' Hard coded list of DARWIN EU® packages that CdmOnboarding checks against.
@@ -85,7 +88,18 @@ getDARWINpackages <- function() {
   c(
     "CdmOnboarding", "DashboardExport",
     "CdmConnector", "IncidencePrevalence",
-    "ReportGenerator"
+    "ReportGenerator", "DrugUtilisation",
+    "PatientProfiles", "TreatmentPatterns",
+    "DrugExposureDiagnostics", "PaRe",
+    "DrugUtilisation", "CohortSurvival",
+    "CodelistGenerator"
+  )
+  # cran = c(
+  #     "CdmConnector", "PaRe",
+  #     "DrugUtilisation", "DrugExposureDiagnostics",
+  #     "IncidencePrevalence", "PatientProfiles",
+  #     "CodelistGenerator"
+  #   )
 }
 
 .getDbmsVersion <- function(connectionDetails, outputFolder) {

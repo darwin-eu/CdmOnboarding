@@ -345,7 +345,7 @@ cdmOnboarding <- function(connectionDetails,
       ParallelLogger::logInfo("> Not all the DARWIN EU® packages are installed.")
       ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffDARWINPackages, collapse = ', ')))
     } else {
-      ParallelLogger::logInfo("> All DARWIN EU® packages are installed".)
+      ParallelLogger::logInfo("> All DARWIN EU® packages are installed.")
     }
     darwinPackageVersions <- packinfo[packinfo$Package %in% darwinPackages, ]
 

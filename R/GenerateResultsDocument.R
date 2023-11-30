@@ -420,12 +420,30 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   if (!is.null(results$performanceResults)) {
     # Installed packages
-    # TODO: join results$hadesPackageVersions with getHADESpackages()   to also list missing packages in this table.
-    # TODO: add results$darwinPackageVersions and getDARWINpackages()
+    results$hadesPackageVersions$Organisation <- "OHDSI-HADES"
+    results$darwinPackageVersions$Organisation <- "DARWIN EU®"
+    allPackages <- data.frame(
+      Package = c(getHADESpackages(), getDARWINpackages()),
+      Version = "",
+      Organisation = c(rep("HADES", length(getHADESpackages())), rep("DARWIN", length(getDARWINpackages())))
+    )
+
+    packageVersions <- dplyr::union(results$hadesPackageVersions, results$darwinPackageVersions) %>%
+      dplyr::full_join(allPackages, by = c("Package", "Organisation")) %>%
+      dplyr::mutate(
+        Version = dplyr::coalesce(Version.x, "Not installed")
+      ) %>%
+      dplyr::select(Organisation, Package, Version) %>%
+      dplyr::arrange(Organisation, Package)
+
     doc <- doc %>%
       officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
-      my_caption("Versions of all installed R packages from the OHDSI Health Analytics Data-to-Evidence Suite (HADES).", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(results$hadesPackageVersions)
+      my_caption(
+        "Versions of all installed R packages from the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
+        sourceSymbol = pkg.env$sources$system,
+        style = pkg.env$styles$tableCaption
+      ) %>%
+      my_body_add_table(packageVersions)
 
     #system detail
     doc <- doc %>%
