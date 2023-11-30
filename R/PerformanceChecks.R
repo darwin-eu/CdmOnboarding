@@ -40,7 +40,8 @@
 #' @export
 performanceChecks <- function(connectionDetails,
                               resultsDatabaseSchema,
-                              vocabDatabaseSchema,
+                              cdmDatabaseSchema,
+                              vocabDatabaseSchema = cdmDatabaseSchema,
                               sqlOnly = FALSE,
                               outputFolder = "output") {
   achillesTiming <- executeQuery(outputFolder, "achilles_timing.sql", "Retrieving duration of Achilles queries",
@@ -49,8 +50,13 @@ performanceChecks <- function(connectionDetails,
   performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
                                        connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
 
-  appliedIndexes <- executeQuery(outputFolder, "applied_indexes.sql", "Retrieving which indexes are applied",
-                                connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+  if (connectionDetails$dbms == "postgresql") {
+        appliedIndexes <- executeQuery(outputFolder, "applied_indexes_postgres.sql", "Retrieving which indexes are applied",
+                                  connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
+  } else if (connectionDetails$dbms == "sql server") {
+        appliedIndexes <- executeQuery(outputFolder, "applied_indexes_sql_server.sql", "Retrieving which indexes are applied",
+                                  connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
+  }
 
   list(
     achillesTiming = achillesTiming,

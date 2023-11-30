@@ -5,7 +5,7 @@ SELECT
 FROM
     pg_indexes
 WHERE
-    schemaname = '@vocabDatabaseSchema'
+    schemaname = '@cdmDatabaseSchema'
 ORDER BY
     tablename,
     indexname;
