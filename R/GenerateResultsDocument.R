@@ -419,19 +419,13 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
   if (!is.null(results$performanceResults)) {
-    #installed packages
+    # Installed packages
+    # TODO: join results$hadesPackageVersions with getHADESpackages()   to also list missing packages in this table.
+    # TODO: add results$darwinPackageVersions and getDARWINpackages()
     doc <- doc %>%
       officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
       my_caption("Versions of all installed R packages from the OHDSI Health Analytics Data-to-Evidence Suite (HADES).", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table(results$hadesPackageVersions)
-
-    if (results$missingPackage == "") {
-      doc <- doc %>%
-        officer::body_add_par("All HADES R packages were available")
-    } else {
-      doc <- doc %>%
-        officer::body_add_par(paste0("Missing R packages: ", results$missingPackages))
-    }
 
     #system detail
     doc <- doc %>%

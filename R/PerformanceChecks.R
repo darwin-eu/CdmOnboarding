@@ -49,6 +49,7 @@ performanceChecks <- function(connectionDetails,
   performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
                                        connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
 
+
   list(
     achillesTiming = achillesTiming,
     performanceBenchmark = performanceBenchmark
@@ -75,6 +76,16 @@ getHADESpackages <- function() {
       "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
       "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
       "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender")
+}
+
+#' Hard coded list of DARWIN EU® packages that CdmOnboarding checks against.
+#' @return character vector with DARWIN EU® package names
+#' @export
+getDARWINpackages <- function() {
+  c(
+    "CdmOnboarding", "DashboardExport",
+    "CdmConnector", "IncidencePrevalence",
+    "ReportGenerator"
 }
 
 .getDbmsVersion <- function(connectionDetails, outputFolder) {
