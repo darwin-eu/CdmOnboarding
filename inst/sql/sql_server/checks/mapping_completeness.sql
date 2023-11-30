@@ -70,6 +70,15 @@ select  'Visit',
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #visit
 union all
+select  'Visit detail',
+        count_big(source_value),
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
+from #visit_detail
+union all
 select  'Measurement Unit',
         count_big(source_value),
         sum(is_mapped),
