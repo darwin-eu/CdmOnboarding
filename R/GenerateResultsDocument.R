@@ -160,7 +160,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       my_caption(
         sprintf(
-          "Monthly mortality over time for Death domain. Overall mortality: %s%%.",
+          "Number of monthly deaths over time. Overall mortality: %s%%.",
           overallMortality
         ),
         sourceSymbol = pkg.env$sources$achilles,
