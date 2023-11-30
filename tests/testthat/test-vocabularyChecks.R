@@ -10,9 +10,9 @@ test_that("Vocabulary Tables Checks", {
     "version", "mappingTempTableCreation", "mappingCompleteness", 
     "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements", 
     "unmappedObservations", "unmappedProcedures", "unmappedDevices", 
-    "unmappedVisits", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedDrugRoute", 
+    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedDrugRoute",
     "mappedDrugs", "mappedConditions", "mappedMeasurements", "mappedObservations", 
-    "mappedProcedures", "mappedDevices", "mappedVisits", "mappedUnitsMeas", 
+    "mappedProcedures", "mappedDevices", "mappedVisits", "mappedVisitDetails", "mappedUnitsMeas",
     "mappedUnitsObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts", 
     "sourceConceptFrequency", "sourceConceptMap"
     )
