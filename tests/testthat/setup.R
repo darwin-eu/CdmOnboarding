@@ -1,3 +1,8 @@
+#' Setup for Eunomia tests
+#' 1. Parameters for connection to Eunomia
+#' 2. Run Achilles and store results to drive
+#' Note: if Achilles needs to be rerun, delete the eunomia_achilles_data.rds file in the test_output folder
+
 library(Eunomia)
 library(Achilles)
 library(DatabaseConnector)
@@ -9,7 +14,7 @@ params <- list(
     databaseId = 'Eunomia',
     cdmVersion = '5.3',
     outputFolder = testthat::test_path('test_output'),
-    baseUrl = "localhost:8080/WebAPI/"
+    baseUrl = "localhost:8080/WebAPI"
 )
 
 # Load Achilles results
@@ -34,7 +39,7 @@ if (file.exists(file.path(params$outputFolder, 'eunomia_achilles_data.rds'))) {
     cdmDatabaseSchema = params$cdmDatabaseSchema,
     resultsDatabaseSchema = params$resultsDatabaseSchema,
     outputFolder = file.path(params$outputFolder, 'achilles-logs'),
-    analysisIds = c(0, 105, 110, 111, 117, 220, 420, 502, 620, 720, 820, 920, 1020, 1820, 2102, 2120, 203, 403, 603, 703, 803, 903, 920, 1003, 1020, 1320, 1411, 1803, 1820)
+    analysisIds = c(0, 105, 110, 111, 113, 117, 220, 420, 502, 620, 720, 820, 920, 1020, 1820, 2102, 2120, 203, 403, 603, 703, 803, 903, 920, 1003, 1020, 1320, 1411, 1803, 1820)
   )
   connection <- DatabaseConnector::connect(params$connectionDetails)
 

@@ -44,61 +44,52 @@
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 dataTablesChecks <- function(connectionDetails,
-                              cdmDatabaseSchema,
-                              resultsDatabaseSchema,
-                              vocabDatabaseSchema = cdmDatabaseSchema,
-                              cdmVersion,
-                              sqlOnly = FALSE,
-                              outputFolder = "output",
-                              optimize = FALSE) {
-  if (optimize) {
-    if (connectionDetails$dbms == "postgresql") {
-      dataTablesCounts <- executeQuery(outputFolder, "data_tables_count_postgres.sql", "Data tables (postgres estimate) count query executed successfully",
-                                       connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
-    } else if (optimize && connectionDetails$dbms == "sql server") {
-      dataTablesCounts <- executeQuery(outputFolder, "data_tables_count_sql_server.sql", "Data tables (sql server estimate) count query executed successfully",
-                                       connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
-    } else {
-      dataTablesCounts <- executeQuery(outputFolder, "data_tables_count_no_person_count.sql", "Data tables (no person count) count query executed successfully",
-                                       connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
-    }
+                             cdmDatabaseSchema,
+                             resultsDatabaseSchema,
+                             vocabDatabaseSchema = cdmDatabaseSchema,
+                             cdmVersion,
+                             sqlOnly = FALSE,
+                             outputFolder = "output",
+                             optimize = FALSE) {
+  if (optimize && connectionDetails$dbms == "postgresql") {
+    dataTablesCountQuery <- "data_tables_count_postgres.sql"
+  } else if (optimize && connectionDetails$dbms == "sql server") {
+    dataTablesCountQuery <- "data_tables_count_sql_server.sql"
+  } else if (optimize) {
+    dataTablesCountQuery <- "data_tables_count_no_person_count.sql"
   } else {
-    dataTablesCounts <- executeQuery(outputFolder, "data_tables_count.sql", "Data tables count query executed successfully",
-                                     connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema, cdmVersion = cdmVersion)
+    dataTablesCountQuery <- "data_tables_count.sql"
   }
 
-  totalRecords <- executeQuery(outputFolder, "totalrecords.sql", "Total number of records over time query executed successfully",
-                               connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
-  recordsPerPerson <- executeQuery(outputFolder, "recordsperperson.sql", "Number of records per person query executed successfully",
-                                   connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
-  conceptsPerPerson <- executeQuery(outputFolder, "conceptsperperson.sql", "Number of records per person query executed successfully",
-                                    connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
-  observationPeriodLength <- executeQuery(outputFolder, "observation_period_length.sql", "Observation Period length query executed successfully",
-                                          connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
-  activePersons <- executeQuery(outputFolder, "active_persons.sql", "Active persons query executed successfully",
-                                connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
-  observedByMonth <- executeQuery(outputFolder, "observed_by_month.sql", "Observed by month query executed successfully",
-                                  connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
-  typeConcepts <- executeQuery(outputFolder, "type_concepts.sql", "Type concept query executed successfully",
-                               connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema, vocabDatabaseSchema = vocabDatabaseSchema)
-  tableDateRange <- executeQuery(outputFolder, "data_tables_date_range.sql", "Date range query executed successfully",
-                                 connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
-  dayOfTheWeek <- executeQuery(outputFolder, "day_of_the_week.sql", "Day of the week query executed successfully",
-                               connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
-  dayOfTheMonth <- executeQuery(outputFolder, "day_of_the_month.sql", "Day of the month query executed successfully",
-                                connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
-
-  list(
-    dataTablesCounts = dataTablesCounts,
-    totalRecords = totalRecords,
-    recordsPerPerson = recordsPerPerson,
-    conceptsPerPerson = conceptsPerPerson,
-    observationPeriodLength = observationPeriodLength,
-    activePersons = activePersons,
-    observedByMonth = observedByMonth,
-    typeConcepts = typeConcepts,
-    tableDateRange = tableDateRange,
-    dayOfTheWeek = dayOfTheWeek,
-    dayOfTheMonth = dayOfTheMonth
+  sqlFileNames <- c(
+    dataTablesCounts = dataTablesCountQuery,
+    totalRecords = "totalrecords.sql",
+    recordsPerPerson = "recordsperperson.sql",
+    conceptsPerPerson = "conceptsperperson.sql",
+    observationPeriodLength = "observation_period_length.sql",
+    activePersons = "active_persons.sql",
+    observedByMonth = "observed_by_month.sql",
+    typeConcepts = "type_concepts.sql",
+    tableDateRange = "data_tables_date_range.sql",
+    dayOfTheWeek = "day_of_the_week.sql",
+    dayOfTheMonth = "day_of_the_month.sql",
+    observationPeriodsPerPerson = "observation_periods_per_person.sql",
+    observationPeriodOverlap = "observation_period_overlap.sql"
   )
+
+  result <- list()
+  for (fieldName in names(sqlFileNames)) {
+    sqlFileName <- sqlFileNames[[fieldName]]
+    result[[fieldName]] <- executeQuery(
+      outputFolder = outputFolder,
+      sqlFileName = sqlFileName,
+      connectionDetails = connectionDetails,
+      sqlOnly = sqlOnly,
+      cdmDatabaseSchema = cdmDatabaseSchema,
+      vocabDatabaseSchema = vocabDatabaseSchema,
+      resultsDatabaseSchema = resultsDatabaseSchema
+    )
+  }
+
+  return(result)
 }

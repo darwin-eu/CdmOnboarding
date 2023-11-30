@@ -11,7 +11,9 @@ test_that("Data Tables Checks", {
 
   testthat::expect_named(dataTablesResults, c(
       "dataTablesCounts", "totalRecords", "recordsPerPerson", "conceptsPerPerson",
-      "observationPeriodLength", "activePersons", "observedByMonth", "typeConcepts", "tableDateRange"
+      "observationPeriodLength", "activePersons", "observedByMonth",
+      "typeConcepts", "tableDateRange", "dayOfTheWeek", "dayOfTheMonth",
+      "observationPeriodsPerPerson", "observationPeriodOverlap"
     )
   )
 
