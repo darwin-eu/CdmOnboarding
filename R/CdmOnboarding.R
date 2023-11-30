@@ -315,11 +315,6 @@ cdmOnboarding <- function(connectionDetails,
   }
 
   # performance checks --------------------------------------------------------------------------------------------
-  packinfo <- NULL
-  hadesPackageVersions <- NULL
-  darwinPackageVersions <- NULL
-  sys_details <- NULL
-  dmsVersion <- NULL
   performanceResults <- NULL
   if (runPerformanceChecks) {
     ParallelLogger::logInfo("Check installed R Packages")
@@ -368,6 +363,11 @@ cdmOnboarding <- function(connectionDetails,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder
     )
+    performanceResults$sys_details <- sys_details
+    performanceResults$dmsVersion <- dmsVersion
+    performanceResults$packinfo <- packinfo
+    performanceResults$hadesPackageVersions <- hadesPackageVersions
+    performanceResults$darwinPackageVersions <- darwinPackageVersions
   }
 
   webApiVersion <- "unknown"
@@ -409,16 +409,11 @@ cdmOnboarding <- function(connectionDetails,
     databaseDescription = databaseDescription,
     vocabularyResults = vocabularyResults,
     dataTablesResults = dataTablesResults,
-    packinfo = packinfo,
-    hadesPackageVersions = hadesPackageVersions,
-    darwinPackageVersions = darwinPackageVersions,
     performanceResults = performanceResults,
-    sys_details = sys_details,
     webAPIversion = webApiVersion,
+    dms = connectionDetails$dbms,
     cdmSource = cdmSource,
     achillesMetadata = achillesMetadata,
-    dms = connectionDetails$dbms,
-    dmsVersion = dmsVersion,
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
     dqdResults = dqdResults,
