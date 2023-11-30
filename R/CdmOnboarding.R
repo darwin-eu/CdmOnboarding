@@ -324,10 +324,8 @@ cdmOnboarding <- function(connectionDetails,
   if (runPerformanceChecks) {
     ParallelLogger::logInfo("Check installed R Packages")
 
-    # Note: there can be multiple versions of the same package due to renvs
-    # Sorting on LibPath to get packages in same environment together
-    packinfo <- as.data.frame(installed.packages())
-    packinfo <- packinfo[order(packinfo$LibPath, packinfo$Package), c("Package", "Version")]
+    packinfo <- as.data.frame(installed.packages(fields = c("URL")))
+    packinfo <- packinfo[, c("Package", "Version", "LibPath", "URL")]
 
     hadesPackages <- getHADESpackages()
     diffHADESPackages <- setdiff(hadesPackages, packinfo$Package)

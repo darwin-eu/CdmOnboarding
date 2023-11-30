@@ -431,16 +431,17 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       dplyr::mutate(
         Version = dplyr::coalesce(Version.x, "Not installed")
       ) %>%
-      dplyr::select(Organisation, Package, Version) %>%
-      dplyr::arrange(Organisation, Package)
+      # Sorting on LibPath to get packages in same environment together (if multiple versions of the same package installed due to renvs)
+      dplyr::arrange(LibPath, Organisation, Package) %>%
+      dplyr::select(Organisation, Package, Version)
 
     doc <- doc %>%
-      officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
       my_caption(
         paste(
           "Versions of all installed R packages from DARWIN EU® and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
-          "Packages can be installed from Github `remotes::install_github(\"darwin-eu/<package_name\")`"
-          # TODO: make distinction with CRAN packages
+          # TODO: instructions how to install missing packages; Github or CRAN
+          # "Packages can be installed from Github `remotes::install_github(\"darwin-eu/<package_name\")`"
         ),
         sourceSymbol = pkg.env$sources$system,
         style = pkg.env$styles$tableCaption
