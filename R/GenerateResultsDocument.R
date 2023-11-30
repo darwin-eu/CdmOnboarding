@@ -301,6 +301,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_unmapped_section(vocabResults$unmappedProcedures, "procedures", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDevices, "devices", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedVisits, "visits", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount)
@@ -315,6 +316,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_mapped_section(vocabResults$mappedProcedures, "procedures", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDevices, "devices", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedVisits, "visits", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount)

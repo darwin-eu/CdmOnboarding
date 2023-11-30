@@ -92,6 +92,8 @@ vocabularyChecks <- function(connectionDetails,
                                         activeConnection = connection, cdmDomain = 'device', smallCellCount = smallCellCount)
     unmappedVisits <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped visits query executed successfully", sqlOnly = sqlOnly,
                                        activeConnection = connection, cdmDomain = 'visit', smallCellCount = smallCellCount)
+    unmappedVisitDetails <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped visit details query executed successfully", sqlOnly = sqlOnly,
+                                        activeConnection = connection, cdmDomain = 'visit_detail', smallCellCount = smallCellCount)
     unmappedUnitsMeas <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly = sqlOnly,
                                           activeConnection = connection, cdmDomain = 'meas_unit', smallCellCount = smallCellCount)
     unmappedUnitsObs <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly = sqlOnly,
@@ -115,6 +117,8 @@ vocabularyChecks <- function(connectionDetails,
                                       activeConnection = connection, cdmDomain = 'device', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
     mappedVisits <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped visits query executed successfully", sqlOnly = sqlOnly,
                                      activeConnection = connection, cdmDomain = 'visit', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+    mappedVisitDetails <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped visit details query executed successfully", sqlOnly = sqlOnly,
+                                     activeConnection = connection, cdmDomain = 'visit_detail', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
     mappedUnitsMeas <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly = sqlOnly,
                                         activeConnection = connection, cdmDomain = 'meas_unit', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
     mappedUnitsObs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly = sqlOnly,
@@ -139,6 +143,7 @@ vocabularyChecks <- function(connectionDetails,
     unmappedProcedures = unmappedProcedures,
     unmappedDevices = unmappedDevices,
     unmappedVisits = unmappedVisits,
+    unmappedVisitDetails = unmappedVisitDetails,
     unmappedUnitsMeas = unmappedUnitsMeas,
     unmappedUnitsObs = unmappedUnitsObs,
     unmappedDrugRoute = unmappedDrugRoute,
@@ -149,6 +154,7 @@ vocabularyChecks <- function(connectionDetails,
     mappedProcedures = mappedProcedures,
     mappedDevices = mappedDevices,
     mappedVisits = mappedVisits,
+    mappedVisitDetails = mappedVisitDetails,
     mappedUnitsMeas = mappedUnitsMeas,
     mappedUnitsObs = mappedUnitsObs,
     mappedDrugRoute = mappedDrugRoute,
