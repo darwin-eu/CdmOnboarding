@@ -420,16 +420,14 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   if (!is.null(results$performanceResults)) {
     # Installed packages
-    results$hadesPackageVersions$Organisation <- "OHDSI-HADES"
-    results$darwinPackageVersions$Organisation <- "DARWIN EU®"
     allPackages <- data.frame(
       Package = c(getHADESpackages(), getDARWINpackages()),
       Version = "",
-      Organisation = c(rep("HADES", length(getHADESpackages())), rep("DARWIN", length(getDARWINpackages())))
+      Organisation = c(rep("OHDSI HADES", length(getHADESpackages())), rep("DARWIN EU®", length(getDARWINpackages())))
     )
 
     packageVersions <- dplyr::union(results$hadesPackageVersions, results$darwinPackageVersions) %>%
-      dplyr::full_join(allPackages, by = c("Package", "Organisation")) %>%
+      dplyr::full_join(allPackages, by = c("Package")) %>%
       dplyr::mutate(
         Version = dplyr::coalesce(Version.x, "Not installed")
       ) %>%
@@ -439,7 +437,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
       my_caption(
-        "Versions of all installed R packages from the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
+        paste(
+          "Versions of all installed R packages from DARWIN EU® and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
+          "Packages can be installed from Github `remotes::install_github(\"darwin-eu/<package_name\")`"
+          # TODO: make distinction with CRAN packages
+        ),
         sourceSymbol = pkg.env$sources$system,
         style = pkg.env$styles$tableCaption
       ) %>%
