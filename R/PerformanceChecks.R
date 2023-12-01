@@ -61,12 +61,13 @@ performanceChecks <- function(connectionDetails,
 #' @return character vector with HADES package names
 #' @export
 getHADESpackages <- function() {
-    # To update the HADES package list:
+    ## To update the HADES package list:
     # packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv" #nolint
-    # hadesPackageList <- read.table(packageListUrl, sep = ",", header = TRUE) #nolint
-    # packages <- hadesPackageList$name #nolint
+    # packageList <- read.table(packageListUrl, sep = ",", header = TRUE) #nolint
+    # packages <- packageList$name #nolint
     # dump("packages", "") #nolint
-    c("CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
+    c(
+      "CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
       "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
       "EnsemblePatientLevelPrediction", "Characterization", "Capr",
       "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
@@ -75,7 +76,8 @@ getHADESpackages <- function() {
       "BrokenAdaptiveRidge", "Cyclops", "DatabaseConnector", "Eunomia",
       "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
       "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
-      "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender")
+      "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender"
+    )
     # cran = c(
     #     "SqlRender", "DatabaseConnector", "DatabaseConnectorJars"
     #  )
@@ -85,14 +87,19 @@ getHADESpackages <- function() {
 #' @return character vector with DARWIN EU® package names
 #' @export
 getDARWINpackages <- function() {
+  ## To update the DARWIN package list:
+  # packageListUrl <- "https://raw.githubusercontent.com/mvankessel-EMC/DependencyReviewerWhitelists/main/darwin.csv" #nolint
+  # packageList <- read.table(packageListUrl, sep = ",", header = TRUE) #nolint
+  # packages <- packageList[packageList$version == '*', 'package'] |> #nolint
+  #             gsub("darwin-eu-dev/", "", x = _) |> #nolint
+  #             gsub("darwin-eu/", "", x = _) |> #nolint
+  #             union(c('CdmOnboarding', 'DashboardExport')) #nolint
+  # dump("packages", "") #nolint
   c(
-    "CdmOnboarding", "DashboardExport",
-    "CdmConnector", "IncidencePrevalence",
-    "ReportGenerator", "DrugUtilisation",
-    "PatientProfiles", "TreatmentPatterns",
-    "DrugExposureDiagnostics", "PaRe",
-    "DrugUtilisation", "CohortSurvival",
-    "CodelistGenerator"
+    "PatientProfiles", "CDMConnector", "PaRe", "IncidencePrevalence",
+    "DrugUtilisation", "DrugExposureDiagnostics", "TreatmentPatterns",
+    "CodelistGenerator", "CohortSurvival", "OMOPGenerics", "deckR",
+    "ReportGenerator", "CdmOnboarding", "DashboardExport"
   )
   # cran = c(
   #     "CdmConnector", "PaRe",

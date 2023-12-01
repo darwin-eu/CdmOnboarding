@@ -441,8 +441,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption(
         paste(
           "Versions of all installed R packages from DARWIN EU® and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
-          # TODO: instructions how to install missing packages; Github or CRAN
-          # "Packages can be installed from Github `remotes::install_github(\"darwin-eu/<package_name\")`"
+          "Packages can be installed from CRAN (install.packages(\"<package_name>\")) or Github (remotes::install_github(\"<organisation>/<package>\"))"
         ),
         sourceSymbol = pkg.env$sources$system,
         style = pkg.env$styles$tableCaption
