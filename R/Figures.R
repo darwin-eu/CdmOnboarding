@@ -35,8 +35,9 @@
   return(plot)
 }
 
+#' https://rpubs.com/melike/heatmapTable
 .heatMapPlot <- function(df, yVar) {
-  maxYVar <- max(df[[yVar]])
+  maxYVar <- length(unique(df[[yVar]]))
   df %>%
     dplyr::group_by(DOMAIN) %>%
     dplyr::mutate(
@@ -50,6 +51,7 @@
         low = scales::muted("midnightblue"),
         mid = "white",
         high = scales::muted("darkred"),
+        n.breaks = 4,
         midpoint = 1 / maxYVar * 100 # expected average proportion
     ) +
     ggplot2::theme(
@@ -60,11 +62,14 @@
         panel.grid.minor.y = element_blank(),
         panel.background = element_rect(fill = "white"),
         axis.text.x = element_text(size = 6, face = "bold"),
-        axis.text.y = element_text(size = 12, face = "bold")
+        axis.text.y = element_text(size = 12, face = "bold"),
+        legend.position = "bottom"
     ) +
-    ggplot2::scale_x_discrete(name = "Domain") +
+    ggplot2::scale_x_discrete(
+      name = ""
+    ) +
     ggplot2::scale_y_reverse(
-        name = yVar,
+        name = "",
         breaks = seq(1, maxYVar)
     ) +
     ggplot2::labs(fill = "Proportion (%)")

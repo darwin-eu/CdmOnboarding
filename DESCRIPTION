@@ -41,7 +41,8 @@ Imports:
     ggplot2,
     tidyr,
     jsonlite,
-    stats
+    stats,
+    cowplot
 Suggests:
     flextable,
     devtools,

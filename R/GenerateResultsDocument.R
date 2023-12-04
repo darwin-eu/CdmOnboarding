@@ -180,7 +180,6 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       df$observationPeriodLength$result,
       round(df$observationPeriodLength$result / 365, 1)
     )
-    df$observationPeriodLength$result$`-` <- c("days", "years")
 
     doc <- doc %>%
       my_caption("Length of first observation period (days, years).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
@@ -232,12 +231,13 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l', 'r', 'r'))
 
+    # Day of the week and month
+    combinedPlot <- cowplot::ggdraw()
     if (!is.null(df$dayOfTheWeek$result)) {
       dayOfTheWeekPlot <- .heatMapPlot(df$dayOfTheWeek$result, "DAY_OF_THE_WEEK")
-      doc <- doc %>%
-        officer::body_add_gg(dayOfTheWeekPlot, height = 5) %>%
-        my_caption("Day of the Week distribution of event start dates after 1900-01-01. 1 = Monday", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$figureCaption) %>%
-        officer::body_add_par(sprintf("Query executed in %.2f seconds", df$dayOfTheMonth$duration), style = pkg.env$styles$footnote)
+      combinedPlot <- combinedPlot +
+        cowplot::draw_plot(dayOfTheWeekPlot, x = 0, y = .48, width = .5, height = .5) +
+        cowplot::draw_plot_label("Day of the Week", x = .15, y = .99, size = 15)
     } else {
       doc <- doc %>%
         my_caption("No Day of the Week results.", style = pkg.env$styles$tableCaption)
@@ -245,18 +245,27 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     if (!is.null(df$dayOfTheMonth$result)) {
       dayOfTheMonthPlot <- .heatMapPlot(df$dayOfTheMonth$result, "DAY_OF_THE_MONTH")
-      doc <- doc %>%
-        officer::body_add_gg(dayOfTheMonthPlot, height = 8) %>%
-        my_caption("Day of the Month distribution of event start dates after 1900-01-01.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$figureCaption) %>%
-        officer::body_add_par(sprintf("Query executed in %.2f seconds", df$dayOfTheMonth$duration), style = pkg.env$styles$footnote)
+      combinedPlot <- combinedPlot +
+        cowplot::draw_plot(dayOfTheMonthPlot, x = .5, y = 0, width = .5, height = 1) +
+        cowplot::draw_plot_label("Day of the Month", x = .65, y = .98, size = 15)
     } else {
       doc <- doc %>%
         my_caption("No Day of the Month results.", style = pkg.env$styles$tableCaption)
     }
 
+    doc <- doc %>%
+      officer::body_add_gg(combinedPlot, scale = .5) %>%
+      my_caption("Day of the Week and Day of the Month distribution of event start dates after 1900-01-01 per domain. 1 = Monday ... 7 = Sunday.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$figureCaption) %>% #nolint
+      officer::body_add_par(
+        sprintf("Queries executed in %.2f seconds and %.2f seconds",
+          df$dayOfTheWeek$duration,
+          df$dayOfTheMonth$duration
+        ),
+        style = pkg.env$styles$footnote
+      )
+
     doc <- doc %>% officer::body_add_break()
   }
-
 
   ## Vocabulary checks section
   doc <- doc %>%
@@ -273,7 +282,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       ) %>%
       officer::body_add_par(
         sprintf(
-          "Preprocessing query executed in %.2f seconds",
+          "Pre-processing query executed in %.2f seconds",
           results$vocabularyResults$mappingTempTableCreation$duration
         ),
         style = pkg.env$styles$footnote
