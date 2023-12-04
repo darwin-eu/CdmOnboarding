@@ -115,15 +115,24 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   df <- results$dataTablesResults
   if (!is.null(df)) {
+    n_persons_total <- df$dataTablesCounts$result$COUNT[df$dataTablesCounts$result$TABLENAME == 'person']
     df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
-      arrange(desc(COUNT))
+      arrange(desc(COUNT)) %>%
+      mutate(
+        Table = TABLENAME,
+        `#Records` = COUNT,
+        `#Persons` = N_PERSONS,
+        `%Persons with record` = prettyPc(N_PERSONS / n_persons_total * 100),
+        .keep = "none"  # do not display other columns
+      )
+
     doc <- doc %>%
       officer::body_add_par("Clinical data", style = pkg.env$styles$heading1) %>%
       officer::body_add_par("Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
       my_caption("The number of records in all clinical data tables",
         sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm,
         style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$dataTablesCounts)
+      my_body_add_table_runtime(df$dataTablesCounts, alignment = c('l', rep('r', 3)))
 
     doc <- doc %>%
       officer::body_add_break() %>%
@@ -256,17 +265,14 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%
       arrange(DOMAIN) %>%
       mutate(
-        P_CODES_MAPPED = prettyPc(P_CODES_MAPPED),
-        P_RECORDS_MAPPED = prettyPc(P_RECORDS_MAPPED),
-      ) %>%
-      rename(
         Domain = DOMAIN,
         `#Codes Source` = N_CODES_SOURCE,
         `#Codes Mapped` = N_CODES_MAPPED,
-        `%Codes Mapped` = P_CODES_MAPPED,
+        `%Codes Mapped` = prettyPc(P_CODES_MAPPED),
         `#Records Source` = N_RECORDS_SOURCE,
         `#Records Mapped` = N_RECORDS_MAPPED,
-        `%Records Mapped` = P_RECORDS_MAPPED,
+        `%Records Mapped` = prettyPc(P_RECORDS_MAPPED),
+        .keep = "none"  # do not display other columns
       )
     doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
@@ -277,14 +283,12 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     vocabResults$drugMapping$result <- vocabResults$drugMapping$result %>%
       arrange(desc(N_RECORDS)) %>%
       mutate(
-        P_RECORDS = prettyPc(P_RECORDS),
-      ) %>%
-      rename(
         Class = CLASS,
         `#Records` = N_RECORDS,
         `#Patients` = N_PATIENTS,
         `#Codes` = N_SOURCE_CODES,
-        `%Records` = P_RECORDS,
+        `%Records` = prettyPc(P_RECORDS),
+        .keep = "none"  # do not display other columns
       )
     doc <- doc %>%
       officer::body_add_par("Drug Mappings", style = pkg.env$styles$heading2) %>%
@@ -514,12 +518,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(vocabResults$vocabularyCounts)
 
     # vocabularies table
-    vocabResults$conceptCounts$result <- vocabResults$conceptCounts$result %>%
-      rename(
-        S = N_STANDARD_CONCEPTS,
-        C = N_CLASSIFICATION_CONCEPTS,
-        `-` = N_NON_STANDARD_CONCEPTS
-      )
+    names(vocabResults$conceptCounts$result) <- c('ID', 'Name', 'Version', 'S', 'C', '-')
     doc <- doc %>%
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(sprintf("Vocabulary version: %s", results$vocabularyResults$version)) %>%
