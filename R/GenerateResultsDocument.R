@@ -154,6 +154,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("The number of distinct concepts per person per OMOP data domains. Only persons with at least one record in that domain are included in the calculation.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(df$conceptsPerPerson)
 
+    # Observation Period
     plot <- .recordsCountPlot(as.data.frame(df$observedByMonth$result))
     n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
     active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
@@ -174,27 +175,44 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       ) %>%
       officer::body_add_par("")
 
+    # Length of first observation period
     df$observationPeriodLength$result <- rbind(
       df$observationPeriodLength$result,
       round(df$observationPeriodLength$result / 365, 1)
     )
+    df$observationPeriodLength$result$`-` <- c("days", "years")
+
     doc <- doc %>%
       my_caption("Length of first observation period (days, years).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$observationPeriodLength)
 
-    doc <- doc %>%
-      my_caption("Number of observation periods per person.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$observationPeriodsPerPerson)
+    # Combine Observation Periods per Person and overlap in one table
+    obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
+      mutate(
+        Field = sprintf("Persons with %s observation period(s)", N_OBSERVATION_PERIODS),
+        Value = N_PERSONS,
+        .keep = "none"  # do not display other columns
+      )
 
     # Note: remove once implemented as DQD check, https://github.com/OHDSI/DataQualityDashboard/issues/510
-    df$observationPeriodOverlap$result <- df$observationPeriodOverlap$result %>%
-      summarise(
-        n_persons = n(),
-        n_overlaps = sum(N_OVERLAPPING_PAIRS)
-      )
+    new_rows <- data.frame(
+      Field = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
+      Value = c(nrow(df$observationPeriodOverlap), sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS))
+    )
+    obsPeriodStats <- rbind(obsPeriodStats, new_rows)
+
     doc <- doc %>%
-      my_caption("Number of persons with and total number of overlapping observation periods.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$observationPeriodOverlap)
+      my_caption(
+        sprintf("Number of observation periods per person %s and overlapping observation periods %s.", pkg.env$sources$achilles, pkg.env$sources$cdm),
+        sourceSymbol = NULL,  # already in caption text
+        style = pkg.env$styles$tableCaption
+      ) %>%
+      my_body_add_table(obsPeriodStats) %>%
+      officer::body_add_par(
+        sprintf("Queries executed in %.2f seconds and %.2f seconds",
+          df$observationPeriodsPerPerson$duration,
+          df$observationPeriodOverlap$duration
+        ), style = pkg.env$styles$footnote)
 
     df$typeConcepts$result <- df$typeConcepts$result %>%
       tidyr::pivot_wider(
