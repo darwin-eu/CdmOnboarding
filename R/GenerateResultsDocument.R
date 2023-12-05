@@ -226,10 +226,24 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$typeConcepts, alignment =  c('l', rep('r', ncol(df$typeConcepts$result) - 1)))  # TODO display in long format
 
+    df$tableDateRange$result <- df$tableDateRange$result %>%
+      rename(
+        `Domain` = DOMAIN,
+        `N` = COUNT_VALUE,
+        `Type` = TYPE_CONCEPT_NAME,
+        `↓Start` = FIRST_START_MONTH,
+        `↑Start` = LAST_START_MONTH,
+        `↓End` = FIRST_END_MONTH,
+        `↑End` = LAST_END_MONTH
+      )
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
-      my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l', 'r', 'r'))
+      my_body_add_table_runtime(
+        df$tableDateRange,
+        auto_format = T,
+        alignment = c('l', 'l', rep('r', ncol(df$tableDateRange$result) - 2))
+      )
 
     # Day of the week and month
     combinedPlot <- cowplot::ggdraw()

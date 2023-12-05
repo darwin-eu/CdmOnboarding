@@ -70,12 +70,18 @@ dataTablesChecks <- function(connectionDetails,
     activePersons = "active_persons.sql",
     observedByMonth = "observed_by_month.sql",
     typeConcepts = "type_concepts.sql",
-    tableDateRange = "data_tables_date_range.sql",
     dayOfTheWeek = "day_of_the_week.sql",
     dayOfTheMonth = "day_of_the_month.sql",
     observationPeriodsPerPerson = "observation_periods_per_person.sql",
     observationPeriodOverlap = "observation_period_overlap.sql"
   )
+
+  if (optimize) {
+    sqlFileNames['tableDateRange'] <- "data_tables_date_range.sql"
+  } else {
+    # TODO: how does timing of type_concepts.sql compare to data_tables_date_range_by_type.sql
+    sqlFileNames['tableDateRange'] <- "data_tables_date_range_by_type.sql"
+  }
 
   result <- list()
   for (fieldName in names(sqlFileNames)) {
