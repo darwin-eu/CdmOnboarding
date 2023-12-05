@@ -180,6 +180,20 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       df$observationPeriodLength$result,
       round(df$observationPeriodLength$result / 365, 1)
     )
+    df$observationPeriodLength$result <- df$observationPeriodLength$result %>%
+      mutate(
+        ` ` = c("Days", "Years"),
+        AVG = round(AVG_VALUE, 1),
+        STDEV = round(STDEV_VALUE, 1),
+        MIN = MIN_VALUE,
+        P10 = P10_VALUE,
+        P25 = P25_VALUE,
+        MEDIAN = MEDIAN_VALUE,
+        P75 = P75_VALUE,
+        P90 = P90_VALUE,
+        MAX = MAX_VALUE,
+        .keep = "none"  # do not display other columns
+      )
 
     doc <- doc %>%
       my_caption("Length of first observation period (days, years).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
@@ -268,9 +282,28 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
         officer::body_add_par("Day, Month, Year of Birth", style = pkg.env$styles$heading2)
     if (!is.null(df$dayMonthYearOfBirth$result)) {
+        df$dayMonthYearOfBirth$result <- df$dayMonthYearOfBirth$result %>%
+          arrange(desc(VARIABLE)) %>% # Year, Month, Day
+          mutate(
+            ` ` = VARIABLE,
+            AVG = round(AVG_VALUE, 1),
+            STDEV = round(STDEV_VALUE, 1),
+            MIN = MIN_VALUE,
+            P10 = P10_VALUE,
+            P25 = P25_VALUE,
+            MEDIAN = MEDIAN_VALUE,
+            P75 = P75_VALUE,
+            P90 = P90_VALUE,
+            MAX = MAX_VALUE,
+            .keep = "none"  # do not display other columns
+          )
        doc <- doc %>%
         my_caption("Distribution of day, month and year of birth of persons.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-        my_body_add_table_runtime(df$dayMonthYearOfBirth)
+        my_body_add_table_runtime(
+          df$dayMonthYearOfBirth,
+          auto_format = FALSE,
+          alignment = c('l', rep('r', ncol(df$dayMonthYearOfBirth$result) - 1))
+        )
     } else {
       doc <- doc %>%
         my_caption("No Day, Month, Year of Birth results.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)

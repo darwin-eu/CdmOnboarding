@@ -1,16 +1,16 @@
 with cte1 as (
     select 
-        'year_of_birth' as variable,
+        'Year' as variable,
         year_of_birth as count_value
     from @cdmDatabaseSchema.person
     union all
     select 
-        'month_of_birth' as variable,
+        'Month' as variable,
         month_of_birth as count_value
     from @cdmDatabaseSchema.person
     union all
     select 
-        'day_of_birth' as variable,
+        'Day' as variable,
         day_of_birth as count_value
     from @cdmDatabaseSchema.person
 ), overallStats as (
@@ -42,7 +42,6 @@ with cte1 as (
 )
 select
     o.variable,
-    o.total as n_records,
     o.min_value,
 	o.max_value,
 	o.avg_value,
