@@ -286,8 +286,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           arrange(desc(VARIABLE)) %>% # Year, Month, Day
           mutate(
             ` ` = VARIABLE,
-            AVG = round(AVG_VALUE, 1),
-            STDEV = round(STDEV_VALUE, 1),
+            `%Missing` = prettyPc(P_MISSING),
             MIN = MIN_VALUE,
             P10 = P10_VALUE,
             P25 = P25_VALUE,

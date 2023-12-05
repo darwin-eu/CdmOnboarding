@@ -19,8 +19,7 @@ with cte1 as (
         count(*) as total,
         min(count_value) as min_value,
         max(count_value) as max_value,
-        avg(count_value) as avg_value,
-        stdev(count_value) as stdev_value
+        sum(CASE WHEN count_value IS NULL THEN 1 ELSE 0 END) as missing_value
     from cte1
     group by variable
 ), statsView as (
@@ -42,10 +41,9 @@ with cte1 as (
 )
 select
     o.variable,
+    100.0 * o.missing_value / o.total as p_missing,
     o.min_value,
 	o.max_value,
-	o.avg_value,
-	o.stdev_value,
     min(case when p.accumulated >= .10 * o.total then p.count_value else o.max_value end) as p10_value,
     min(case when p.accumulated >= .25 * o.total then p.count_value else o.max_value end) as p25_value,
     min(case when p.accumulated >= .50 * o.total then p.count_value else o.max_value end) as median_value,
@@ -53,5 +51,5 @@ select
     min(case when p.accumulated >= .90 * o.total then p.count_value else o.max_value end) as p90_value
 from priorStats p
 join overallStats o on p.variable = o.variable
-GROUP BY o.variable, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+GROUP BY o.variable, o.min_value, o.max_value, o.missing_value, o.total
 ;
