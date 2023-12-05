@@ -1,49 +1,58 @@
--- TODO: implement with percent_rank or ntile, as percentile_disc is not cross-db compatible
-SELECT
-    'year_of_birth' as variable,
-    avg(year_of_birth) as average,
-    STDEV(year_of_birth) as std_dev,
-    min(year_of_birth) as minimum,
-    percentile_disc(0.1) WITHIN GROUP (ORDER BY year_of_birth) as p10,
-    percentile_disc(0.25) WITHIN GROUP (ORDER BY year_of_birth) as p25,
-    percentile_disc(0.5) WITHIN GROUP (ORDER BY year_of_birth) as median,
-    percentile_disc(0.75) WITHIN GROUP (ORDER BY year_of_birth) as p75,
-    percentile_disc(0.9) WITHIN GROUP (ORDER BY year_of_birth) as p90,
-    max(year_of_birth) as maximum,
-    sum(case when year_of_birth is null then 1 else 0 end) as missing
-FROM 
-    @cdmDatabaseSchema.person
-
-UNION ALL
-
-SELECT
-    'month_of_birth' as variable,
-    round(avg(month_of_birth), 1) as average,
-    round(STDEV(month_of_birth), 1) as std_dev,
-    min(month_of_birth) as minimum,
-    percentile_disc(0.1) WITHIN GROUP (ORDER BY month_of_birth) as p10,
-    percentile_disc(0.25) WITHIN GROUP (ORDER BY month_of_birth) as p25,
-    percentile_disc(0.5) WITHIN GROUP (ORDER BY month_of_birth) as median,
-    percentile_disc(0.75) WITHIN GROUP (ORDER BY month_of_birth) as p75,
-    percentile_disc(0.9) WITHIN GROUP (ORDER BY month_of_birth) as p90,
-    max(month_of_birth) as maximum,
-    sum(case when month_of_birth is null then 1 else 0 end) as missing
-FROM 
-    @cdmDatabaseSchema.person
-
-UNION ALL
-
-SELECT
-    'day_of_birth' as variable,
-    round(avg(day_of_birth), 1) as average,
-    round(STDEV(day_of_birth), 1) as std_dev,
-    min(day_of_birth) as minimum,
-    percentile_disc(0.1) WITHIN GROUP (ORDER BY day_of_birth) as p10,
-    percentile_disc(0.25) WITHIN GROUP (ORDER BY day_of_birth) as p25,
-    percentile_disc(0.5) WITHIN GROUP (ORDER BY day_of_birth) as median,
-    percentile_disc(0.75) WITHIN GROUP (ORDER BY day_of_birth) as p75,
-    percentile_disc(0.9) WITHIN GROUP (ORDER BY day_of_birth) as p90,
-    max(day_of_birth) as maximum,
-    sum(case when day_of_birth is null then 1 else 0 end) as missing
-FROM 
-    @cdmDatabaseSchema.person
+with cte1 as (
+    select 
+        'year_of_birth' as variable,
+        year_of_birth as count_value
+    from @cdmDatabaseSchema.person
+    union all
+    select 
+        'month_of_birth' as variable,
+        month_of_birth as count_value
+    from @cdmDatabaseSchema.person
+    union all
+    select 
+        'day_of_birth' as variable,
+        day_of_birth as count_value
+    from @cdmDatabaseSchema.person
+), overallStats as (
+    select 
+        variable,
+        count(*) as total,
+        min(count_value) as min_value,
+        max(count_value) as max_value,
+        avg(count_value) as avg_value,
+        stdev(count_value) as stdev_value
+    from cte1
+    group by variable
+), statsView as (
+    select
+        variable,
+        count_value,
+        count(*) as total,
+        row_number() over (partition by variable order by count_value) as rn
+    from cte1
+    group by variable, count_value
+), priorStats as (
+  select
+    s.variable,
+    s.count_value,
+    sum(p.total) as accumulated
+  from statsView s
+  join statsView p on s.variable = p.variable and p.rn <= s.rn
+  group by s.variable, s.count_value, s.total, s.rn
+)
+select
+    o.variable,
+    o.total as n_records,
+    o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+    min(case when p.accumulated >= .10 * o.total then p.count_value else o.max_value end) as p10_value,
+    min(case when p.accumulated >= .25 * o.total then p.count_value else o.max_value end) as p25_value,
+    min(case when p.accumulated >= .50 * o.total then p.count_value else o.max_value end) as median_value,
+    min(case when p.accumulated >= .75 * o.total then p.count_value else o.max_value end) as p75_value,
+    min(case when p.accumulated >= .90 * o.total then p.count_value else o.max_value end) as p90_value
+from priorStats p
+join overallStats o on p.variable = o.variable
+GROUP BY o.variable, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
