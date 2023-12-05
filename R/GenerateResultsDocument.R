@@ -264,6 +264,18 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         style = pkg.env$styles$footnote
       )
 
+    # Day, Month, Year of Birth
+    doc <- doc %>%
+        officer::body_add_par("Day, Month, Year of Birth", style = pkg.env$styles$heading2)
+    if (!is.null(df$dayMonthYearOfBirth$result)) {
+       doc <- doc %>%
+        my_caption("Distribution of day, month and year of birth of persons.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+        my_body_add_table_runtime(df$dayMonthYearOfBirth)
+    } else {
+      doc <- doc %>%
+        my_caption("No Day, Month, Year of Birth results.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
+    }
+
     doc <- doc %>% officer::body_add_break()
   }
 
