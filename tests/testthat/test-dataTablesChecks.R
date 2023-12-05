@@ -13,7 +13,8 @@ test_that("Data Tables Checks", {
       "dataTablesCounts", "totalRecords", "recordsPerPerson", "conceptsPerPerson",
       "observationPeriodLength", "activePersons", "observedByMonth",
       "typeConcepts", "tableDateRange", "dayOfTheWeek", "dayOfTheMonth",
-      "observationPeriodsPerPerson", "observationPeriodOverlap"
+      "observationPeriodsPerPerson", "observationPeriodOverlap",
+      "dayMonthYearOfBirth"
     )
   )
 
