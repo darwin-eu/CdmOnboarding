@@ -80,7 +80,7 @@ my_compare(results_v21_fixed, results_v22_fixed) # "In x but not in y: 0 element
 my_compare(results_v22_fixed, results_v30_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 13 elements" -> includes dqdResults and dedResults
 
 my_compare(results_v22, results_v22_fixed) # "In x but not in y: 4 elements.\nIn y but not in x: 4 elements"
-my_compare(results_v30, results_v30_fixed) # "In x but not in y: 4 elements.\nIn y but not in x: 5 elements"
+my_compare(results_v30, results_v30_fixed) # "In x but not in y: 4 elements.\nIn y but not in x: 6 elements"
 
 #' TODO:
 #' - Run v21 and v22 with dqdJson and drugExposureDiagnostics

@@ -18,17 +18,17 @@ fixDataFrameNames <- function(df) {
     }
 
     names(result) <- names(result) |>
-        gsub("^#$", "ROW_NUM", x = _) |>
-        gsub('^C$', "N_CLASSIFICATION_CONCEPTS", x = _) |>
-        gsub('^S$', "N_STANDARD_CONCEPTS", x = _) |>
-        gsub('^-$', "N_NON_STANDARD_CONCEPTS", x = _) |>
-        gsub('^TABLE$', "DOMAIN", x = _) |>
-        gsub('PERSON COUNT', "N_PERSONS", x = _) |>
-        gsub("CATEGORY", "DOMAIN", x = _) |>
-        gsub("(?<!SOURCE)_VALUE", "", x = _, perl = TRUE) |>
-        gsub("%", "P_", x = _) |>
-        gsub("#", "N_", x = _) |>
-        gsub(" ", "_", x = _)
+        str_replace("^#$", "ROW_NUM") |>
+        str_replace('^C$', "N_CLASSIFICATION_CONCEPTS") |>
+        str_replace('^S$', "N_STANDARD_CONCEPTS") |>
+        str_replace('^-$', "N_NON_STANDARD_CONCEPTS") |>
+        str_replace('^TABLE$', "DOMAIN") |>
+        str_replace('PERSON COUNT', "N_PERSONS") |>
+        str_replace("CATEGORY", "DOMAIN") |>
+        str_replace("(?<!SOURCE|COUNT)_VALUE", "") |>
+        str_replace("%", "P_") |>
+        str_replace("#", "N_") |>
+        str_replace_all(" ", "_")
     if ('CONCEPT_NAME' %in% names(result)) {
         result$CONCEPT_ID <- dplyr::coalesce(result$CONCEPT_ID, character(nrow(result)))
     }
