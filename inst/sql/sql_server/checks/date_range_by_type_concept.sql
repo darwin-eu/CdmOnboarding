@@ -1,8 +1,8 @@
--- TODO: this can replace the type_concepts.sql. Execution time is very similar on Synthea20k
 select
-	domain,
-  type_concept_id,
-  concept_name + ' (' + isnull(standard_concept, '-') + ')' as type_concept_name,
+	domain as domain,
+  type_concept_id as type_concept_id,
+  concept_name as type_concept_name,
+  standard_concept as type_standard_concept,
   count_value as count_value,
 	left(cast(first_start_date as varchar), 7) as first_start_month,
   left(cast(last_start_date as varchar), 7) as last_start_month,

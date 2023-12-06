@@ -213,36 +213,23 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           df$observationPeriodOverlap$duration
         ), style = pkg.env$styles$footnote)
 
-    df$typeConcepts$result <- df$typeConcepts$result %>%
-      tidyr::pivot_wider(
-        id_cols = TYPE_CONCEPT_NAME,
-        names_from = DOMAIN,
-        values_from = COUNT,
-        values_fill = "0",
-        values_fn = prettyHr
-      )
-    doc <- doc %>%
-      officer::body_add_par("Type Concepts", style = pkg.env$styles$heading2) %>%
-      my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$typeConcepts, alignment =  c('l', rep('r', ncol(df$typeConcepts$result) - 1)))  # TODO display in long format
-
-    df$tableDateRange$result <- df$tableDateRange$result %>%
-      rename(
+    df$dateRangeByTypeConcept$result <- df$dateRangeByTypeConcept$result %>%
+      mutate(
         `Domain` = DOMAIN,
         `N` = COUNT_VALUE,
-        `Type` = TYPE_CONCEPT_NAME,
+        `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
         `↓Start` = FIRST_START_MONTH,
         `↑Start` = LAST_START_MONTH,
         `↓End` = FIRST_END_MONTH,
-        `↑End` = LAST_END_MONTH
+        `↑End` = LAST_END_MONTH,
+        .keep = "none"  # do not display other columns
       )
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(
-        df$tableDateRange,
-        auto_format = T,
-        alignment = c('l', 'l', rep('r', ncol(df$tableDateRange$result) - 2))
+        df$dateRangeByTypeConcept,
+        alignment = c('l', 'l', rep('r', ncol(df$dateRangeByTypeConcept$result) - 2))
       )
 
     # Day of the week and month
