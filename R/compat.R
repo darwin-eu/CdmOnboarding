@@ -68,7 +68,8 @@ fixP_RECORDS <- function(r) {
     return(r)
 }
 
-#' Provide backwards compatibility
+#' Provide forwards compatibility by converting results from previous versions of CdmOnboarding to the latest version.
+#' Provide backwards compatibility by converting results from the latest version of CdmOnboarding to previous versions.
 compat <- function(r, target_version = package_version('3.0.0')) {
     if (target_version$major != 3) {
         print("Only target version v3 is supported")
@@ -90,12 +91,33 @@ compat <- function(r, target_version = package_version('3.0.0')) {
     r$dataTablesResults$dataTablesCounts <- fixDataFrameNames(r$dataTablesResults$dataTablesCounts)
     r$dataTablesResults$conceptsPerPerson <- fixDataFrameNames(r$dataTablesResults$conceptsPerPerson)
     r$dataTablesResults$totalRecords <- fixDataFrameNames(r$dataTablesResults$totalRecords)
-    r$dataTablesResults$tableDateRange <- fixDataFrameNames(r$dataTablesResults$tableDateRange)
     r$dataTablesResults$observationPeriodLength <- fixDataFrameNames(r$dataTablesResults$observationPeriodLength)
     r$dataTablesResults$observedByMonth <- fixDataFrameNames(r$dataTablesResults$observedByMonth)
-    r$dataTablesResults$typeConcepts <- fixDataFrameNames(r$dataTablesResults$typeConcepts)
     r$dataTablesResults$dayOfTheMonth <- fixDataFrameNames(r$dataTablesResults$dayOfTheMonth)
     r$dataTablesResults$dayOfTheWeek <- fixDataFrameNames(r$dataTablesResults$dayOfTheWeek)
+
+    # Backwards compatibility, typeConcepts and tableDateRange were merged into dateRangeByTypeConcept (v3)
+    if (!is.null(r$dataTablesResults$dateRangeByTypeConcept)) {
+        r$dataTablesResults$tableDateRange$result <- r$dataTablesResults$dateRangeByTypeConcept$result %>%
+            summarise(
+                FIRST_START_MONTH = min(FIRST_START_MONTH),
+                LAST_START_MONTH = max(LAST_START_MONTH),
+                .by = DOMAIN
+            )
+        r$dataTablesResults$tableDateRange$duration <- NA
+
+        r$dataTablesResults$typeConcepts$result <- r$dataTablesResults$dateRangeByTypeConcept$result %>%
+            select(
+                DOMAIN,
+                TYPE_CONCEPT_ID,
+                TYPE_CONCEPT_NAME,
+                COUNT = COUNT_VALUE
+            )
+        r$dataTablesResults$typeConcepts$duration <- NA
+    } else {
+        r$dataTablesResults$typeConcepts <- fixDataFrameNames(r$dataTablesResults$typeConcepts)
+        r$dataTablesResults$tableDateRange <- fixDataFrameNames(r$dataTablesResults$tableDateRange)
+    }
 
     # Vocabulary
     r$vocabularyResults$conceptCounts <- fixDataFrameNames(r$vocabularyResults$conceptCounts)
