@@ -68,7 +68,6 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 # Details for connecting to the CDM
 cdmDatabaseSchema <- Sys.getenv("CDM_SCHEMA")
 resultsDatabaseSchema <- Sys.getenv("RESULTS_SCHEMA")
-vocabDatabaseSchema <- cdmDatabaseSchema
 oracleTempSchema <- NULL
 
 # Details specific to the database:
@@ -92,7 +91,6 @@ results <- CdmOnboarding::cdmOnboarding(
   connectionDetails = connectionDetails,
   cdmDatabaseSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = resultsDatabaseSchema,
-  vocabDatabaseSchema = vocabDatabaseSchema,
   oracleTempSchema = oracleTempSchema,
   databaseId = databaseId,
   authors = authors,

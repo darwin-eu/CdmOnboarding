@@ -52,5 +52,5 @@ from (
   from @cdmDatabaseSchema.specimen
   group by specimen_type_concept_id
 ) cte
-join @vocabDatabaseSchema.concept on type_concept_id = concept_id
+join @cdmDatabaseSchema.concept on type_concept_id = concept_id
 ;

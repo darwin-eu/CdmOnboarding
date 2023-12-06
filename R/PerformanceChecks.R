@@ -32,22 +32,19 @@
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
-#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary.
-#'                                         On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 performanceChecks <- function(connectionDetails,
                               resultsDatabaseSchema,
-                              vocabDatabaseSchema,
                               sqlOnly = FALSE,
                               outputFolder = "output") {
   achillesTiming <- executeQuery(outputFolder, "achilles_timing.sql", "Retrieving duration of Achilles queries",
                                  connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
 
   performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
-                                       connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+                                       connectionDetails, sqlOnly)
 
   list(
     achillesTiming = achillesTiming,

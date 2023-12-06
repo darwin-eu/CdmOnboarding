@@ -32,8 +32,6 @@
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
-#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
-#'                                         On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param smallCellCount                   To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
@@ -42,28 +40,27 @@
 #' @export
 vocabularyChecks <- function(connectionDetails,
                            cdmDatabaseSchema,
-                           vocabDatabaseSchema = cdmDatabaseSchema,
                            smallCellCount = 5,
                            sqlOnly = FALSE,
                            outputFolder = "output",
                            optimize = FALSE) {
   if (optimize && connectionDetails$dbms == "postgresql") {
     vocabularyCounts <- executeQuery(outputFolder, "vocabulary_tables_count_postgres.sql", "Count on vocabulary tables (postgres estimate) query executed successfully",
-                                     connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+                                     connectionDetails, sqlOnly)
   } else if (optimize && connectionDetails$dbms == "sql server") {
     vocabularyCounts <- executeQuery(outputFolder, "vocabulary_tables_count_sql_server.sql", "Count on vocabulary tables (sql server estimate) query executed successfully",
-                                     connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+                                     connectionDetails, sqlOnly)
   } else {
     vocabularyCounts <- executeQuery(outputFolder, "vocabulary_tables_count.sql", "Count on vocabulary tables query executed successfully",
-                                     connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+                                     connectionDetails, sqlOnly)
   }
 
   conceptCounts <- executeQuery(outputFolder, "concept_counts_by_vocabulary.sql", "Concept counts by vocabulary query executed successfully",
-                                connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+                                connectionDetails, sqlOnly)
   sourceConceptFrequency <- executeQuery(outputFolder, "source_to_concept_map_frequency.sql", "Source to concept map breakdown query executed successfully",
-                                         connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+                                         connectionDetails, sqlOnly)
   sourceConceptMap <- executeQuery(outputFolder, "get_source_to_concept_map.sql", "Source to concept map query executed successfully",
-                                   connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
+                                   connectionDetails, sqlOnly)
 
   # Execute in same connection
   # Note: if one query in the tryCatch fails, then all fail ("current transaction is aborted")
@@ -76,7 +73,7 @@ vocabularyChecks <- function(connectionDetails,
                                             activeConnection = connection)
 
     drugMapping  <- executeQuery(outputFolder, "mapping_levels_drugs.sql", "Drug Level Mapping query executed successfully", sqlOnly = sqlOnly,
-                                     activeConnection = connection, vocabDatabaseSchema = vocabDatabaseSchema)
+                                     activeConnection = connection)
 
     unmappedDrugs <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped drugs query executed successfully", sqlOnly = sqlOnly,
                                       activeConnection = connection, cdmDomain = 'drug', smallCellCount = smallCellCount)
@@ -104,27 +101,27 @@ vocabularyChecks <- function(connectionDetails,
     unmappedUnits <- rbind(unmappedUnitsMeas, unmappedUnitsObs)
 
     mappedDrugs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped drugs query executed successfully", sqlOnly = sqlOnly,
-                                   activeConnection = connection, cdmDomain = 'drug', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                   activeConnection = connection, cdmDomain = 'drug', smallCellCount = smallCellCount)
     mappedConditions <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped conditions query executed successfully", sqlOnly = sqlOnly,
-                                         activeConnection = connection, cdmDomain = 'condition', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                         activeConnection = connection, cdmDomain = 'condition', smallCellCount = smallCellCount)
     mappedMeasurements <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped measurements query executed successfully", sqlOnly = sqlOnly,
-                                           activeConnection = connection, cdmDomain = 'measurement', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                           activeConnection = connection, cdmDomain = 'measurement', smallCellCount = smallCellCount)
     mappedObservations <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped observations query executed successfully", sqlOnly = sqlOnly,
-                                           activeConnection = connection, cdmDomain = 'observation', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                           activeConnection = connection, cdmDomain = 'observation', smallCellCount = smallCellCount)
     mappedProcedures <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped procedures query executed successfully", sqlOnly = sqlOnly,
-                                         activeConnection = connection, cdmDomain = 'procedure', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                         activeConnection = connection, cdmDomain = 'procedure', smallCellCount = smallCellCount)
     mappedDevices <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped devices query executed successfully", sqlOnly = sqlOnly,
-                                      activeConnection = connection, cdmDomain = 'device', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                      activeConnection = connection, cdmDomain = 'device', smallCellCount = smallCellCount)
     mappedVisits <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped visits query executed successfully", sqlOnly = sqlOnly,
-                                     activeConnection = connection, cdmDomain = 'visit', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                     activeConnection = connection, cdmDomain = 'visit', smallCellCount = smallCellCount)
     mappedVisitDetails <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped visit details query executed successfully", sqlOnly = sqlOnly,
-                                     activeConnection = connection, cdmDomain = 'visit_detail', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                     activeConnection = connection, cdmDomain = 'visit_detail', smallCellCount = smallCellCount)
     mappedUnitsMeas <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly = sqlOnly,
-                                        activeConnection = connection, cdmDomain = 'meas_unit', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                        activeConnection = connection, cdmDomain = 'meas_unit', smallCellCount = smallCellCount)
     mappedUnitsObs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped units query executed successfully", sqlOnly = sqlOnly,
-                                       activeConnection = connection, cdmDomain = 'obs_unit', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                       activeConnection = connection, cdmDomain = 'obs_unit', smallCellCount = smallCellCount)
     mappedDrugRoute <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Unmapped units query executed successfully", sqlOnly = sqlOnly,
-                                         activeConnection = connection, cdmDomain = 'drug_route', vocabDatabaseSchema = vocabDatabaseSchema, smallCellCount = smallCellCount)
+                                         activeConnection = connection, cdmDomain = 'drug_route', smallCellCount = smallCellCount)
   },
   finally = {
     DatabaseConnector::disconnect(connection = connection)

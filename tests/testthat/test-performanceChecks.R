@@ -2,7 +2,6 @@ test_that("Performance Checks", {
   performanceResults <- CdmOnboarding::performanceChecks(
     connectionDetails = params$connectionDetails,
     resultsDatabaseSchema = params$resultsDatabaseSchema,
-    vocabDatabaseSchema = params$cdmDatabaseSchema,
     outputFolder = params$outputFolder
   )
 

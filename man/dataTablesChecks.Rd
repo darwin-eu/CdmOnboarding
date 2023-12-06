@@ -8,7 +8,6 @@ dataTablesChecks(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
-  vocabDatabaseSchema = cdmDatabaseSchema,
   cdmVersion,
   sqlOnly = FALSE,
   outputFolder = "output",
@@ -23,9 +22,6 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 
 \item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
-
-\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
- On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{cdmVersion}{Define the OMOP CDM version used: currently supports v5 and above.
 Use major release number or minor number only (e.g. 5, 5.3)}
