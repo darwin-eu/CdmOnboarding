@@ -148,6 +148,34 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_gg(recordsPerPersonPlot, height = 4) %>%
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
+    # Mortality
+    personCount <- df$dataTablesCounts$result %>%
+      filter(TABLENAME == 'person') %>%
+      pull(COUNT)
+    deathCount <- df$dataTablesCounts$result %>%
+      filter(TABLENAME == 'death') %>%
+      pull(COUNT)
+    overallMortality <- round(deathCount / personCount * 100, 2)
+
+    if (deathCount > 0) {
+      totalDeath <- df$totalRecords$result %>% filter(df$totalRecords$result$SERIES_NAME %in% 'Death')
+      totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
+      doc <- doc %>%
+        officer::body_add_gg(totalDeathPlot, height = 4)
+    } else {
+      doc <- doc %>%
+        officer::body_add_par("No death records found.", style = pkg.env$styles$highlight)
+    }
+    doc <- doc %>%
+      my_caption(
+        sprintf(
+          "Number of monthly deaths over time. Overall mortality: %s%%.",
+          overallMortality
+        ),
+        sourceSymbol = pkg.env$sources$achilles,
+        style = pkg.env$styles$figureCaption
+      )
+
     doc <- doc %>%
       officer::body_add_break() %>%
       officer::body_add_par("Distinct concepts per person", style = pkg.env$styles$heading2) %>%
