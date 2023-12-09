@@ -227,6 +227,28 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Length of first observation period (days, years).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$observationPeriodLength)
 
+    df$visitLength$result <- df$visitLength$result %>%
+      mutate(
+        Domain = DOMAIN,
+        `Concept ID` = CONCEPT_ID,
+        `Concept Name` = CONCEPT_NAME,
+        AVG = round(AVG_VALUE, 1),
+        STDEV = round(STDEV_VALUE, 1),
+        MIN = MIN_VALUE,
+        P10 = P10_VALUE,
+        P25 = P25_VALUE,
+        MEDIAN = MEDIAN_VALUE,
+        P75 = P75_VALUE,
+        P90 = P90_VALUE,
+        MAX = MAX_VALUE,
+        .keep = "none"  # do not display other columns
+      ) %>%
+      arrange(Domain)
+
+    doc <- doc %>%
+      my_caption("Length of visit in days by visit concept.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table_runtime(df$visitLength)
+
     # Combine Observation Periods per Person and overlap in one table
     obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
       mutate(
