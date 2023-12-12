@@ -394,7 +394,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("The level of the drug mappings", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(vocabResults$drugMapping, alignment =  c('l', rep('r', 4)))
 
-    # Top 25 missing mappings
+    # Top 25 unmapped codes
     doc <- doc %>%
       officer::body_add_par("Unmapped Codes", style = pkg.env$styles$heading2) %>%
       my_unmapped_section(vocabResults$unmappedDrugs, "drugs", results$smallCellCount) %>%
@@ -407,9 +407,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_unmapped_section(vocabResults$unmappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedValuesMeas, "measurement values", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedValuesObs, "observation values", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount)
 
-    ## add top 25 mapped codes
+    # Top 25 mapped concepts
     doc <- doc %>%
       officer::body_add_par("Mapped Codes", style = pkg.env$styles$heading2) %>%
       my_mapped_section(vocabResults$mappedDrugs, "drugs", results$smallCellCount) %>%
@@ -422,6 +424,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_mapped_section(vocabResults$mappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedValuesMeas, "measurement values", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedValuesObs, "observation values", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount)
 
     ## add source_to_concept_map breakdown
