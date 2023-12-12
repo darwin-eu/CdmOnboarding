@@ -74,7 +74,8 @@ dataTablesChecks <- function(connectionDetails,
     dayOfTheMonth = "day_of_the_month.sql",
     observationPeriodsPerPerson = "observation_periods_per_person.sql",
     observationPeriodOverlap = "observation_period_overlap.sql",
-    dayMonthYearOfBirth = "day_month_year_of_birth.sql"
+    dayMonthYearOfBirth = "day_month_year_of_birth.sql",
+    visitLength = "visit_length.sql"
   )
 
   result <- list()
