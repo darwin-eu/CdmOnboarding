@@ -2,6 +2,7 @@ test_that("Vocabulary Tables Checks", {
   vocabularyResults <- CdmOnboarding::vocabularyChecks(
     connectionDetails = params$connectionDetails,
     cdmDatabaseSchema = params$cdmDatabaseSchema,
+    cdmVersion = params$cdmVersion,
     outputFolder = params$outputFolder
   )
 
@@ -10,10 +11,10 @@ test_that("Vocabulary Tables Checks", {
     "version", "mappingTempTableCreation", "mappingCompleteness", 
     "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements", 
     "unmappedObservations", "unmappedProcedures", "unmappedDevices", 
-    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedDrugRoute",
+    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedValuesMeas", "unmappedValuesObs", "unmappedDrugRoute",
     "mappedDrugs", "mappedConditions", "mappedMeasurements", "mappedObservations", 
     "mappedProcedures", "mappedDevices", "mappedVisits", "mappedVisitDetails", "mappedUnitsMeas",
-    "mappedUnitsObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts", 
+    "mappedUnitsObs", "mappedValuesMeas", "mappedValuesObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts", 
     "sourceConceptFrequency", "sourceConceptMap"
     )
   )

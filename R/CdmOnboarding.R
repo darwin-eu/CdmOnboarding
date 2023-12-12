@@ -308,37 +308,40 @@ cdmOnboarding <- function(connectionDetails,
       cdmDatabaseSchema = cdmDatabaseSchema,
       vocabDatabaseSchema = vocabDatabaseSchema,
       smallCellCount = smallCellCount,
-      sqlOnly = sqlOnly,
+      cdmVersion = cdmVersion,
       outputFolder = outputFolder,
+      sqlOnly = sqlOnly,
       optimize = optimize
     )
   }
 
   # performance checks --------------------------------------------------------------------------------------------
-  missingPackages <- NULL
-  packinfo <- NULL
-  hadesPackageVersions <- NULL
-  sys_details <- NULL
-  dmsVersion <- NULL
   performanceResults <- NULL
   if (runPerformanceChecks) {
     ParallelLogger::logInfo("Check installed R Packages")
+
+    packinfo <- as.data.frame(installed.packages(fields = c("URL")))
+    packinfo <- packinfo[, c("Package", "Version", "LibPath", "URL")]
+
     hadesPackages <- getHADESpackages()
-    diffPackages <- setdiff(hadesPackages, rownames(installed.packages()))
-    missingPackages <- paste(diffPackages, collapse = ', ')
-
-    if (length(diffPackages) > 0) {
-      ParallelLogger::logInfo("Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information") # nolint
-      ParallelLogger::logInfo(sprintf("Missing: %s", missingPackages))
+    diffHADESPackages <- setdiff(hadesPackages, packinfo$Package)
+    if (length(diffHADESPackages) > 0) {
+      ParallelLogger::logInfo("> Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information") # nolint
+      ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffHADESPackages, collapse = ', ')))
     } else {
-      ParallelLogger::logInfo("> All HADES packages are installed")
+      ParallelLogger::logInfo("> All HADES packages are installed.")
     }
-
-    # Note: can have multiple versions of the same package due to renvs
-    # Sorting on LibPath to get packages in same environment together
-    packinfo <- as.data.frame(installed.packages())
-    packinfo <- packinfo[order(packinfo$LibPath, packinfo$Package), c("Package", "Version")]
     hadesPackageVersions <- packinfo[packinfo$Package %in% hadesPackages, ]
+
+    darwinPackages <- getDARWINpackages()
+    diffDARWINPackages <- setdiff(darwinPackages, packinfo$Package)
+    if (length(diffDARWINPackages) > 0) {
+      ParallelLogger::logInfo("> Not all the DARWIN EU® packages are installed.")
+      ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffDARWINPackages, collapse = ', ')))
+    } else {
+      ParallelLogger::logInfo("> All DARWIN EU® packages are installed.")
+    }
+    darwinPackageVersions <- packinfo[packinfo$Package %in% darwinPackages, ]
 
     sys_details <- benchmarkme::get_sys_details(sys_info = FALSE)
     ParallelLogger::logInfo(
@@ -361,6 +364,11 @@ cdmOnboarding <- function(connectionDetails,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder
     )
+    performanceResults$sys_details <- sys_details
+    performanceResults$dmsVersion <- dmsVersion
+    performanceResults$packinfo <- packinfo
+    performanceResults$hadesPackageVersions <- hadesPackageVersions
+    performanceResults$darwinPackageVersions <- darwinPackageVersions
   }
 
   webApiVersion <- "unknown"
@@ -402,16 +410,11 @@ cdmOnboarding <- function(connectionDetails,
     databaseDescription = databaseDescription,
     vocabularyResults = vocabularyResults,
     dataTablesResults = dataTablesResults,
-    packinfo = packinfo,
-    hadesPackageVersions = hadesPackageVersions,
-    missingPackages = missingPackages,
     performanceResults = performanceResults,
-    sys_details = sys_details,
     webAPIversion = webApiVersion,
+    dms = connectionDetails$dbms,
     cdmSource = cdmSource,
     achillesMetadata = achillesMetadata,
-    dms = connectionDetails$dbms,
-    dmsVersion = dmsVersion,
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
     dqdResults = dqdResults,

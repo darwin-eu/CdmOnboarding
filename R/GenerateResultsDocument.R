@@ -115,14 +115,22 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   df <- results$dataTablesResults
   if (!is.null(df)) {
-    n_persons_total <- df$dataTablesCounts$result$COUNT[df$dataTablesCounts$result$TABLENAME == 'person']
+    # Pre-compute counts
+    personCount <- df$dataTablesCounts$result %>%
+      dplyr::filter(TABLENAME == 'person') %>%
+      pull(COUNT)
+    deathCount <- df$dataTablesCounts$result %>%
+      dplyr::filter(TABLENAME == 'death') %>%
+      pull(COUNT)
+
+    # Total records per table
     df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
       arrange(desc(COUNT)) %>%
       mutate(
         Table = TABLENAME,
         `#Records` = COUNT,
         `#Persons` = N_PERSONS,
-        `%Persons with record` = prettyPc(N_PERSONS / n_persons_total * 100),
+        `%Persons with record` = prettyPc(N_PERSONS / personCount * 100),
         .keep = "none"  # do not display other columns
       )
 
@@ -149,16 +157,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
     # Mortality
-    personCount <- df$dataTablesCounts$result %>%
-      filter(TABLENAME == 'person') %>%
-      pull(COUNT)
-    deathCount <- df$dataTablesCounts$result %>%
-      filter(TABLENAME == 'death') %>%
-      pull(COUNT)
     overallMortality <- round(deathCount / personCount * 100, 2)
 
     if (deathCount > 0) {
-      totalDeath <- df$totalRecords$result %>% filter(df$totalRecords$result$SERIES_NAME %in% 'Death')
+      totalDeath <- df$totalRecords$result %>%
+        dplyr::filter(SERIES_NAME %in% 'Death')
       totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
       doc <- doc %>%
         officer::body_add_gg(totalDeathPlot, height = 4)
@@ -227,6 +230,28 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Length of first observation period (days, years).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$observationPeriodLength)
 
+    df$visitLength$result <- df$visitLength$result %>%
+      mutate(
+        Domain = DOMAIN,
+        `Concept ID` = CONCEPT_ID,
+        `Concept Name` = CONCEPT_NAME,
+        AVG = round(AVG_VALUE, 1),
+        STDEV = round(STDEV_VALUE, 1),
+        MIN = MIN_VALUE,
+        P10 = P10_VALUE,
+        P25 = P25_VALUE,
+        MEDIAN = MEDIAN_VALUE,
+        P75 = P75_VALUE,
+        P90 = P90_VALUE,
+        MAX = MAX_VALUE,
+        .keep = "none"  # do not display other columns
+      ) %>%
+      arrange(Domain)
+
+    doc <- doc %>%
+      my_caption("Length of visit in days by visit concept.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table_runtime(df$visitLength)
+
     # Combine Observation Periods per Person and overlap in one table
     obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
       mutate(
@@ -255,23 +280,24 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           df$observationPeriodOverlap$duration
         ), style = pkg.env$styles$footnote)
 
-    df$typeConcepts$result <- df$typeConcepts$result %>%
-      tidyr::pivot_wider(
-        id_cols = TYPE_CONCEPT_NAME,
-        names_from = DOMAIN,
-        values_from = COUNT,
-        values_fill = "0",
-        values_fn = prettyHr
+    df$dateRangeByTypeConcept$result <- df$dateRangeByTypeConcept$result %>%
+      mutate(
+        `Domain` = DOMAIN,
+        `N` = COUNT_VALUE,
+        `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
+        `↓Start` = FIRST_START_MONTH,
+        `↑Start` = LAST_START_MONTH,
+        `↓End` = FIRST_END_MONTH,
+        `↑End` = LAST_END_MONTH,
+        .keep = "none"  # do not display other columns
       )
-    doc <- doc %>%
-      officer::body_add_par("Type Concepts", style = pkg.env$styles$heading2) %>%
-      my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$typeConcepts, alignment =  c('l', rep('r', ncol(df$typeConcepts$result) - 1)))  # TODO display in long format
-
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
-      my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l', 'r', 'r'))
+      my_body_add_table_runtime(
+        df$dateRangeByTypeConcept,
+        alignment = c('l', 'l', rep('r', ncol(df$dateRangeByTypeConcept$result) - 2))
+      )
 
     # Day of the week and month
     combinedPlot <- cowplot::ggdraw()
@@ -394,7 +420,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("The level of the drug mappings", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(vocabResults$drugMapping, alignment =  c('l', rep('r', 4)))
 
-    # Top 25 missing mappings
+    # Top 25 unmapped codes
     doc <- doc %>%
       officer::body_add_par("Unmapped Codes", style = pkg.env$styles$heading2) %>%
       my_unmapped_section(vocabResults$unmappedDrugs, "drugs", results$smallCellCount) %>%
@@ -407,9 +433,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_unmapped_section(vocabResults$unmappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedValuesMeas, "measurement values", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedValuesObs, "observation values", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount)
 
-    ## add top 25 mapped codes
+    # Top 25 mapped concepts
     doc <- doc %>%
       officer::body_add_par("Mapped Codes", style = pkg.env$styles$heading2) %>%
       my_mapped_section(vocabResults$mappedDrugs, "drugs", results$smallCellCount) %>%
@@ -422,6 +450,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_mapped_section(vocabResults$mappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedValuesMeas, "measurement values", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedValuesObs, "observation values", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount)
 
     ## add source_to_concept_map breakdown
@@ -523,35 +553,50 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   doc <- doc %>%
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
-  if (!is.null(results$performanceResults)) {
-    #installed packages
-    doc <- doc %>%
-      officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
-      my_caption("Versions of all installed R packages from the OHDSI Health Analytics Data-to-Evidence Suite (HADES).", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(results$hadesPackageVersions)
+  df_pr <- results$performanceResults
+  if (!is.null(df_pr)) {
+    # Installed packages
+    allPackages <- data.frame(
+      Package = c(getHADESpackages(), getDARWINpackages()),
+      Version = "",
+      Organisation = c(rep("OHDSI HADES", length(getHADESpackages())), rep("DARWIN EU®", length(getDARWINpackages())))
+    )
 
-    if (results$missingPackage == "") {
-      doc <- doc %>%
-        officer::body_add_par("All HADES R packages were available")
-    } else {
-      doc <- doc %>%
-        officer::body_add_par(paste0("Missing R packages: ", results$missingPackages))
-    }
+    packageVersions <- dplyr::union(df_pr$hadesPackageVersions, df_pr$darwinPackageVersions) %>%
+      dplyr::full_join(allPackages, by = c("Package")) %>%
+      dplyr::mutate(
+        Version = dplyr::coalesce(Version.x, "Not installed")
+      ) %>%
+      # Sorting on LibPath to get packages in same environment together (if multiple versions of the same package installed due to renvs)
+      dplyr::arrange(LibPath, Organisation, Package) %>%
+      dplyr::select(Organisation, Package, Version)
+
+    doc <- doc %>%
+      officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
+      my_caption(
+        paste(
+          "Versions of all installed R packages from DARWIN EU® and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
+          "Packages can be installed from CRAN (install.packages(\"<package_name>\")) or Github (remotes::install_github(\"<organisation>/<package>\"))"
+        ),
+        sourceSymbol = pkg.env$sources$system,
+        style = pkg.env$styles$tableCaption
+      ) %>%
+      my_body_add_table(packageVersions)
 
     #system detail
     doc <- doc %>%
       officer::body_add_par("System Information", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(paste0("Installed R version: ", results$sys_details$r_version$version.string)) %>%
-      officer::body_add_par(paste0("System CPU vendor: ", results$sys_details$cpu$vendor_id, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System CPU model: ", results$sys_details$cpu$model_name, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System CPU number of cores: ", results$sys_details$cpu$no_of_cores, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(results$sys_details$ram, collapse = ", ")))) %>%
-      officer::body_add_par(paste0("DBMS: ", results$dmsVersion)) %>%
+      officer::body_add_par(paste0("Installed R version: ", df_pr$sys_details$r_version$version.string)) %>%
+      officer::body_add_par(paste0("System CPU vendor: ", df_pr$sys_details$cpu$vendor_id, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System CPU model: ", df_pr$sys_details$cpu$model_name, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System CPU number of cores: ", df_pr$sys_details$cpu$no_of_cores, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(df_pr$sys_details$ram, collapse = ", ")))) %>%
+      officer::body_add_par(paste0("DBMS: ", df_pr$dmsVersion)) %>%
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
 
-    n_relations <- results$performanceResults$performanceBenchmark$result
-    benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
+    n_relations <- df_pr$performanceBenchmark$result
+    benchmark_query_time <- df_pr$performanceBenchmark$duration
     doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(sprintf(

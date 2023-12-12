@@ -69,13 +69,13 @@ dataTablesChecks <- function(connectionDetails,
     observationPeriodLength = "observation_period_length.sql",
     activePersons = "active_persons.sql",
     observedByMonth = "observed_by_month.sql",
-    typeConcepts = "type_concepts.sql",
-    tableDateRange = "data_tables_date_range.sql",
+    dateRangeByTypeConcept = "date_range_by_type_concept.sql",
     dayOfTheWeek = "day_of_the_week.sql",
     dayOfTheMonth = "day_of_the_month.sql",
     observationPeriodsPerPerson = "observation_periods_per_person.sql",
     observationPeriodOverlap = "observation_period_overlap.sql",
-    dayMonthYearOfBirth = "day_month_year_of_birth.sql"
+    dayMonthYearOfBirth = "day_month_year_of_birth.sql",
+    visitLength = "visit_length.sql"
   )
 
   result <- list()
@@ -88,7 +88,8 @@ dataTablesChecks <- function(connectionDetails,
       sqlOnly = sqlOnly,
       cdmDatabaseSchema = cdmDatabaseSchema,
       vocabDatabaseSchema = vocabDatabaseSchema,
-      resultsDatabaseSchema = resultsDatabaseSchema
+      resultsDatabaseSchema = resultsDatabaseSchema,
+      cdmVersion = cdmVersion
     )
   }
 
