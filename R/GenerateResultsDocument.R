@@ -115,14 +115,22 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   df <- results$dataTablesResults
   if (!is.null(df)) {
-    n_persons_total <- df$dataTablesCounts$result$COUNT[df$dataTablesCounts$result$TABLENAME == 'person']
+    # Pre-compute counts
+    personCount <- df$dataTablesCounts$result %>%
+      dplyr::filter(TABLENAME == 'person') %>%
+      pull(COUNT)
+    deathCount <- df$dataTablesCounts$result %>%
+      dplyr::filter(TABLENAME == 'death') %>%
+      pull(COUNT)
+
+    # Total records per table
     df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
       arrange(desc(COUNT)) %>%
       mutate(
         Table = TABLENAME,
         `#Records` = COUNT,
         `#Persons` = N_PERSONS,
-        `%Persons with record` = prettyPc(N_PERSONS / n_persons_total * 100),
+        `%Persons with record` = prettyPc(N_PERSONS / personCount * 100),
         .keep = "none"  # do not display other columns
       )
 
@@ -149,16 +157,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
     # Mortality
-    personCount <- df$dataTablesCounts$result %>%
-      filter(TABLENAME == 'person') %>%
-      pull(COUNT)
-    deathCount <- df$dataTablesCounts$result %>%
-      filter(TABLENAME == 'death') %>%
-      pull(COUNT)
     overallMortality <- round(deathCount / personCount * 100, 2)
 
     if (deathCount > 0) {
-      totalDeath <- df$totalRecords$result %>% filter(df$totalRecords$result$SERIES_NAME %in% 'Death')
+      totalDeath <- df$totalRecords$result %>%
+        dplyr::filter(SERIES_NAME %in% 'Death')
       totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
       doc <- doc %>%
         officer::body_add_gg(totalDeathPlot, height = 4)
