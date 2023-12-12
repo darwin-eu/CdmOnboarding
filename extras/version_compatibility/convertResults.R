@@ -35,14 +35,14 @@ print(get_cdmonboarding_version(results_v21))
 results_v22 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v2.2.0.rds')
 print(get_cdmonboarding_version(results_v22))
 
-# TODO
-# results_v30 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v3.0.0.rds')
-# print(get_cdmonboarding_version(results_v30))
+results_v30 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v3.0.0-dev.rds')
+print(get_cdmonboarding_version(results_v30))
 
-results_v1_fixed <- compat(results_v1)
+results_v10_fixed <- compat(results_v1)
 results_v20_fixed <- compat(results_v20)
 results_v21_fixed <- compat(results_v21)
 results_v22_fixed <- compat(results_v22)
+results_v30_fixed <- compat(results_v30)
 
 my_setdiff <- function(a, b) {
   set <- setdiff(a, b)
@@ -74,8 +74,15 @@ my_compare <- function(x, y) {
   print(sprintf('In x but not in y: %d elements.\nIn y but not in x: %d elements', length(a), length(b)))
 }
 
-my_compare(results_v1_fixed, results_v22_fixed) # "In x but not in y: 14 elements.\nIn y but not in x: 13 elements"
+my_compare(results_v10_fixed, results_v22_fixed) # "In x but not in y: 14 elements.\nIn y but not in x: 13 elements"
 my_compare(results_v20_fixed, results_v22_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 4 elements"
 my_compare(results_v21_fixed, results_v22_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 1 elements"
+my_compare(results_v22_fixed, results_v30_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 13 elements" -> includes dqdResults and dedResults
 
-my_compare(results_v22, names_v22_fixed)
+my_compare(results_v22, results_v22_fixed) # "In x but not in y: 4 elements.\nIn y but not in x: 4 elements"
+my_compare(results_v30, results_v30_fixed) # "In x but not in y: 4 elements.\nIn y but not in x: 6 elements"
+
+#' TODO:
+#' - Run v21 and v22 with dqdJson and drugExposureDiagnostics
+#' - Compare each subsequent version (after fix), document added elements. No elements should be removed
+#' - Compare each against latest version (v3), document differences.
