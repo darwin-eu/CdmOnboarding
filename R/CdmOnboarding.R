@@ -308,8 +308,9 @@ cdmOnboarding <- function(connectionDetails,
       cdmDatabaseSchema = cdmDatabaseSchema,
       vocabDatabaseSchema = vocabDatabaseSchema,
       smallCellCount = smallCellCount,
-      sqlOnly = sqlOnly,
+      cdmVersion = cdmVersion,
       outputFolder = outputFolder,
+      sqlOnly = sqlOnly,
       optimize = optimize
     )
   }

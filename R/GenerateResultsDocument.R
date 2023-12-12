@@ -115,14 +115,22 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   df <- results$dataTablesResults
   if (!is.null(df)) {
-    n_persons_total <- df$dataTablesCounts$result$COUNT[df$dataTablesCounts$result$TABLENAME == 'person']
+    # Pre-compute counts
+    personCount <- df$dataTablesCounts$result %>%
+      dplyr::filter(TABLENAME == 'person') %>%
+      pull(COUNT)
+    deathCount <- df$dataTablesCounts$result %>%
+      dplyr::filter(TABLENAME == 'death') %>%
+      pull(COUNT)
+
+    # Total records per table
     df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
       arrange(desc(COUNT)) %>%
       mutate(
         Table = TABLENAME,
         `#Records` = COUNT,
         `#Persons` = N_PERSONS,
-        `%Persons with record` = prettyPc(N_PERSONS / n_persons_total * 100),
+        `%Persons with record` = prettyPc(N_PERSONS / personCount * 100),
         .keep = "none"  # do not display other columns
       )
 
@@ -149,16 +157,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
     # Mortality
-    personCount <- df$dataTablesCounts$result %>%
-      filter(TABLENAME == 'person') %>%
-      pull(COUNT)
-    deathCount <- df$dataTablesCounts$result %>%
-      filter(TABLENAME == 'death') %>%
-      pull(COUNT)
     overallMortality <- round(deathCount / personCount * 100, 2)
 
     if (deathCount > 0) {
-      totalDeath <- df$totalRecords$result %>% filter(df$totalRecords$result$SERIES_NAME %in% 'Death')
+      totalDeath <- df$totalRecords$result %>%
+        dplyr::filter(SERIES_NAME %in% 'Death')
       totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
       doc <- doc %>%
         officer::body_add_gg(totalDeathPlot, height = 4)
@@ -417,7 +420,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("The level of the drug mappings", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(vocabResults$drugMapping, alignment =  c('l', rep('r', 4)))
 
-    # Top 25 missing mappings
+    # Top 25 unmapped codes
     doc <- doc %>%
       officer::body_add_par("Unmapped Codes", style = pkg.env$styles$heading2) %>%
       my_unmapped_section(vocabResults$unmappedDrugs, "drugs", results$smallCellCount) %>%
@@ -430,9 +433,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_unmapped_section(vocabResults$unmappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedValuesMeas, "measurement values", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedValuesObs, "observation values", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount)
 
-    ## add top 25 mapped codes
+    # Top 25 mapped concepts
     doc <- doc %>%
       officer::body_add_par("Mapped Codes", style = pkg.env$styles$heading2) %>%
       my_mapped_section(vocabResults$mappedDrugs, "drugs", results$smallCellCount) %>%
@@ -445,6 +450,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_mapped_section(vocabResults$mappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedValuesMeas, "measurement values", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedValuesObs, "observation values", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount)
 
     ## add source_to_concept_map breakdown

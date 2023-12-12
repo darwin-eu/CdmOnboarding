@@ -88,7 +88,8 @@ dataTablesChecks <- function(connectionDetails,
       sqlOnly = sqlOnly,
       cdmDatabaseSchema = cdmDatabaseSchema,
       vocabDatabaseSchema = vocabDatabaseSchema,
-      resultsDatabaseSchema = resultsDatabaseSchema
+      resultsDatabaseSchema = resultsDatabaseSchema,
+      cdmVersion = cdmVersion
     )
   }
 
