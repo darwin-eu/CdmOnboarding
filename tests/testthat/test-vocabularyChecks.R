@@ -2,6 +2,7 @@ test_that("Vocabulary Tables Checks", {
   vocabularyResults <- CdmOnboarding::vocabularyChecks(
     connectionDetails = params$connectionDetails,
     cdmDatabaseSchema = params$cdmDatabaseSchema,
+    cdmVersion = params$cdmVersion,
     outputFolder = params$outputFolder
   )
 

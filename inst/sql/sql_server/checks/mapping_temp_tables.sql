@@ -115,7 +115,7 @@ group by value_as_concept_id, value_source_value
 ;
 
 select
-  {@cdmVersion == '5.4'} ? {value_source_value} {''} as source_value,
+  {@cdmVersion == '5.4'} ? {value_source_value} : {''} as source_value,
   value_as_concept_id as concept_id,
   case when value_as_concept_id = 0 or value_as_concept_id > 2000000000 then 0 else 1 end as is_mapped,
   count_big(*) as num_records
