@@ -523,35 +523,50 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   doc <- doc %>%
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
-  if (!is.null(results$performanceResults)) {
-    #installed packages
-    doc <- doc %>%
-      officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
-      my_caption("Versions of all installed R packages from the OHDSI Health Analytics Data-to-Evidence Suite (HADES).", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(results$hadesPackageVersions)
+  df_pr <- results$performanceResults
+  if (!is.null(df_pr)) {
+    # Installed packages
+    allPackages <- data.frame(
+      Package = c(getHADESpackages(), getDARWINpackages()),
+      Version = "",
+      Organisation = c(rep("OHDSI HADES", length(getHADESpackages())), rep("DARWIN EU®", length(getDARWINpackages())))
+    )
 
-    if (results$missingPackage == "") {
-      doc <- doc %>%
-        officer::body_add_par("All HADES R packages were available")
-    } else {
-      doc <- doc %>%
-        officer::body_add_par(paste0("Missing R packages: ", results$missingPackages))
-    }
+    packageVersions <- dplyr::union(df_pr$hadesPackageVersions, df_pr$darwinPackageVersions) %>%
+      dplyr::full_join(allPackages, by = c("Package")) %>%
+      dplyr::mutate(
+        Version = dplyr::coalesce(Version.x, "Not installed")
+      ) %>%
+      # Sorting on LibPath to get packages in same environment together (if multiple versions of the same package installed due to renvs)
+      dplyr::arrange(LibPath, Organisation, Package) %>%
+      dplyr::select(Organisation, Package, Version)
+
+    doc <- doc %>%
+      officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
+      my_caption(
+        paste(
+          "Versions of all installed R packages from DARWIN EU® and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
+          "Packages can be installed from CRAN (install.packages(\"<package_name>\")) or Github (remotes::install_github(\"<organisation>/<package>\"))"
+        ),
+        sourceSymbol = pkg.env$sources$system,
+        style = pkg.env$styles$tableCaption
+      ) %>%
+      my_body_add_table(packageVersions)
 
     #system detail
     doc <- doc %>%
       officer::body_add_par("System Information", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(paste0("Installed R version: ", results$sys_details$r_version$version.string)) %>%
-      officer::body_add_par(paste0("System CPU vendor: ", results$sys_details$cpu$vendor_id, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System CPU model: ", results$sys_details$cpu$model_name, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System CPU number of cores: ", results$sys_details$cpu$no_of_cores, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(results$sys_details$ram, collapse = ", ")))) %>%
-      officer::body_add_par(paste0("DBMS: ", results$dmsVersion)) %>%
+      officer::body_add_par(paste0("Installed R version: ", df_pr$sys_details$r_version$version.string)) %>%
+      officer::body_add_par(paste0("System CPU vendor: ", df_pr$sys_details$cpu$vendor_id, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System CPU model: ", df_pr$sys_details$cpu$model_name, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System CPU number of cores: ", df_pr$sys_details$cpu$no_of_cores, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(df_pr$sys_details$ram, collapse = ", ")))) %>%
+      officer::body_add_par(paste0("DBMS: ", df_pr$dmsVersion)) %>%
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
 
-    n_relations <- results$performanceResults$performanceBenchmark$result
-    benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
+    n_relations <- df_pr$performanceBenchmark$result
+    benchmark_query_time <- df_pr$performanceBenchmark$duration
     doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(sprintf(
