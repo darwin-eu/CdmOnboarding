@@ -16,7 +16,7 @@ with cte1 as (
 ), overallStats as (
     select 
         variable,
-        count(*) as total,
+        count_big(*) as total,
         min(count_value) as min_value,
         max(count_value) as max_value,
         sum(CASE WHEN count_value IS NULL THEN 1 ELSE 0 END) as missing_value
@@ -26,7 +26,7 @@ with cte1 as (
     select
         variable,
         count_value,
-        count(*) as total,
+        count_big(*) as total,
         row_number() over (partition by variable order by count_value) as rn
     from cte1
     group by variable, count_value
