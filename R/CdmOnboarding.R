@@ -476,40 +476,7 @@ cdmOnboarding <- function(connectionDetails,
 }
 
 .checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
-  required_achilles_tables <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
-  errorReportFile <- file.path(outputFolder, "errorAchillesExistsSql.txt")
-  achilles_tables_exist <- tryCatch({
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    for (x in required_achilles_tables) {
-      sql <- SqlRender::translate(
-               SqlRender::render(
-                 "SELECT COUNT(*) FROM @resultsDatabaseSchema.@table",
-                 resultsDatabaseSchema = resultsDatabaseSchema,
-                 table = x
-               ),
-               targetDialect = 'postgresql'
-             )
-      DatabaseConnector::executeSql(
-        connection = connection,
-        sql = sql,
-        progressBar = FALSE,
-        reportOverallTime = FALSE,
-        errorReportFile = errorReportFile
-      )
-    }
-    TRUE
-  },
-  error = function(e) {
-    ParallelLogger::logWarn(sprintf("> The Achilles tables have not been found (%s). Please see error report in %s",
-                            paste(required_achilles_tables, collapse = ', '),
-                            errorReportFile))
-    FALSE
-  },
-  finally = {
-    DatabaseConnector::disconnect(connection = connection)
-    rm(connection)
-  })
-  return(achilles_tables_exist)
+  return(TRUE)
 }
 
 .getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {

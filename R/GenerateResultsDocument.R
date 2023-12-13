@@ -399,6 +399,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     doc <- doc %>%
       officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par("The following indexes are applied on the OMOP schema: ") %>%
       my_body_add_table(results$performanceResults$appliedIndexes$result)
 
     doc <- doc %>%
