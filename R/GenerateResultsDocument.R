@@ -401,7 +401,15 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       )
     doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
-      my_caption("Shows the percentage of codes that are mapped to the standardized vocabularies as well as the percentage of records. Note: 1) for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes could be bigger than actual number of unique source codes and 2) there are no OMOP observation source codes.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>% #nolint
+      my_caption(
+        paste(
+          "The number and percentage of codes and records that are mapped to an OMOP concept (not 0 and <2B)."
+          , "Note: for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes"
+          , "could be bigger than actual number of unique source codes."
+        )
+        sourceSymbol = pkg.env$sources$cdm,
+        style = pkg.env$styles$tableCaption
+      ) %>%
       my_body_add_table_runtime(vocabResults$mappingCompleteness, alignment = c('l', rep('r', 6)))
 
     # Drug Level Mappings
