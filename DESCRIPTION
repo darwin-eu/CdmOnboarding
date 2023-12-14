@@ -24,7 +24,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Depends: 
     R (>= 4.0.0),
-    DatabaseConnector (>= 3.0.0)
+    DatabaseConnector (>= 5.0.2)
 Imports:
     ROhdsiWebApi (>= 1.1.2),
     ParallelLogger,
@@ -41,10 +41,14 @@ Imports:
     ggplot2,
     tidyr,
     jsonlite,
-    stats
+    stats,
+    cowplot
 Suggests:
     flextable,
     devtools,
-    knitr
+    knitr,
+    testthat (>= 3.0.0),
+    Eunomia
 Remotes:
     OHDSI/ROhdsiWebApi
+Config/testthat/edition: 3
