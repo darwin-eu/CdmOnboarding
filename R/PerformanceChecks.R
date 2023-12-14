@@ -56,7 +56,7 @@ performanceChecks <- function(connectionDetails,
         appliedIndexes <- executeQuery(outputFolder, "applied_indexes_sql_server.sql", "Retrieving which indexes are applied",
                                   connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
   } else {
-    ParallelLogger::logWarn("This DBMS is not equal to Postgresql, SQL server or Redshift, so not applied indexes could be listed.")
+    ParallelLogger::logWarn("This DBMS is not equal to Postgresql or SQL server, so no applied indexes could be listed.")
   }
 
   list(
