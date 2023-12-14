@@ -481,14 +481,14 @@ achilles_tables_exist <- tryCatch({
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     for (x in required_achilles_tables) {
         sql <- SqlRender::translate(
-        SqlRender::render(
-        "SELECT COUNT(*) FROM @resultsDatabaseSchema.@table",
-        resultsDatabaseSchema = resultsDatabaseSchema,
-        table = x
-        ),
-        targetDialect = 'postgresql'
-        )
-    DatabaseConnector::executeSql(
+                SqlRender::render(
+                "SELECT COUNT(*) FROM @resultsDatabaseSchema.@table",
+                resultsDatabaseSchema = resultsDatabaseSchema,
+                table = x
+                ),
+                targetDialect = 'postgresql'
+                )
+       DatabaseConnector::executeSql(
         connection = connection,
         sql = sql,
         progressBar = FALSE,
@@ -497,18 +497,19 @@ achilles_tables_exist <- tryCatch({
         )
     }
     TRUE
-},
-error = function(e) {
+ },
+ error = function(e) {
     ParallelLogger::logWarn(sprintf("> The Achilles tables have not been found (%s). Please see error report in %s",
     paste(required_achilles_tables, collapse = ', '),
     errorReportFile))
     FALSE
 },
-finally = {
+ finally = {
     DatabaseConnector::disconnect(connection = connection)
     rm(connection)
-})
-return(achilles_tables_exist)
+ })
+ return(achilles_tables_exist)
+}
 
 .getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks", "get_achilles_metadata.sql"),
