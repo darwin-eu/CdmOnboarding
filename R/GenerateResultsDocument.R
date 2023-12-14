@@ -115,27 +115,69 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   df <- results$dataTablesResults
   if (!is.null(df)) {
+    # Pre-compute counts
+    personCount <- df$dataTablesCounts$result %>%
+      dplyr::filter(TABLENAME == 'person') %>%
+      pull(COUNT)
+    deathCount <- df$dataTablesCounts$result %>%
+      dplyr::filter(TABLENAME == 'death') %>%
+      pull(COUNT)
+
+    # Total records per table
     df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
-      arrange(desc(COUNT))
+      arrange(desc(COUNT)) %>%
+      mutate(
+        Table = TABLENAME,
+        `#Records` = COUNT,
+        `#Persons` = N_PERSONS,
+        `%Persons with record` = prettyPc(N_PERSONS / personCount * 100),
+        .keep = "none"  # do not display other columns
+      )
+
     doc <- doc %>%
       officer::body_add_par("Clinical data", style = pkg.env$styles$heading1) %>%
       officer::body_add_par("Record counts per OMOP CDM table", style = pkg.env$styles$heading2) %>%
       my_caption("The number of records in all clinical data tables",
         sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm,
         style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$dataTablesCounts)
+      my_body_add_table_runtime(df$dataTablesCounts, alignment = c('l', rep('r', 3)))
 
-    totalRecordsPlot <- recordsCountPlot(as.data.frame(df$totalRecords$result), log_y_axis = TRUE)
     doc <- doc %>%
       officer::body_add_break() %>%
-      officer::body_add_par("Data density plots", style = pkg.env$styles$heading2) %>%
+      officer::body_add_par("Data density plots", style = pkg.env$styles$heading2)
+
+    totalRecordsPlot <- .recordsCountPlot(as.data.frame(df$totalRecords$result), log_y_axis = TRUE)
+    doc <- doc %>%
       officer::body_add_gg(totalRecordsPlot, height = 4) %>%
       my_caption("Total record count over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
 
-    recordsPerPersonPlot <- recordsCountPlot(as.data.frame(df$recordsPerPerson$result), log_y_axis = TRUE)
+    recordsPerPersonPlot <- .recordsCountPlot(as.data.frame(df$recordsPerPerson$result), log_y_axis = TRUE)
     doc <- doc %>%
       officer::body_add_gg(recordsPerPersonPlot, height = 4) %>%
       my_caption("Number of records per person over time per OMOP data domain.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$figureCaption)
+
+    # Mortality
+    overallMortality <- round(deathCount / personCount * 100, 2)
+
+    if (deathCount > 0) {
+      totalDeath <- df$totalRecords$result %>%
+        dplyr::filter(SERIES_NAME %in% 'Death')
+      totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
+      doc <- doc %>%
+        officer::body_add_gg(totalDeathPlot, height = 4)
+    } else {
+      doc <- doc %>%
+        officer::body_add_par("No death records found.", style = pkg.env$styles$highlight)
+    }
+    doc <- doc %>%
+      my_caption(
+        sprintf(
+          "Number of monthly deaths over time. Overall mortality: %s%%.",
+          overallMortality
+        ),
+        sourceSymbol = pkg.env$sources$achilles,
+        style = pkg.env$styles$figureCaption
+      )
 
     doc <- doc %>%
       officer::body_add_break() %>%
@@ -143,47 +185,185 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_caption("The number of distinct concepts per person per OMOP data domains. Only persons with at least one record in that domain are included in the calculation.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(df$conceptsPerPerson)
 
-    plot <- recordsCountPlot(as.data.frame(df$observedByMonth$result))
+    # Observation Period
+    plot <- .recordsCountPlot(as.data.frame(df$observedByMonth$result))
+    n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
+    active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
     doc <- doc %>%
       officer::body_add_par("") %>%
       officer::body_add_par("Observation Period", style = pkg.env$styles$heading2) %>%
       officer::body_add_gg(plot, height = 4) %>%
       my_caption(
-        sprintf("Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
-                pkg.env$sources$achilles,
-                if (!is.null(results$cdmSource$SOURCE_RELEASE_DATE)) results$cdmSource$SOURCE_RELEASE_DATE else results$cdmSource$CDM_RELEASE_DATE,
-                prettyHr(df$activePersons$result$COUNT),
-                pkg.env$sources$cdm
+        sprintf(
+          "Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
+          pkg.env$sources$achilles,
+          active_index_date,
+          prettyHr(n_active_persons),
+          pkg.env$sources$cdm
         ),
         sourceSymbol = '',  # already in caption text
         style = pkg.env$styles$figureCaption
       ) %>%
       officer::body_add_par("")
 
+    # Length of first observation period
+    df$observationPeriodLength$result <- rbind(
+      df$observationPeriodLength$result,
+      round(df$observationPeriodLength$result / 365, 1)
+    )
+    df$observationPeriodLength$result <- df$observationPeriodLength$result %>%
+      mutate(
+        ` ` = c("Days", "Years"),
+        AVG = round(AVG_VALUE, 1),
+        STDEV = round(STDEV_VALUE, 1),
+        MIN = MIN_VALUE,
+        P10 = P10_VALUE,
+        P25 = P25_VALUE,
+        MEDIAN = MEDIAN_VALUE,
+        P75 = P75_VALUE,
+        P90 = P90_VALUE,
+        MAX = MAX_VALUE,
+        .keep = "none"  # do not display other columns
+      )
+
     doc <- doc %>%
-      my_caption("Length of first observation period (days).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
+      my_caption("Length of first observation period (days, years).", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(df$observationPeriodLength)
 
-    df$typeConcepts$result <- df$typeConcepts$result %>%
-                        tidyr::pivot_wider(
-                          id_cols = TYPE_CONCEPT_NAME,
-                          names_from = DOMAIN,
-                          values_from = COUNT,
-                          values_fill = "0",
-                          values_fn = prettyHr)
-    doc <- doc %>%
-      officer::body_add_par("Type Concepts", style = pkg.env$styles$heading2) %>%
-      my_caption("Number of type concepts by domain. Counts are rounded up to the nearest hundred.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table_runtime(df$typeConcepts, alignment =  c('l', rep('r', ncol(df$typeConcepts$result) - 1)))  # TODO display in long format
+    df$visitLength$result <- df$visitLength$result %>%
+      mutate(
+        Domain = DOMAIN,
+        `Concept ID` = CONCEPT_ID,
+        `Concept Name` = CONCEPT_NAME,
+        AVG = round(AVG_VALUE, 1),
+        STDEV = round(STDEV_VALUE, 1),
+        MIN = MIN_VALUE,
+        P10 = P10_VALUE,
+        P25 = P25_VALUE,
+        MEDIAN = MEDIAN_VALUE,
+        P75 = P75_VALUE,
+        P90 = P90_VALUE,
+        MAX = MAX_VALUE,
+        .keep = "none"  # do not display other columns
+      ) %>%
+      arrange(Domain)
 
+    doc <- doc %>%
+      my_caption("Length of visit in days by visit concept.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>%
+      my_body_add_table_runtime(df$visitLength)
+
+    # Combine Observation Periods per Person and overlap in one table
+    obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
+      mutate(
+        Field = sprintf("Persons with %s observation period(s)", N_OBSERVATION_PERIODS),
+        Value = N_PERSONS,
+        .keep = "none"  # do not display other columns
+      )
+
+    # Note: remove once implemented as DQD check, https://github.com/OHDSI/DataQualityDashboard/issues/510
+    new_rows <- data.frame(
+      Field = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
+      Value = c(nrow(df$observationPeriodOverlap), sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS))
+    )
+    obsPeriodStats <- rbind(obsPeriodStats, new_rows)
+
+    doc <- doc %>%
+      my_caption(
+        sprintf("Number of observation periods per person %s and overlapping observation periods %s.", pkg.env$sources$achilles, pkg.env$sources$cdm),
+        sourceSymbol = NULL,  # already in caption text
+        style = pkg.env$styles$tableCaption
+      ) %>%
+      my_body_add_table(obsPeriodStats) %>%
+      officer::body_add_par(
+        sprintf("Queries executed in %.2f seconds and %.2f seconds",
+          df$observationPeriodsPerPerson$duration,
+          df$observationPeriodOverlap$duration
+        ), style = pkg.env$styles$footnote)
+
+    df$dateRangeByTypeConcept$result <- df$dateRangeByTypeConcept$result %>%
+      mutate(
+        `Domain` = DOMAIN,
+        `N` = COUNT_VALUE,
+        `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
+        `↓Start` = FIRST_START_MONTH,
+        `↑Start` = LAST_START_MONTH,
+        `↓End` = FIRST_END_MONTH,
+        `↑End` = LAST_END_MONTH,
+        .keep = "none"  # do not display other columns
+      )
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles, style = pkg.env$styles$tableCaption) %>% #nolint
-      my_body_add_table_runtime(df$tableDateRange, auto_format = FALSE, alignment =  c('l', 'r', 'r'))
+      my_body_add_table_runtime(
+        df$dateRangeByTypeConcept,
+        alignment = c('l', 'l', rep('r', ncol(df$dateRangeByTypeConcept$result) - 2))
+      )
+
+    # Day of the week and month
+    combinedPlot <- cowplot::ggdraw()
+    if (!is.null(df$dayOfTheWeek$result)) {
+      dayOfTheWeekPlot <- .heatMapPlot(df$dayOfTheWeek$result, "DAY_OF_THE_WEEK")
+      combinedPlot <- combinedPlot +
+        cowplot::draw_plot(dayOfTheWeekPlot, x = 0, y = .48, width = .5, height = .5) +
+        cowplot::draw_plot_label("Day of the Week", x = .15, y = .99, size = 15)
+    } else {
+      doc <- doc %>%
+        my_caption("No Day of the Week results.", style = pkg.env$styles$tableCaption)
+    }
+
+    if (!is.null(df$dayOfTheMonth$result)) {
+      dayOfTheMonthPlot <- .heatMapPlot(df$dayOfTheMonth$result, "DAY_OF_THE_MONTH")
+      combinedPlot <- combinedPlot +
+        cowplot::draw_plot(dayOfTheMonthPlot, x = .5, y = 0, width = .5, height = 1) +
+        cowplot::draw_plot_label("Day of the Month", x = .65, y = .98, size = 15)
+    } else {
+      doc <- doc %>%
+        my_caption("No Day of the Month results.", style = pkg.env$styles$tableCaption)
+    }
+
+    doc <- doc %>%
+      officer::body_add_gg(combinedPlot, scale = .5) %>%
+      my_caption("Day of the Week and Day of the Month distribution of event start dates after 1900-01-01 per domain. 1 = Monday ... 7 = Sunday.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$figureCaption) %>% #nolint
+      officer::body_add_par(
+        sprintf("Queries executed in %.2f seconds and %.2f seconds",
+          df$dayOfTheWeek$duration,
+          df$dayOfTheMonth$duration
+        ),
+        style = pkg.env$styles$footnote
+      )
+
+    # Day, Month, Year of Birth
+    doc <- doc %>%
+        officer::body_add_par("Day, Month, Year of Birth", style = pkg.env$styles$heading2)
+    if (!is.null(df$dayMonthYearOfBirth$result)) {
+        df$dayMonthYearOfBirth$result <- df$dayMonthYearOfBirth$result %>%
+          arrange(desc(VARIABLE)) %>% # Year, Month, Day
+          mutate(
+            ` ` = VARIABLE,
+            `%Missing` = prettyPc(P_MISSING),
+            MIN = MIN_VALUE,
+            P10 = P10_VALUE,
+            P25 = P25_VALUE,
+            MEDIAN = MEDIAN_VALUE,
+            P75 = P75_VALUE,
+            P90 = P90_VALUE,
+            MAX = MAX_VALUE,
+            .keep = "none"  # do not display other columns
+          )
+       doc <- doc %>%
+        my_caption("Distribution of day, month and year of birth of persons.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
+        my_body_add_table_runtime(
+          df$dayMonthYearOfBirth,
+          auto_format = FALSE,
+          alignment = c('l', rep('r', ncol(df$dayMonthYearOfBirth$result) - 1))
+        )
+    } else {
+      doc <- doc %>%
+        my_caption("No Day, Month, Year of Birth results.", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption)
+    }
 
     doc <- doc %>% officer::body_add_break()
   }
-
 
   ## Vocabulary checks section
   doc <- doc %>%
@@ -191,23 +371,33 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   vocabResults <- results$vocabularyResults
   if (!is.null(vocabResults)) {
-    doc <- doc %>% officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version))
+    doc <- doc %>%
+      officer::body_add_par(
+        sprintf(
+          "Vocabulary version: %s",
+          results$vocabularyResults$version
+        )
+      ) %>%
+      officer::body_add_par(
+        sprintf(
+          "Pre-processing query executed in %.2f seconds",
+          results$vocabularyResults$mappingTempTableCreation$duration
+        ),
+        style = pkg.env$styles$footnote
+      )
 
     # Mapping Completeness
     vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%
       arrange(DOMAIN) %>%
       mutate(
-        P_CODES_MAPPED = prettyPc(P_CODES_MAPPED),
-        P_RECORDS_MAPPED = prettyPc(P_RECORDS_MAPPED),
-      ) %>%
-      rename(
         Domain = DOMAIN,
         `#Codes Source` = N_CODES_SOURCE,
         `#Codes Mapped` = N_CODES_MAPPED,
-        `%Codes Mapped` = P_CODES_MAPPED,
+        `%Codes Mapped` = prettyPc(P_CODES_MAPPED),
         `#Records Source` = N_RECORDS_SOURCE,
         `#Records Mapped` = N_RECORDS_MAPPED,
-        `%Records Mapped` = P_RECORDS_MAPPED,
+        `%Records Mapped` = prettyPc(P_RECORDS_MAPPED),
+        .keep = "none"  # do not display other columns
       )
     doc <- doc %>%
       officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
@@ -218,21 +408,19 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     vocabResults$drugMapping$result <- vocabResults$drugMapping$result %>%
       arrange(desc(N_RECORDS)) %>%
       mutate(
-        P_RECORDS = prettyPc(P_RECORDS),
-      ) %>%
-      rename(
         Class = CLASS,
         `#Records` = N_RECORDS,
         `#Patients` = N_PATIENTS,
         `#Codes` = N_SOURCE_CODES,
-        `%Records` = P_RECORDS,
+        `%Records` = prettyPc(P_RECORDS),
+        .keep = "none"  # do not display other columns
       )
     doc <- doc %>%
       officer::body_add_par("Drug Mappings", style = pkg.env$styles$heading2) %>%
       my_caption("The level of the drug mappings", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>%
       my_body_add_table_runtime(vocabResults$drugMapping, alignment =  c('l', rep('r', 4)))
 
-    # Top 25 missing mappings
+    # Top 25 unmapped codes
     doc <- doc %>%
       officer::body_add_par("Unmapped Codes", style = pkg.env$styles$heading2) %>%
       my_unmapped_section(vocabResults$unmappedDrugs, "drugs", results$smallCellCount) %>%
@@ -242,11 +430,14 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_unmapped_section(vocabResults$unmappedProcedures, "procedures", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDevices, "devices", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedVisits, "visits", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedValuesMeas, "measurement values", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedValuesObs, "observation values", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount)
 
-    ## add top 25 mapped codes
+    # Top 25 mapped concepts
     doc <- doc %>%
       officer::body_add_par("Mapped Codes", style = pkg.env$styles$heading2) %>%
       my_mapped_section(vocabResults$mappedDrugs, "drugs", results$smallCellCount) %>%
@@ -256,8 +447,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_mapped_section(vocabResults$mappedProcedures, "procedures", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDevices, "devices", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedVisits, "visits", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedVisitDetails, "visit details", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedValuesMeas, "measurement values", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedValuesObs, "observation values", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount)
 
     ## add source_to_concept_map breakdown
@@ -359,35 +553,50 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   doc <- doc %>%
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
-  if (!is.null(results$performanceResults)) {
-    #installed packages
-    doc <- doc %>%
-      officer::body_add_par("HADES packages", style = pkg.env$styles$heading2) %>%
-      my_caption("Versions of all installed R packages from the OHDSI Health Analytics Data-to-Evidence Suite (HADES).", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
-      my_body_add_table(results$hadesPackageVersions)
+  df_pr <- results$performanceResults
+  if (!is.null(df_pr)) {
+    # Installed packages
+    allPackages <- data.frame(
+      Package = c(getHADESpackages(), getDARWINpackages()),
+      Version = "",
+      Organisation = c(rep("OHDSI HADES", length(getHADESpackages())), rep("DARWIN EU®", length(getDARWINpackages())))
+    )
 
-    if (results$missingPackage == "") {
-      doc <- doc %>%
-        officer::body_add_par("All HADES R packages were available")
-    } else {
-      doc <- doc %>%
-        officer::body_add_par(paste0("Missing R packages: ", results$missingPackages))
-    }
+    packageVersions <- dplyr::union(df_pr$hadesPackageVersions, df_pr$darwinPackageVersions) %>%
+      dplyr::full_join(allPackages, by = c("Package")) %>%
+      dplyr::mutate(
+        Version = dplyr::coalesce(Version.x, "Not installed")
+      ) %>%
+      # Sorting on LibPath to get packages in same environment together (if multiple versions of the same package installed due to renvs)
+      dplyr::arrange(LibPath, Organisation, Package) %>%
+      dplyr::select(Organisation, Package, Version)
+
+    doc <- doc %>%
+      officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
+      my_caption(
+        paste(
+          "Versions of all installed R packages from DARWIN EU® and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
+          "Packages can be installed from CRAN (install.packages(\"<package_name>\")) or Github (remotes::install_github(\"<organisation>/<package>\"))"
+        ),
+        sourceSymbol = pkg.env$sources$system,
+        style = pkg.env$styles$tableCaption
+      ) %>%
+      my_body_add_table(packageVersions)
 
     #system detail
     doc <- doc %>%
       officer::body_add_par("System Information", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(paste0("Installed R version: ", results$sys_details$r_version$version.string)) %>%
-      officer::body_add_par(paste0("System CPU vendor: ", results$sys_details$cpu$vendor_id, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System CPU model: ", results$sys_details$cpu$model_name, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System CPU number of cores: ", results$sys_details$cpu$no_of_cores, collapse = ", ")) %>%
-      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(results$sys_details$ram, collapse = ", ")))) %>%
-      officer::body_add_par(paste0("DBMS: ", results$dmsVersion)) %>%
+      officer::body_add_par(paste0("Installed R version: ", df_pr$sys_details$r_version$version.string)) %>%
+      officer::body_add_par(paste0("System CPU vendor: ", df_pr$sys_details$cpu$vendor_id, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System CPU model: ", df_pr$sys_details$cpu$model_name, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System CPU number of cores: ", df_pr$sys_details$cpu$no_of_cores, collapse = ", ")) %>%
+      officer::body_add_par(paste0("System RAM: ", prettyunits::pretty_bytes(as.numeric(df_pr$sys_details$ram, collapse = ", ")))) %>%
+      officer::body_add_par(paste0("DBMS: ", df_pr$dmsVersion)) %>%
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
 
-    n_relations <- results$performanceResults$performanceBenchmark$result$COUNT
-    benchmark_query_time <- results$performanceResults$performanceBenchmark$duration
+    n_relations <- df_pr$performanceBenchmark$result
+    benchmark_query_time <- df_pr$performanceBenchmark$duration
     doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
       officer::body_add_par(sprintf(
@@ -458,15 +667,10 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(vocabResults$vocabularyCounts)
 
     # vocabularies table
-    vocabResults$conceptCounts$result <- vocabResults$conceptCounts$result %>%
-      rename(
-        S = N_STANDARD_CONCEPTS,
-        C = N_CLASSIFICATION_CONCEPTS,
-        `-` = N_NON_STANDARD_CONCEPTS
-      )
+    names(vocabResults$conceptCounts$result) <- c('ID', 'Name', 'Version', 'S', 'C', '-')
     doc <- doc %>%
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(paste0("Vocabulary version: ", results$vocabularyResults$version)) %>%
+      officer::body_add_par(sprintf("Vocabulary version: %s", results$vocabularyResults$version)) %>%
       my_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm, style = pkg.env$styles$tableCaption) %>% #nolint
       my_body_add_table_runtime(vocabResults$conceptCounts)
   }

@@ -102,8 +102,8 @@ results <- CdmOnboarding::cdmOnboarding(
   dqdJsonPath = dqdJsonPath
 )
 
- # cdmOnboarding() should already generate the resultsdocument.
- # Use this to regenerate upon error (results object should be returned anyway)
+# cdmOnboarding() should already generate the resultsdocument.
+# Use this to regenerate upon error (results object should be returned anyway)
 if (FALSE) {
   CdmOnboarding::generateResultsDocument(
     results = results,

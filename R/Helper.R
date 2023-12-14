@@ -23,7 +23,7 @@
 executeQuery <- function(
   outputFolder,
   sqlFileName,
-  successMessage,
+  successMessage = NULL,
   connectionDetails = NULL,
   sqlOnly = FALSE,
   activeConnection = NULL,
@@ -35,7 +35,11 @@ executeQuery <- function(
     dbms <- activeConnection@dbms
   }
 
-  sql <-   do.call(
+  if (is.null(successMessage)) {
+    successMessage <- sprintf("'%s' executed successfully", sqlFileName)
+  }
+
+  sql <- do.call(
     SqlRender::loadRenderTranslateSql,
     c(
       sqlFilename = file.path("checks", sqlFileName),
@@ -170,6 +174,7 @@ my_body_add_table_runtime <- function(x, value, duration = NULL, ...) {
   if (is.null(duration)) {
     duration <- value$duration
   }
+  # TODO: if $result null, add a warning message instead of failing. Report all missing values at the end of execution.
   my_body_add_table(x, value$result, ...) %>%
     officer::body_add_par(sprintf("Query executed in %.2f seconds", value$duration), style = pkg.env$styles$footnote)
 }
@@ -215,20 +220,6 @@ my_unmapped_section <- function(x, data, domain, smallCellCount) {
 my_mapped_section <- function(x, data, domain, smallCellCount) {
   names(data$result) <- c("#", "Concept id", "Concept Name", "#Records", "%Records")
   my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
-}
-
-
-recordsCountPlot <- function(results, log_y_axis = FALSE) {
-  temp <- results %>%
-    dplyr::rename(Date = X_CALENDAR_MONTH, Domain = SERIES_NAME, Count = Y_RECORD_COUNT) %>%
-    dplyr::mutate(Date = lubridate::parse_date_time(Date, "ym"))
-  plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) +
-    geom_line(aes(color = Domain)) +
-    scale_colour_hue(l = 40)
-  if (log_y_axis) {
-    plot <- plot + scale_y_log10()
-  }
-  return(plot)
 }
 
 #' Bundles the results in a zip file
