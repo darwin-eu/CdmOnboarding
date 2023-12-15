@@ -44,7 +44,7 @@ performanceChecks <- function(connectionDetails,
                                  connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
 
   performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
-                                       connectionDetails, sqlOnly)
+                                       connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
 
   appliedIndexes <- NULL
   if (connectionDetails$dbms == "postgresql") {

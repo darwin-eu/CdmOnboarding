@@ -124,9 +124,9 @@ vocabularyChecks <- function(connectionDetails,
     mappedUnitsObs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped obs units query executed successfully", sqlOnly = sqlOnly,
                                    activeConnection = connection, cdmDomain = 'obs_unit', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedValuesMeas <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped meas values query executed successfully", sqlOnly = sqlOnly,
-                                        activeConnection = connection, cdmDomain = 'meas_value', smallCellCount = smallCellCount)
+                                        activeConnection = connection, cdmDomain = 'meas_value', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedValuesObs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped obs values query executed successfully", sqlOnly = sqlOnly,
-                                       activeConnection = connection, cdmDomain = 'obs_value', smallCellCount = smallCellCount)
+                                       activeConnection = connection, cdmDomain = 'obs_value', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedDrugRoute <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Unmapped drug routes query executed successfully", sqlOnly = sqlOnly,
                                     activeConnection = connection, cdmDomain = 'drug_route', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
   },
