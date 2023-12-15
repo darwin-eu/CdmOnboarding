@@ -57,7 +57,7 @@ performanceChecks <- function(connectionDetails,
     appliedIndexes <- executeQuery(outputFolder, "applied_indexes_sql_server.sql", "Retrieving applied indexes",
                                    connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
   } else {
-    ParallelLogger::logWarn(sprtinf("The applied indexes cannot be run for '%s', it is only implemented for PostgreSQL and MS Sql Server.", connectionDetails$dbms))
+    ParallelLogger::logWarn(sprintf("The applied indexes query cannot be run for '%s', it is only implemented for PostgreSQL and MS Sql Server.", connectionDetails$dbms))
   }
 
   list(

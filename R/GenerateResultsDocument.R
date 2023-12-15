@@ -597,7 +597,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     doc <- doc %>%
       officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2)
-    if (!is.null(df_pr$performanceBenchmark)) {
+    if (!is.null(df_pr$performanceBenchmark$result)) {
       n_relations <- df_pr$performanceBenchmark$result
       benchmark_query_time <- df_pr$performanceBenchmark$duration
       doc <- doc %>%
@@ -614,7 +614,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     doc <- doc %>%
       officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2)
-    if (!is.null(df_pr$appliedIndexes)) {
+    if (!is.null(df_pr$appliedIndexes$result)) {
       doc <- doc %>%
         my_caption("The indexes applied on the OMOP CDM tables", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
         my_body_add_table_runtime(df_pr$appliedIndexes)
@@ -661,8 +661,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     }
 
     arTimings <- results$performanceResults$achillesTiming$result
-    arTimings <- arTimings %>% arrange(arTimings$ID)
     if (!is.null(arTimings)) {
+      arTimings <- arTimings %>% arrange(arTimings$ID)
       arTimings$ID <- as.character(arTimings$ID)
       if (utils::compareVersion(results$achillesMetadata$ACHILLES_VERSION, '1.6.3') < 1) {
         # version 1.6.3 contains unit, cannot convert to numeric.
