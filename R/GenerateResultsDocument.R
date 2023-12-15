@@ -603,16 +603,62 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
 
-    n_relations <- df_pr$performanceBenchmark$result
-    benchmark_query_time <- df_pr$performanceBenchmark$duration
     doc <- doc %>%
-      officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(sprintf(
-        "The number of 'Maps To' relations is equal to %s and queried in %.2f seconds (%g s/#).",
-        prettyHr(n_relations),
-        benchmark_query_time,
-        benchmark_query_time / n_relations
-      ))
+      officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2)
+    if (!is.null(df_pr$performanceBenchmark$result)) {
+      n_relations <- df_pr$performanceBenchmark$result
+      benchmark_query_time <- df_pr$performanceBenchmark$duration
+      doc <- doc %>%
+        officer::body_add_par(sprintf(
+          "The number of 'Maps To' relations is equal to %s and queried in %.2f seconds (%g s/#).",
+          prettyHr(n_relations),
+          benchmark_query_time,
+          benchmark_query_time / n_relations
+        ))
+    } else {
+      doc <- doc %>%
+        officer::body_add_par("Performance benchmark of the OMOP CDM tables could not be retrieved", style = pkg.env$styles$highlight)
+    }
+
+    doc <- doc %>%
+      officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2)
+    if (!is.null(df_pr$appliedIndexes$result)) {
+      doc <- doc %>%
+        my_caption("The indexes applied on the OMOP CDM tables", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
+        my_body_add_table_runtime(df_pr$appliedIndexes)
+
+      expectedIndexes <- getExpectedIndexes(results$cdmSource$CDM_VERSION)
+
+      missingIndexes <- setdiff(expectedIndexes, df_pr$appliedIndexes$result$INDEXNAME)
+      additionalIndexes <- setdiff(df_pr$appliedIndexes$result$INDEXNAME, expectedIndexes)
+
+      if (length(missingIndexes) > 0) {
+        doc <- doc %>%
+          officer::body_add_par("The following expected indexes are missing:") %>%
+          officer::body_add_par("") %>%
+          officer::body_add_par(paste(missingIndexes, collapse = ", "))
+      } else {
+        doc <- doc %>%
+          officer::body_add_par("All expected indexes are present")
+      }
+
+      if (length(additionalIndexes) > 0) {
+        doc <- doc %>%
+          officer::body_add_par("") %>%
+          officer::body_add_par("The following indexes have been applied additional to the expected indexes:") %>%
+          officer::body_add_par("") %>%
+          officer::body_add_par(paste(additionalIndexes, collapse = ", "))
+      }
+
+      df_pr$appliedIndexes$result <- df_pr$appliedIndexes$result %>%
+        dplyr::group_by(TABLENAME) %>%
+        dplyr::summarize(
+          INDEXNAME = paste(INDEXNAME, collapse = ",")
+        )
+    } else {
+      doc <- doc %>%
+        officer::body_add_par("Applied indexes could not be retrieved", style = pkg.env$styles$highlight)
+    }
 
     doc <- doc %>%
       officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2)
@@ -623,8 +669,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     }
 
     arTimings <- results$performanceResults$achillesTiming$result
-    arTimings <- arTimings %>% arrange(arTimings$ID)
     if (!is.null(arTimings)) {
+      arTimings <- arTimings %>% arrange(arTimings$ID)
       arTimings$ID <- as.character(arTimings$ID)
       if (utils::compareVersion(results$achillesMetadata$ACHILLES_VERSION, '1.6.3') < 1) {
         # version 1.6.3 contains unit, cannot convert to numeric.
