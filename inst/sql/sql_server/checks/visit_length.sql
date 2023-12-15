@@ -13,9 +13,9 @@ select
     p25_value,
     median_value,
     p75_value,
-    p90_value
+    p90_value,
     max_value
-from results.achilles_results_dist
-join cdm.concept on stratum_1 = cast(concept_id as VARCHAR)
+from @resultsDatabaseSchema.achilles_results_dist
+join @cdmDatabaseSchema.concept on stratum_1 = cast(concept_id as VARCHAR)
 where analysis_id IN (213, 1313)
 ;

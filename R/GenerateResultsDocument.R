@@ -406,7 +406,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           "The number and percentage of codes and records that are mapped to an OMOP concept (not 0 and <2B)."
           , "Note: for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes"
           , "could be bigger than actual number of unique source codes."
-        )
+        ),
         sourceSymbol = pkg.env$sources$cdm,
         style = pkg.env$styles$tableCaption
       ) %>%

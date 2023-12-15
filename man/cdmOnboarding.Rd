@@ -9,7 +9,6 @@ cdmOnboarding(
   cdmDatabaseSchema,
   resultsDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
-  vocabDatabaseSchema = cdmDatabaseSchema,
   oracleTempSchema = resultsDatabaseSchema,
   databaseId,
   databaseName,
@@ -42,9 +41,6 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 
 \item{scratchDatabaseSchema}{Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.}
-
-\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
-On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
 
