@@ -8,13 +8,13 @@ test_that("Vocabulary Tables Checks with Optimize", {
 
   testthat::expect_type(vocabularyResults, 'list')
   testthat::expect_named(vocabularyResults, c(
-    "version", "mappingTempTableCreation", "mappingCompleteness",
-    "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements",
-    "unmappedObservations", "unmappedProcedures", "unmappedDevices",
-    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedDrugRoute",
-    "mappedDrugs", "mappedConditions", "mappedMeasurements", "mappedObservations",
+    "version", "mappingTempTableCreation", "mappingCompleteness", 
+    "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements", 
+    "unmappedObservations", "unmappedProcedures", "unmappedDevices", 
+    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedValuesMeas", "unmappedValuesObs", "unmappedDrugRoute",
+    "mappedDrugs", "mappedConditions", "mappedMeasurements", "mappedObservations", 
     "mappedProcedures", "mappedDevices", "mappedVisits", "mappedVisitDetails", "mappedUnitsMeas",
-    "mappedUnitsObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts",
+    "mappedUnitsObs", "mappedValuesMeas", "mappedValuesObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts", 
     "sourceConceptFrequency", "sourceConceptMap"
     )
   )

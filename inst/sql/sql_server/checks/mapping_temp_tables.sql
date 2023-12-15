@@ -45,7 +45,7 @@ select
   drug_concept_id as concept_id,
   case when drug_concept_id = 0 or drug_concept_id > 2000000000 then 0 else 1 end as is_mapped,
   count_big(*) as num_records,
-  {@optimize} ? {0} : {count_big(distinct person_id)} as num_patients
+  {@optimize} ? {0} : {count_big(distinct person_id)} as num_patients -- for the drug levels table
 into #drug
 from @cdmDatabaseSchema.drug_exposure
 group by drug_concept_id, drug_source_value
@@ -115,14 +115,14 @@ group by value_as_concept_id, value_source_value
 ;
 
 select
-  '' as source_value,
+  {@cdmVersion == '5.4'} ? {ISNULL(value_source_value, '')} : {''} as source_value,
   value_as_concept_id as concept_id,
   case when value_as_concept_id = 0 or value_as_concept_id > 2000000000 then 0 else 1 end as is_mapped,
   count_big(*) as num_records
 into #obs_value
 from @cdmDatabaseSchema.observation
 where value_as_concept_id IS NOT NULL
-group by value_as_concept_id
+group by value_as_concept_id {@cdmVersion == '5.4'} ? {, value_source_value}
 ;
 
 select
