@@ -120,6 +120,59 @@ getDARWINpackages <- function() {
   #   )
 }
 
+#' Default indexes for an OMOP CDM. Note that currently these are the same for both v5.3 and v5.4.
+getExpectedIndexes <- function(cdmVersion) {
+  cdmVersion <- sub(pattern = "v", replacement = "", cdmVersion)
+  # Extracted idx from https://github.com/OHDSI/CommonDataModel/blob/main/inst/sql/sql_server/OMOP_CDM_indices_v5.4.sql
+  # and xpk from https://github.com/OHDSI/CommonDataModel/blob/main/inst/ddl/5.4/postgresql/OMOPCDM_postgresql_5.4_primary_keys.sql
+  indexes <- c(
+    "xpk_person", "xpk_observation_period", "xpk_visit_occurrence", "xpk_visit_detail",
+    "xpk_condition_occurrence", "xpk_drug_exposure", "xpk_procedure_occurrence",
+    "xpk_device_exposure", "xpk_measurement", "xpk_observation",
+    "xpk_note", "xpk_note_nlp", "xpk_specimen", "xpk_location", "xpk_care_site",
+    "xpk_provider", "xpk_payer_plan_period", "xpk_cost", "xpk_drug_era",
+    "xpk_dose_era", "xpk_condition_era", "xpk_episode", "xpk_metadata",
+    "xpk_concept", "xpk_vocabulary", "xpk_domain", "xpk_concept_class", "xpk_relationship",
+    "idx_person_id", "idx_gender", "idx_observation_period_id_1",
+    "idx_visit_person_id_1", "idx_visit_concept_id_1", "idx_visit_det_person_id_1",
+    "idx_visit_det_concept_id_1", "idx_visit_det_occ_id", "idx_condition_person_id_1",
+    "idx_condition_concept_id_1", "idx_condition_visit_id_1", "idx_drug_person_id_1",
+    "idx_drug_concept_id_1", "idx_drug_visit_id_1", "idx_procedure_person_id_1",
+    "idx_procedure_concept_id_1", "idx_procedure_visit_id_1", "idx_device_person_id_1",
+    "idx_device_concept_id_1", "idx_device_visit_id_1", "idx_measurement_person_id_1",
+    "idx_measurement_concept_id_1", "idx_measurement_visit_id_1",
+    "idx_observation_person_id_1", "idx_observation_concept_id_1",
+    "idx_observation_visit_id_1", "idx_death_person_id_1", "idx_note_person_id_1",
+    "idx_note_concept_id_1", "idx_note_visit_id_1", "idx_note_nlp_note_id_1",
+    "idx_note_nlp_concept_id_1", "idx_specimen_person_id_1", "idx_specimen_concept_id_1",
+    "idx_fact_relationship_id1", "idx_fact_relationship_id2", "idx_fact_relationship_id3",
+    "idx_location_id_1", "idx_care_site_id_1", "idx_provider_id_1",
+    "idx_period_person_id_1", "idx_cost_event_id", "idx_drug_era_person_id_1",
+    "idx_drug_era_concept_id_1", "idx_dose_era_person_id_1", "idx_dose_era_concept_id_1",
+    "idx_condition_era_person_id_1", "idx_condition_era_concept_id_1",
+    "idx_metadata_concept_id_1", "idx_concept_concept_id", "idx_concept_code",
+    "idx_concept_vocabluary_id", "idx_concept_domain_id", "idx_concept_class_id",
+    "idx_vocabulary_vocabulary_id", "idx_domain_domain_id", "idx_concept_class_class_id",
+    "idx_concept_relationship_id_1", "idx_concept_relationship_id_2",
+    "idx_concept_relationship_id_3", "idx_relationship_rel_id", "idx_concept_synonym_id",
+    "idx_concept_ancestor_id_1", "idx_concept_ancestor_id_2", "idx_source_to_concept_map_3",
+    "idx_source_to_concept_map_1", "idx_source_to_concept_map_2",
+    "idx_source_to_concept_map_c", "idx_drug_strength_id_1", "idx_drug_strength_id_2"
+  )
+
+  if (cdmVersion == '5.3') {
+    return(indexes)
+  } else if (cdmVersion == '5.4') {
+    # Indexes for the episode and episode event table (note: not applied by default CDM DDL scripts)
+    return(
+      c(indexes, "idx_episode_person_id_1", "idx_episode_concept_id_1",
+      "idx_episode_event_id_1", "idx_ee_field_concept_id_1")
+    )
+  } else {
+    return(indexes)
+  }
+}
+
 .getDbmsVersion <- function(connectionDetails, outputFolder) {
   versionQuery <- switch(
     connectionDetails$dbms,

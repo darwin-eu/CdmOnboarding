@@ -616,8 +616,37 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2)
     if (!is.null(df_pr$appliedIndexes)) {
       doc <- doc %>%
-        officer::body_add_par("The applied indexes on the OMOP CDM tables") %>%
-        my_body_add_table(df_pr$appliedIndexes$result)
+        my_caption("The indexes applied on the OMOP CDM tables", sourceSymbol = pkg.env$sources$system, style = pkg.env$styles$tableCaption) %>%
+        my_body_add_table_runtime(df_pr$appliedIndexes)
+
+      expectedIndexes <- getExpectedIndexes(results$cdmSource$CDM_VERSION)
+
+      missingIndexes <- setdiff(expectedIndexes, df_pr$appliedIndexes$result$INDEXNAME)
+      additionalIndexes <- setdiff(df_pr$appliedIndexes$result$INDEXNAME, expectedIndexes)
+
+      if (length(missingIndexes) > 0) {
+        doc <- doc %>%
+          officer::body_add_par("The following expected indexes are missing:") %>%
+          officer::body_add_par("") %>%
+          officer::body_add_par(paste(missingIndexes, collapse = ", "))
+      } else {
+        doc <- doc %>%
+          officer::body_add_par("All expected indexes are present")
+      }
+
+      if (length(additionalIndexes) > 0) {
+        doc <- doc %>%
+          officer::body_add_par("") %>%
+          officer::body_add_par("The following indexes have been applied additional to the expected indexes:") %>%
+          officer::body_add_par("") %>%
+          officer::body_add_par(paste(additionalIndexes, collapse = ", "))
+      }
+
+      df_pr$appliedIndexes$result <- df_pr$appliedIndexes$result %>%
+        dplyr::group_by(TABLENAME) %>%
+        dplyr::summarize(
+          INDEXNAME = paste(INDEXNAME, collapse = ",")
+        )
     } else {
       doc <- doc %>%
         officer::body_add_par("Applied indexes could not be retrieved", style = pkg.env$styles$highlight)
