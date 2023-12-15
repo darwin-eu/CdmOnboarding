@@ -7,7 +7,6 @@
 performanceChecks(
   connectionDetails,
   resultsDatabaseSchema,
-  vocabDatabaseSchema,
   sqlOnly = FALSE,
   outputFolder = "output"
 )
@@ -17,9 +16,6 @@ performanceChecks(
 
 \item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
-
-\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary.
-On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 

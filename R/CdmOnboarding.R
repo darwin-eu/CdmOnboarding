@@ -37,8 +37,6 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param scratchDatabaseSchema            Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
-#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
-#'                                         On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.
 #' @param databaseId                       ID of your database, this will be used as subfolder for the results and naming of the report
 #' @param databaseName		                 String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.
@@ -63,7 +61,6 @@ cdmOnboarding <- function(connectionDetails,
                           cdmDatabaseSchema,
                           resultsDatabaseSchema,
                           scratchDatabaseSchema = resultsDatabaseSchema,
-                          vocabDatabaseSchema = cdmDatabaseSchema,
                           oracleTempSchema = resultsDatabaseSchema,
                           databaseId,
                           databaseName,
@@ -91,7 +88,6 @@ cdmOnboarding <- function(connectionDetails,
     cdmDatabaseSchema = cdmDatabaseSchema,
     resultsDatabaseSchema = resultsDatabaseSchema,
     scratchDatabaseSchema = scratchDatabaseSchema,
-    vocabDatabaseSchema = vocabDatabaseSchema,
     oracleTempSchema = oracleTempSchema,
     databaseId = databaseId,
     databaseName = databaseName,
@@ -157,7 +153,6 @@ cdmOnboarding <- function(connectionDetails,
     cdmDatabaseSchema,
     resultsDatabaseSchema,
     scratchDatabaseSchema,
-    vocabDatabaseSchema,
     oracleTempSchema,
     databaseId,
     databaseName,
@@ -306,7 +301,6 @@ cdmOnboarding <- function(connectionDetails,
     vocabularyResults <- vocabularyChecks(
       connectionDetails = connectionDetails,
       cdmDatabaseSchema = cdmDatabaseSchema,
-      vocabDatabaseSchema = vocabDatabaseSchema,
       smallCellCount = smallCellCount,
       cdmVersion = cdmVersion,
       outputFolder = outputFolder,
@@ -359,7 +353,6 @@ cdmOnboarding <- function(connectionDetails,
     ParallelLogger::logInfo("Running Performance Checks SQL")
     performanceResults <- performanceChecks(
       connectionDetails = connectionDetails,
-      vocabDatabaseSchema = vocabDatabaseSchema,
       resultsDatabaseSchema = resultsDatabaseSchema,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder

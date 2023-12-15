@@ -17,7 +17,7 @@ from (
   group by concept_id
 ) as cte
 cross join (select sum(num_records) as total_records from #@cdmDomain) as t
-left join @vocabDatabaseSchema.concept as concept on cte.concept_id = concept.concept_id
+left join @cdmDatabaseSchema.concept as concept on cte.concept_id = concept.concept_id
 where num_records > @smallCellCount
 order by num_records desc
 ;
