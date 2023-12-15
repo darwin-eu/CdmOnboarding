@@ -49,16 +49,16 @@ performanceChecks <- function(connectionDetails,
   performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
                                        connectionDetails, sqlOnly, vocabDatabaseSchema = vocabDatabaseSchema)
 
+  appliedIndexes <- NULL
   if (connectionDetails$dbms == "postgresql") {
-        appliedIndexes <- executeQuery(outputFolder, "applied_indexes_postgres.sql", "Retrieving which indexes are applied",
-                                  connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
+    appliedIndexes <- executeQuery(outputFolder, "applied_indexes_postgres.sql", "Retrieving applied indexes",
+                                   connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
   } else if (connectionDetails$dbms == "sql server") {
-        appliedIndexes <- executeQuery(outputFolder, "applied_indexes_sql_server.sql", "Retrieving which indexes are applied",
-                                  connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
+    appliedIndexes <- executeQuery(outputFolder, "applied_indexes_sql_server.sql", "Retrieving applied indexes",
+                                   connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
   } else {
-    ParallelLogger::logWarn("This DBMS is not equal to Postgresql or SQL server, so no applied indexes could be listed.")
+    ParallelLogger::logWarn(sprtinf("The applied indexes cannot be run for '%s', it is only implemented for PostgreSQL and MS Sql Server.", connectionDetails$dbms))
   }
-
 
   list(
     achillesTiming = achillesTiming,

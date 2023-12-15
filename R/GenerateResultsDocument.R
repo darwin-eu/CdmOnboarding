@@ -595,21 +595,33 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par(paste0("WebAPI version: ", results$webAPIversion)) %>%
       officer::body_add_par("")
 
-    n_relations <- df_pr$performanceBenchmark$result
-    benchmark_query_time <- df_pr$performanceBenchmark$duration
     doc <- doc %>%
-      officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(sprintf(
-        "The number of 'Maps To' relations is equal to %s and queried in %.2f seconds (%g s/#).",
-        prettyHr(n_relations),
-        benchmark_query_time,
-        benchmark_query_time / n_relations
-      ))
+      officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2)
+    if (!is.null(df_pr$performanceBenchmark)) {
+      n_relations <- df_pr$performanceBenchmark$result
+      benchmark_query_time <- df_pr$performanceBenchmark$duration
+      doc <- doc %>%
+        officer::body_add_par(sprintf(
+          "The number of 'Maps To' relations is equal to %s and queried in %.2f seconds (%g s/#).",
+          prettyHr(n_relations),
+          benchmark_query_time,
+          benchmark_query_time / n_relations
+        ))
+    } else {
+      doc <- doc %>%
+        officer::body_add_par("Performance benchmark of the OMOP CDM tables could not be retrieved", style = pkg.env$styles$highlight)
+    }
 
     doc <- doc %>%
-      officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par("The following indexes are applied on the OMOP schema: ") %>%
-      my_body_add_table(results$performanceResults$appliedIndexes$result)
+      officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2)
+    if (!is.null(df_pr$appliedIndexes)) {
+      doc <- doc %>%
+        officer::body_add_par("The applied indexes on the OMOP CDM tables") %>%
+        my_body_add_table(df_pr$appliedIndexes$result)
+    } else {
+      doc <- doc %>%
+        officer::body_add_par("Applied indexes could not be retrieved", style = pkg.env$styles$highlight)
+    }
 
     doc <- doc %>%
       officer::body_add_par("Achilles Query Performance", style = pkg.env$styles$heading2)

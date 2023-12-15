@@ -7,5 +7,5 @@ test_that("Performance Checks", {
   )
 
   testthat::expect_type(performanceResults, 'list')
-  testthat::expect_named(performanceResults, c("achillesTiming", "performanceBenchmark"))
+  testthat::expect_named(performanceResults, c("achillesTiming", "performanceBenchmark", "appliedIndexes"))
 })
