@@ -618,6 +618,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2)
     if (!is.null(df_pr$appliedIndexes$result)) {
+      df_pr$appliedIndexes$result <- df_pr$appliedIndexes$result %>%
+        dplyr::group_by(TABLENAME) %>%
+        dplyr::summarize(
+          INDEXNAMES = paste(INDEXNAME, collapse = ",")
+        )
       doc <- doc %>%
         my_table_caption("The indexes applied on the OMOP CDM tables", sourceSymbol = pkg.env$sources$system) %>%
         my_body_add_table_runtime(df_pr$appliedIndexes)
@@ -644,12 +649,6 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           officer::body_add_par("") %>%
           officer::body_add_par(paste(additionalIndexes, collapse = ", "))
       }
-
-      df_pr$appliedIndexes$result <- df_pr$appliedIndexes$result %>%
-        dplyr::group_by(TABLENAME) %>%
-        dplyr::summarize(
-          INDEXNAME = paste(INDEXNAME, collapse = ",")
-        )
     } else {
       doc <- doc %>%
         officer::body_add_par("Applied indexes could not be retrieved", style = pkg.env$styles$highlight)
