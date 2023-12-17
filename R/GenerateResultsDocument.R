@@ -620,6 +620,14 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     if (!is.null(df_pr$appliedIndexes$result)) {
       expectedIndexes <- getExpectedIndexes(results$cdmSource$CDM_VERSION)
 
+      # filter to the OMOP CDM tables only
+      if (!is.null(results$dataTablesResults$dataTablesCounts)) {
+        omop_table_names <- results$dataTablesResults$dataTablesCounts$result %>%
+          dplyr::pull(TABLENAME)
+        df_pr$appliedIndexes$result %>%
+          dplyr::filter(TABLENAME %in% omop_table_names)
+      }
+
       missingIndexes <- setdiff(expectedIndexes, df_pr$appliedIndexes$result$INDEXNAME)
       additionalIndexes <- setdiff(df_pr$appliedIndexes$result$INDEXNAME, expectedIndexes)
 
@@ -628,6 +636,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         dplyr::summarize(
           INDEXNAMES = paste(INDEXNAME, collapse = ",")
         )
+
       doc <- doc %>%
         my_table_caption("The indexes applied on the OMOP CDM tables", sourceSymbol = pkg.env$sources$system) %>%
         my_body_add_table_runtime(df_pr$appliedIndexes)
