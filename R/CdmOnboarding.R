@@ -353,6 +353,7 @@ cdmOnboarding <- function(connectionDetails,
     ParallelLogger::logInfo("Running Performance Checks SQL")
     performanceResults <- performanceChecks(
       connectionDetails = connectionDetails,
+      cdmDatabaseSchema = cdmDatabaseSchema,
       resultsDatabaseSchema = resultsDatabaseSchema,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder

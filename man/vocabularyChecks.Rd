@@ -7,6 +7,7 @@
 vocabularyChecks(
   connectionDetails,
   cdmDatabaseSchema,
+  cdmVersion,
   smallCellCount = 5,
   sqlOnly = FALSE,
   outputFolder = "output",

@@ -35,8 +35,8 @@
   return(plot)
 }
 
-#' https://rpubs.com/melike/heatmapTable
 .heatMapPlot <- function(df, yVar) {
+  # https://rpubs.com/melike/heatmapTable
   maxYVar <- length(unique(df[[yVar]]))
   df %>%
     dplyr::group_by(DOMAIN) %>%

@@ -41,7 +41,7 @@
 vocabularyChecks <- function(connectionDetails,
                              cdmDatabaseSchema,
                              cdmVersion,
-                           smallCellCount = 5,
+                             smallCellCount = 5,
                              sqlOnly = FALSE,
                              outputFolder = "output",
                              optimize = FALSE) {

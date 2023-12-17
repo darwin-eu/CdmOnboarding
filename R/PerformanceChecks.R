@@ -30,6 +30,8 @@
 #' \code{PerformanceChecks} runs a list of performance checks as part of the CDM Onboarding procedure
 #'
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
@@ -37,6 +39,7 @@
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
 performanceChecks <- function(connectionDetails,
+                              cdmDatabaseSchema,
                               resultsDatabaseSchema,
                               sqlOnly = FALSE,
                               outputFolder = "output") {
