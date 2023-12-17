@@ -18,9 +18,10 @@ params <- list(
 )
 
 # Load Achilles results
-if (file.exists(file.path(params$outputFolder, 'eunomia_achilles_data.rds'))) {
+achilles_rds_file <- file.path(params$outputFolder, 'eunomia_achilles_results.rds')
+if (file.exists(achilles_rds_file)) {
   print('Loading Achilles results from file')
-  achilles_data <- readRDS(file.path(params$outputFolder, 'eunomia_achilles_data.rds'))
+  achilles_data <- readRDS(achilles_rds_file)
   connection <- DatabaseConnector::connect(params$connectionDetails)
   for (tableName in names(achilles_data)) {
     print(sprintf('Inserting %s', tableName))
@@ -59,6 +60,6 @@ if (file.exists(file.path(params$outputFolder, 'eunomia_achilles_data.rds'))) {
     )
   )
   DatabaseConnector::disconnect(connection)
-  saveRDS(achilles_data, file.path(params$outputFolder, 'eunomia_achilles_data.rds'))
+  saveRDS(achilles_data, achilles_rds_file)
   #TODO: clean up of achilles data rds for run on Github Actions
 }

@@ -1,14 +1,17 @@
 test_that("No Checks", {
-  results <- do.call(
-    CdmOnboarding::cdmOnboarding,
-    c(
-      params,
-      runDataTablesChecks = FALSE,
-      runVocabularyChecks = FALSE,
-      runPerformanceChecks = FALSE,
-      runWebAPIChecks = FALSE,
-      runDedChecks = FALSE
-    )
+  results <- CdmOnboarding::cdmOnboarding(
+    connectionDetails = params$connectionDetails,
+    cdmDatabaseSchema = params$cdmDatabaseSchema,
+    resultsDatabaseSchema = params$resultsDatabaseSchema,
+    outputFolder = params$outputFolder,
+    databaseId = params$databaseId,
+    dqdJsonPath = NULL,
+    baseUrl = params$baseUrl,
+    runDataTablesChecks = FALSE,
+    runVocabularyChecks = FALSE,
+    runPerformanceChecks = FALSE,
+    runWebAPIChecks = FALSE,
+    runDedChecks = FALSE
   )
 
   testthat::expect_type(results, 'list')

@@ -12,17 +12,19 @@ test_that("DQD Json", {
     checkLevels = "TABLE"
   )
 
-  results <- do.call(
-    CdmOnboarding::cdmOnboarding,
-    c(
-      params,
-      dqdJsonPath = file.path(params$outputFolder, dqdOutputFile),
-      runDataTablesChecks = FALSE,
-      runVocabularyChecks = FALSE,
-      runPerformanceChecks = FALSE,
-      runWebAPIChecks = FALSE,
-      runDedChecks = FALSE
-    )
+  results <- CdmOnboarding::cdmOnboarding(
+    connectionDetails = params$connectionDetails,
+    cdmDatabaseSchema = params$cdmDatabaseSchema,
+    resultsDatabaseSchema = params$resultsDatabaseSchema,
+    outputFolder = params$outputFolder,
+    databaseId = params$databaseId,
+    dqdJsonPath = file.path(params$outputFolder, dqdOutputFile),
+    baseUrl = params$baseUrl,
+    runDataTablesChecks = FALSE,
+    runVocabularyChecks = FALSE,
+    runPerformanceChecks = FALSE,
+    runWebAPIChecks = FALSE,
+    runDedChecks = FALSE
   )
 
   testthat::expect_type(results$dqdResults, 'list')
