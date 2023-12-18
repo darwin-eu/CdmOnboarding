@@ -280,10 +280,10 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         `Domain` = DOMAIN,
         `N` = COUNT_VALUE,
         `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
-        `↓Start` = FIRST_START_MONTH,
-        `↑Start` = LAST_START_MONTH,
-        `↓End` = FIRST_END_MONTH,
-        `↑End` = LAST_END_MONTH,
+        `Min Start` = FIRST_START_MONTH,
+        `Max Start` = LAST_START_MONTH,
+        `Min End` = FIRST_END_MONTH,
+        `Max End` = LAST_END_MONTH,
         .keep = "none"  # do not display other columns
       )
     doc <- doc %>%
@@ -563,7 +563,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     allPackages <- data.frame(
       Package = c(getHADESpackages(), getDARWINpackages()),
       Version = "",
-      Organisation = c(rep("OHDSI HADES", length(getHADESpackages())), rep("DARWIN EU®", length(getDARWINpackages())))
+      Organisation = c(rep("OHDSI HADES", length(getHADESpackages())), rep("DARWIN EU\u00AE", length(getDARWINpackages())))
     )
 
     packageVersions <- dplyr::union(df_pr$hadesPackageVersions, df_pr$darwinPackageVersions) %>%
@@ -579,7 +579,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
       my_table_caption(
         paste(
-          "Versions of all installed R packages from DARWIN EU® and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
+          "Versions of all installed R packages from DARWIN EU\u00AE and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
           "Packages can be installed from CRAN (install.packages(\"<package_name>\")) or Github (remotes::install_github(\"<organisation>/<package>\"))"
         ),
         sourceSymbol = pkg.env$sources$system
@@ -618,7 +618,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2)
     if (!is.null(df_pr$appliedIndexes$result)) {
-      expectedIndexes <- getExpectedIndexes(results$cdmSource$CDM_VERSION)
+      expectedIndexes <- .getExpectedIndexes(results$cdmSource$CDM_VERSION)
 
       # filter to the OMOP CDM tables only
       if (!is.null(results$dataTablesResults$dataTablesCounts)) {

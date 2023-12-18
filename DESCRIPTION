@@ -39,17 +39,20 @@ Imports:
     data.table,
     lubridate,
     ggplot2,
-    tidyr,
     jsonlite,
     stats,
-    cowplot
+    cowplot,
+    scales,
+    stringr
 Suggests:
     flextable,
     devtools,
     knitr,
     testthat (>= 3.0.0),
-    Eunomia
+    Eunomia,
+    Achilles
 Remotes:
     OHDSI/ROhdsiWebApi,
-    OHDSI/Eunomia
+    OHDSI/Eunomia,
+    OHDSI/Achilles
 Config/testthat/edition: 3

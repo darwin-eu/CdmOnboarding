@@ -120,9 +120,10 @@ getDARWINpackages <- function() {
   #   )
 }
 
-#' Default indexes for an OMOP CDM. Note that currently these are the same for both v5.3 and v5.4.
-getExpectedIndexes <- function(cdmVersion) {
+.getExpectedIndexes <- function(cdmVersion) {
   cdmVersion <- sub(pattern = "v", replacement = "", cdmVersion)
+
+  # Default indexes for an OMOP CDM. Note that currently these are the same for both v5.3 and v5.4.
   # Extracted idx from https://github.com/OHDSI/CommonDataModel/blob/main/inst/sql/sql_server/OMOP_CDM_indices_v5.4.sql
   # and xpk from https://github.com/OHDSI/CommonDataModel/blob/main/inst/ddl/5.4/postgresql/OMOPCDM_postgresql_5.4_primary_keys.sql
   indexes <- c(

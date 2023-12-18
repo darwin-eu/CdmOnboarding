@@ -2,12 +2,18 @@
 % Please edit documentation in R/compat.R
 \name{compat}
 \alias{compat}
-\title{Provide forwards compatibility by converting results from previous versions of CdmOnboarding to the latest version.
-Provide backwards compatibility by converting results from the latest version of CdmOnboarding to previous versions.}
+\title{Compatibility of CdmOnboarding results}
 \usage{
 compat(r, target_version = package_version("3.0.0"))
 }
+\arguments{
+\item{r}{A list of results from CdmOnboarding.}
+
+\item{target_version}{The version to convert the results to, only v3 supported.}
+}
+\value{
+A list of results from CdmOnboarding, forwards compatible with v3.
+}
 \description{
-Provide forwards compatibility by converting results from previous versions of CdmOnboarding to the latest version.
-Provide backwards compatibility by converting results from the latest version of CdmOnboarding to previous versions.
+\code{compat} provides compatibility by converting results from previous versions of CdmOnboarding to the latest version.
 }

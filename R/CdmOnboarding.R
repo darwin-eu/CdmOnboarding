@@ -330,10 +330,10 @@ cdmOnboarding <- function(connectionDetails,
     darwinPackages <- getDARWINpackages()
     diffDARWINPackages <- setdiff(darwinPackages, packinfo$Package)
     if (length(diffDARWINPackages) > 0) {
-      ParallelLogger::logInfo("> Not all the DARWIN EU® packages are installed.")
+      ParallelLogger::logInfo("> Not all the DARWIN EU\u00AE packages are installed.")
       ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffDARWINPackages, collapse = ', ')))
     } else {
-      ParallelLogger::logInfo("> All DARWIN EU® packages are installed.")
+      ParallelLogger::logInfo("> All DARWIN EU\u00AE packages are installed.")
     }
     darwinPackageVersions <- packinfo[packinfo$Package %in% darwinPackages, ]
 
