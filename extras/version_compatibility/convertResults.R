@@ -1,5 +1,7 @@
 #' @file testCompat.R Test functionality of compat
 
+library(stringr)
+library(tidyverse)
 source('R/compat.R')
 options(error = message)
 
@@ -24,19 +26,19 @@ get_names <- function(myList, current_field_name = "", depth = 0) {
 }
 
 results_v1 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v1.0.1.rds')
-print(get_cdmonboarding_version(results_v1))
+print(CdmOnboarding:::.get_cdmonboarding_version(results_v1))
 
 results_v20 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v2.0.0.rds')
-print(get_cdmonboarding_version(results_v20))
+print(CdmOnboarding:::.get_cdmonboarding_version(results_v20))
 
 results_v21 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v2.1.0.rds')
-print(get_cdmonboarding_version(results_v21))
+print(CdmOnboarding:::.get_cdmonboarding_version(results_v21))
 
 results_v22 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v2.2.0.rds')
-print(get_cdmonboarding_version(results_v22))
+print(CdmOnboarding:::.get_cdmonboarding_version(results_v22))
 
-results_v30 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v3.0.0-dev.rds')
-print(get_cdmonboarding_version(results_v30))
+results_v30 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v3.0.0.rds')
+print(CdmOnboarding:::.get_cdmonboarding_version(results_v30))
 
 results_v10_fixed <- compat(results_v1)
 results_v20_fixed <- compat(results_v20)
@@ -74,13 +76,26 @@ my_compare <- function(x, y) {
   print(sprintf('In x but not in y: %d elements.\nIn y but not in x: %d elements', length(a), length(b)))
 }
 
-my_compare(results_v10_fixed, results_v22_fixed) # "In x but not in y: 14 elements.\nIn y but not in x: 13 elements"
-my_compare(results_v20_fixed, results_v22_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 4 elements"
+my_compare(results_v10_fixed, results_v20_fixed) # "In x but not in y: 14 elements.\nIn y but not in x: 9 elements"
+# Removed: 13 packInfo elements (Built, Depends, Enhances, etc.)
+# Added: achillesMetadata, conceptsPerPerson$N_PERSONS, activePersons, observationPeriodLength, observedByMonth, tableDateRange, typeConcepts, dqdResults, mappingTempTableCreation
+
+my_compare(results_v20_fixed, results_v21_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 3 elements"
+# Removed: none
+# Added: dedResults, mappedDrugRoute, unmappedDrugRoute
+
 my_compare(results_v21_fixed, results_v22_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 1 elements"
-my_compare(results_v22_fixed, results_v30_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 13 elements" -> includes dqdResults and dedResults
+# Removed: none
+# Added: performanceResults$dmsVersion
+
+my_compare(results_v22_fixed, results_v30_fixed) # "In x but not in y: 1 elements.\nIn y but not in x: 25 elements" -> includes dqdResults and dedResults
+# Removed: missingPackages
+# Added: dateRangeByTypeConcept, dayMonthYearOfBirth, dayOfTheMonth, dayOfTheWeek, observationPeriodOverlap, observationPeriodsPerPerson, visitLength
+#        appliedIndexes, darwinPackageVersions, packinfo$LibPath, packinfo$URL,
+#        mappedValuesMeas, mappedValuesObs, mappedVisitDetails, unmappedValuesMeas, unmappedValuesObs, unmappedVisitDetails
 
 my_compare(results_v22, results_v22_fixed) # "In x but not in y: 4 elements.\nIn y but not in x: 4 elements"
-my_compare(results_v30, results_v30_fixed) # "In x but not in y: 4 elements.\nIn y but not in x: 6 elements"
+my_compare(results_v30, results_v30_fixed) # "In x but not in y: 17 elements.\nIn y but not in x: 11 elements"
 
 #' TODO:
 #' - Run v21 and v22 with dqdJson and drugExposureDiagnostics

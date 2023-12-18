@@ -622,8 +622,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
       # filter to the OMOP CDM tables only
       if (!is.null(results$dataTablesResults$dataTablesCounts)) {
-        omop_table_names <- results$dataTablesResults$dataTablesCounts$result %>%
-          dplyr::pull(Table)
+        omop_table_names <- results$dataTablesResults$dataTablesCounts$result[,1]
         df_pr$appliedIndexes$result <- df_pr$appliedIndexes$result %>%
           dplyr::filter(TABLENAME %in% omop_table_names)
       }

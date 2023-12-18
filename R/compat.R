@@ -111,17 +111,19 @@ compat <- function(r, target_version = package_version('3.0.0')) {
         r$vocabularyResults$mappedUnitsObs <- .fixDataFrameNames(r$vocabularyResults$mappedUnitsObs)
     }
     r <- .fixP_RECORDS(r)
-
-    r$performanceResults$sys_details <- r$sys_details
-    r$performanceResults$dmsVersion <- r$dmsVersion
-    r$performanceResults$packinfo <- data.frame(r$packinfo)
-    r$performanceResults$hadesPackageVersions <- r$hadesPackageVersions
-    r$performanceResults$darwinPackageVersions <- r$darwinPackageVersions
-
-    r$packinfo <- NULL
-    r$dmsVersion <- NULL
-    r$sys_details <- NULL
-    r$hadesPackageVersions <- NULL
+    
+    if (is.null(r$performanceResults$packinfo)) {
+        r$performanceResults$sys_details <- r$sys_details
+        r$performanceResults$dmsVersion <- r$dmsVersion
+        r$performanceResults$packinfo <- data.frame(r$packinfo)
+        r$performanceResults$hadesPackageVersions <- r$hadesPackageVersions
+        r$performanceResults$darwinPackageVersions <- r$darwinPackageVersions
+    
+        r$packinfo <- NULL
+        r$dmsVersion <- NULL
+        r$sys_details <- NULL
+        r$hadesPackageVersions <- NULL
+    }
 
     return(r)
 }
@@ -150,7 +152,15 @@ compat <- function(r, target_version = package_version('3.0.0')) {
         str_replace('^TABLE$', "DOMAIN") |>
         str_replace('PERSON COUNT', "N_PERSONS") |>
         str_replace("CATEGORY", "DOMAIN") |>
-        str_replace("(?<!SOURCE|COUNT)_VALUE", "") |>
+        str_replace("AVERAGE", "AVG_VALUE") |>
+        str_replace("STD_DEV", "STDEV_VALUE") |>
+        str_replace("MIN", "MIN_VALUE") |>
+        str_replace("MAX", "MAX_VALUE") |>
+        str_replace("P10", "P10_VALUE") |>
+        str_replace("P25", "P25_VALUE") |>
+        str_replace("P75", "P75_VALUE") |>
+        str_replace("P90", "P90_VALUE") |>
+        str_replace("(?<!SOURCE|COUNT|AVG|STDEV|MIN|MAX|P\\d\\d)_VALUE", "") |>
         str_replace("%", "P_") |>
         str_replace("#", "N_") |>
         str_replace_all(" ", "_")
