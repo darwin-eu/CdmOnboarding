@@ -227,22 +227,23 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       mutate(
         Field = sprintf("Persons with %s observation period(s)", N_OBSERVATION_PERIODS),
         Value = N_PERSONS,
-        `%Persons` = prettyPc(N_PERONS / personCount * 100),
+        `%Persons` = N_PERSONS / personCount * 100,
         .keep = "none"  # do not display other columns
       )
 
     # Note: remove once implemented as DQD check, https://github.com/OHDSI/DataQualityDashboard/issues/510
     new_rows <- data.frame(
-      Field = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
-      Value = c(
+      A = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
+      B = c(
         nrow(df$observationPeriodOverlap),
         sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS)
-      )
-      `%Persons` = c(
-        prettyPc(nrow(df$observationPeriodOverlap) / personCount * 100),
+      ),
+      C = c(
+        nrow(df$observationPeriodOverlap) / personCount * 100,
         NA
       )
     )
+    names(new_rows) <- c("Field", "Value", "%Persons")
     obsPeriodStats <- rbind(obsPeriodStats, new_rows)
 
     doc <- doc %>%
@@ -439,7 +440,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedValuesMeas, "measurement values", results$smallCellCount) %>%
       my_unmapped_section(vocabResults$unmappedValuesObs, "observation values", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount)
+      my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount) %>%
+      my_unmapped_section(vocabResults$unmappedSpecialty, "specialty", results$smallCellCount)
 
     # Top 25 mapped concepts
     doc <- doc %>%
@@ -456,7 +458,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedValuesMeas, "measurement values", results$smallCellCount) %>%
       my_mapped_section(vocabResults$mappedValuesObs, "observation values", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount)
+      my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount) %>%
+      my_mapped_section(vocabResults$mappedSpecialty, "specialty", results$smallCellCount)
 
     ## add source_to_concept_map breakdown
     doc <- doc %>%

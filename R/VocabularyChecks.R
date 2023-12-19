@@ -93,17 +93,19 @@ vocabularyChecks <- function(connectionDetails,
     unmappedVisits <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped visits query executed successfully", sqlOnly = sqlOnly,
                                    activeConnection = connection, cdmDomain = 'visit', smallCellCount = smallCellCount)
     unmappedVisitDetails <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped visit details query executed successfully", sqlOnly = sqlOnly,
-                                        activeConnection = connection, cdmDomain = 'visit_detail', smallCellCount = smallCellCount)
+                                         activeConnection = connection, cdmDomain = 'visit_detail', smallCellCount = smallCellCount)
     unmappedUnitsMeas <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped meas units query executed successfully", sqlOnly = sqlOnly,
-                                          activeConnection = connection, cdmDomain = 'meas_unit', smallCellCount = smallCellCount)
+                                      activeConnection = connection, cdmDomain = 'meas_unit', smallCellCount = smallCellCount)
     unmappedUnitsObs <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped obs units query executed successfully", sqlOnly = sqlOnly,
-                                         activeConnection = connection, cdmDomain = 'obs_unit', smallCellCount = smallCellCount)
+                                     activeConnection = connection, cdmDomain = 'obs_unit', smallCellCount = smallCellCount)
     unmappedValuesMeas <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped meas values query executed successfully", sqlOnly = sqlOnly,
-                                          activeConnection = connection, cdmDomain = 'meas_value', smallCellCount = smallCellCount)
+                                      activeConnection = connection, cdmDomain = 'meas_value', smallCellCount = smallCellCount)
     unmappedValuesObs <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped obs values query executed successfully", sqlOnly = sqlOnly,
-                                         activeConnection = connection, cdmDomain = 'obs_value', smallCellCount = smallCellCount)
+                                      activeConnection = connection, cdmDomain = 'obs_value', smallCellCount = smallCellCount)
     unmappedDrugRoute <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped drug route query executed successfully", sqlOnly = sqlOnly,
-                                         activeConnection = connection, cdmDomain = 'drug_route', smallCellCount = smallCellCount)
+                                      activeConnection = connection, cdmDomain = 'drug_route', smallCellCount = smallCellCount)
+    unmappedSpecialty <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped specialty query executed successfully", sqlOnly = sqlOnly,
+                                      activeConnection = connection, cdmDomain = 'specialty', smallCellCount = smallCellCount)
 
     mappedDrugs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped drugs query executed successfully", sqlOnly = sqlOnly,
                                 activeConnection = connection, cdmDomain = 'drug', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
@@ -126,11 +128,13 @@ vocabularyChecks <- function(connectionDetails,
     mappedUnitsObs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped obs units query executed successfully", sqlOnly = sqlOnly,
                                    activeConnection = connection, cdmDomain = 'obs_unit', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedValuesMeas <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped meas values query executed successfully", sqlOnly = sqlOnly,
-                                        activeConnection = connection, cdmDomain = 'meas_value', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
+                                     activeConnection = connection, cdmDomain = 'meas_value', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedValuesObs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped obs values query executed successfully", sqlOnly = sqlOnly,
-                                       activeConnection = connection, cdmDomain = 'obs_value', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
-    mappedDrugRoute <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Unmapped drug routes query executed successfully", sqlOnly = sqlOnly,
+                                    activeConnection = connection, cdmDomain = 'obs_value', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
+    mappedDrugRoute <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped drug routes query executed successfully", sqlOnly = sqlOnly,
                                     activeConnection = connection, cdmDomain = 'drug_route', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
+    mappedSpecialty <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped specialty query executed successfully", sqlOnly = sqlOnly,
+                                    activeConnection = connection, cdmDomain = 'specialty', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
   },
   finally = {
     DatabaseConnector::disconnect(connection = connection)
@@ -155,6 +159,7 @@ vocabularyChecks <- function(connectionDetails,
     unmappedValuesMeas = unmappedValuesMeas,
     unmappedValuesObs = unmappedValuesObs,
     unmappedDrugRoute = unmappedDrugRoute,
+    unmappedSpecialty = unmappedSpecialty,
     mappedDrugs = mappedDrugs,
     mappedConditions = mappedConditions,
     mappedMeasurements = mappedMeasurements,
@@ -168,6 +173,7 @@ vocabularyChecks <- function(connectionDetails,
     mappedValuesMeas = mappedValuesMeas,
     mappedValuesObs = mappedValuesObs,
     mappedDrugRoute = mappedDrugRoute,
+    mappedSpecialty = mappedSpecialty,
     conceptCounts = conceptCounts,
     vocabularyCounts = vocabularyCounts,
     sourceConceptFrequency = sourceConceptFrequency,
