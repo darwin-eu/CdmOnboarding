@@ -130,7 +130,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         Table = TABLENAME,
         `#Records` = COUNT,
         `#Persons` = N_PERSONS,
-        `%Persons with record` = prettyPc(N_PERSONS / personCount * 100),
+        `%Persons` = prettyPc(N_PERSONS / personCount * 100),
         .keep = "none"  # do not display other columns
       )
 
@@ -160,7 +160,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     if (deathCount > 0) {
       totalDeath <- df$totalRecords$result %>%
         dplyr::filter(SERIES_NAME %in% 'Death')
-      totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), log_y_axis = TRUE)
+      totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), hide_legend = TRUE)
       doc <- doc %>%
         officer::body_add_gg(totalDeathPlot, height = 4)
     } else {
@@ -170,7 +170,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     doc <- doc %>%
       my_figure_caption(
         sprintf(
-          "Number of monthly deaths over time. Overall mortality: %s%%.",
+          "Number of deaths in each month. Overall mortality: %s%%.",
           overallMortality
         ),
         sourceSymbol = pkg.env$sources$achilles
@@ -183,7 +183,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(df$conceptsPerPerson)
 
     # Observation Period
-    plot <- .recordsCountPlot(as.data.frame(df$observedByMonth$result))
+    plot <- .recordsCountPlot(as.data.frame(df$observedByMonth$result), hide_legend = TRUE)
     n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
     active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
     doc <- doc %>%
@@ -203,15 +203,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("")
 
     # Length of first observation period
-    df$observationPeriodLength$result <- rbind(
-      df$observationPeriodLength$result,
-      round(df$observationPeriodLength$result / 365, 1)
-    )
+    df$observationPeriodLength$result <- round(df$observationPeriodLength$result / 365, 1)
     df$observationPeriodLength$result <- df$observationPeriodLength$result %>%
       mutate(
-        ` ` = c("Days", "Years"),
-        AVG = round(AVG_VALUE, 1),
-        STDEV = round(STDEV_VALUE, 1),
+        AVG = AVG_VALUE,
+        STDEV = STDEV_VALUE,
         MIN = MIN_VALUE,
         P10 = P10_VALUE,
         P25 = P25_VALUE,
@@ -223,43 +219,29 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       )
 
     doc <- doc %>%
-      my_table_caption("Length of first observation period (days, years).", sourceSymbol = pkg.env$sources$achilles) %>%
+      my_table_caption("Length of first observation period (years).", sourceSymbol = pkg.env$sources$achilles) %>%
       my_body_add_table_runtime(df$observationPeriodLength)
-
-    df$visitLength$result <- df$visitLength$result %>%
-      mutate(
-        Domain = DOMAIN,
-        `Concept ID` = CONCEPT_ID,
-        `Concept Name` = CONCEPT_NAME,
-        AVG = round(AVG_VALUE, 1),
-        STDEV = round(STDEV_VALUE, 1),
-        MIN = MIN_VALUE,
-        P10 = P10_VALUE,
-        P25 = P25_VALUE,
-        MEDIAN = MEDIAN_VALUE,
-        P75 = P75_VALUE,
-        P90 = P90_VALUE,
-        MAX = MAX_VALUE,
-        .keep = "none"  # do not display other columns
-      ) %>%
-      arrange(Domain)
-
-    doc <- doc %>%
-      my_table_caption("Length of visit in days by visit concept.", sourceSymbol = pkg.env$sources$achilles) %>%
-      my_body_add_table_runtime(df$visitLength)
 
     # Combine Observation Periods per Person and overlap in one table
     obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
       mutate(
         Field = sprintf("Persons with %s observation period(s)", N_OBSERVATION_PERIODS),
         Value = N_PERSONS,
+        `%Persons` = prettyPc(N_PERONS / personCount * 100),
         .keep = "none"  # do not display other columns
       )
 
     # Note: remove once implemented as DQD check, https://github.com/OHDSI/DataQualityDashboard/issues/510
     new_rows <- data.frame(
       Field = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
-      Value = c(nrow(df$observationPeriodOverlap), sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS))
+      Value = c(
+        nrow(df$observationPeriodOverlap),
+        sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS)
+      )
+      `%Persons` = c(
+        prettyPc(nrow(df$observationPeriodOverlap) / personCount * 100),
+        NA
+      )
     )
     obsPeriodStats <- rbind(obsPeriodStats, new_rows)
 
@@ -280,12 +262,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         `Domain` = DOMAIN,
         `N` = COUNT_VALUE,
         `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
-        `Min Start` = FIRST_START_MONTH,
-        `Max Start` = LAST_START_MONTH,
-        `Min End` = FIRST_END_MONTH,
-        `Max End` = LAST_END_MONTH,
+        `Start date [Min, Max]` = sprintf("[%s, %s]", FIRST_START_MONTH, LAST_START_MONTH),
+        `End date [Min, Max]` = sprintf("[%s, %s]", FIRST_END_MONTH, LAST_END_MONTH),
         .keep = "none"  # do not display other columns
-      )
+      ) %>%
+      arrange(Domain)
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_table_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles) %>% #nolint
@@ -293,6 +274,27 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         df$dateRangeByTypeConcept,
         alignment = c('l', 'l', rep('r', ncol(df$dateRangeByTypeConcept$result) - 2))
       )
+
+    df$visitLength$result <- df$visitLength$result %>%
+      mutate(
+        Domain = DOMAIN,
+        `Concept Name` = CONCEPT_NAME,
+        AVG = round(AVG_VALUE, 1),
+        STDEV = round(STDEV_VALUE, 1),
+        MIN = MIN_VALUE,
+        P10 = P10_VALUE,
+        P25 = P25_VALUE,
+        MEDIAN = MEDIAN_VALUE,
+        P75 = P75_VALUE,
+        P90 = P90_VALUE,
+        MAX = MAX_VALUE,
+        .keep = "none"  # do not display other columns
+      ) %>%
+      arrange(Domain)
+
+    doc <- doc %>%
+      my_table_caption("Length of stay by visit concept. The length should be interpreted as number of nights, meaning a length of 0 is a same-day visit.", sourceSymbol = pkg.env$sources$achilles) %>%
+      my_body_add_table_runtime(df$visitLength)
 
     # Day of the week and month
     combinedPlot <- cowplot::ggdraw()
@@ -572,7 +574,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         Version = dplyr::coalesce(Version.x, "Not installed")
       ) %>%
       # Sorting on LibPath to get packages in same environment together (if multiple versions of the same package installed due to renvs)
-      dplyr::arrange(LibPath, Organisation, Package) %>%
+      dplyr::arrange(Organisation, LibPath, Package) %>%
       dplyr::select(Organisation, Package, Version)
 
     doc <- doc %>%

@@ -20,8 +20,8 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-.recordsCountPlot <- function(results, log_y_axis = FALSE) {
-  temp <- results %>%
+.recordsCountPlot <- function(df, log_y_axis = FALSE, hide_legend = FALSE) {
+  temp <- df %>%
     dplyr::rename(Date = X_CALENDAR_MONTH, Domain = SERIES_NAME, Count = Y_RECORD_COUNT) %>%
     dplyr::mutate(Date = lubridate::parse_date_time(Date, "ym"))
   plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) +
@@ -30,6 +30,10 @@
 
   if (log_y_axis) {
     plot <- plot + ggplot2::scale_y_log10()
+  }
+
+  if (hide_legend) {
+    plot <- plot + ggplot2::theme(legend.position = "none")
   }
 
   return(plot)
