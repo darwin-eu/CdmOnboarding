@@ -6,8 +6,8 @@
 \usage{
 performanceChecks(
   connectionDetails,
+  cdmDatabaseSchema,
   resultsDatabaseSchema,
-  vocabDatabaseSchema,
   sqlOnly = FALSE,
   outputFolder = "output"
 )
@@ -15,11 +15,11 @@ performanceChecks(
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
+\item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM schema.
+On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
+
 \item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
-
-\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary.
-On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 

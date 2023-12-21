@@ -37,8 +37,6 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param scratchDatabaseSchema            Fully qualified name of database schema that we can write temporary tables to. Default is resultsDatabaseSchema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_scratch.dbo'.
-#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
-#'                                         On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.
 #' @param databaseId                       ID of your database, this will be used as subfolder for the results and naming of the report
 #' @param databaseName		                 String name of the database name. If blank, CDM_SOURCE table will be queried to try to obtain this.
@@ -63,7 +61,6 @@ cdmOnboarding <- function(connectionDetails,
                           cdmDatabaseSchema,
                           resultsDatabaseSchema,
                           scratchDatabaseSchema = resultsDatabaseSchema,
-                          vocabDatabaseSchema = cdmDatabaseSchema,
                           oracleTempSchema = resultsDatabaseSchema,
                           databaseId,
                           databaseName,
@@ -91,7 +88,6 @@ cdmOnboarding <- function(connectionDetails,
     cdmDatabaseSchema = cdmDatabaseSchema,
     resultsDatabaseSchema = resultsDatabaseSchema,
     scratchDatabaseSchema = scratchDatabaseSchema,
-    vocabDatabaseSchema = vocabDatabaseSchema,
     oracleTempSchema = oracleTempSchema,
     databaseId = databaseId,
     databaseName = databaseName,
@@ -157,7 +153,6 @@ cdmOnboarding <- function(connectionDetails,
     cdmDatabaseSchema,
     resultsDatabaseSchema,
     scratchDatabaseSchema,
-    vocabDatabaseSchema,
     oracleTempSchema,
     databaseId,
     databaseName,
@@ -242,9 +237,9 @@ cdmOnboarding <- function(connectionDetails,
   # Check whether Achilles output is available and get Achilles run info ---------------------------------------
   achillesMetadata <- NULL
   if (!sqlOnly) {
+    achillesTablesExists <- .checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema)
     achillesMetadata <- .getAchillesMetadata(connectionDetails, resultsDatabaseSchema, outputFolder)
-    achillesTableExists <- .checkAchillesTablesExist(connectionDetails, resultsDatabaseSchema, outputFolder)
-    if (is.null(achillesMetadata) || !achillesTableExists) {
+    if (is.null(achillesMetadata) || !achillesTablesExists) {
       ParallelLogger::logError("The output from the Achilles analyses is required.")
       ParallelLogger::logError(sprintf(
         "Please run Achilles first and make sure the resulting Achilles tables are in the given results schema ('%s').",
@@ -306,39 +301,41 @@ cdmOnboarding <- function(connectionDetails,
     vocabularyResults <- vocabularyChecks(
       connectionDetails = connectionDetails,
       cdmDatabaseSchema = cdmDatabaseSchema,
-      vocabDatabaseSchema = vocabDatabaseSchema,
       smallCellCount = smallCellCount,
-      sqlOnly = sqlOnly,
+      cdmVersion = cdmVersion,
       outputFolder = outputFolder,
+      sqlOnly = sqlOnly,
       optimize = optimize
     )
   }
 
   # performance checks --------------------------------------------------------------------------------------------
-  missingPackages <- NULL
-  packinfo <- NULL
-  hadesPackageVersions <- NULL
-  sys_details <- NULL
-  dmsVersion <- NULL
   performanceResults <- NULL
   if (runPerformanceChecks) {
     ParallelLogger::logInfo("Check installed R Packages")
+
+    packinfo <- as.data.frame(installed.packages(fields = c("URL")))
+    packinfo <- packinfo[, c("Package", "Version", "LibPath", "URL")]
+
     hadesPackages <- getHADESpackages()
-    diffPackages <- setdiff(hadesPackages, rownames(installed.packages()))
-    missingPackages <- paste(diffPackages, collapse = ', ')
-
-    if (length(diffPackages) > 0) {
-      ParallelLogger::logInfo("Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information") # nolint
-      ParallelLogger::logInfo(sprintf("Missing: %s", missingPackages))
+    diffHADESPackages <- setdiff(hadesPackages, packinfo$Package)
+    if (length(diffHADESPackages) > 0) {
+      ParallelLogger::logInfo("> Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information") # nolint
+      ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffHADESPackages, collapse = ', ')))
     } else {
-      ParallelLogger::logInfo("> All HADES packages are installed")
+      ParallelLogger::logInfo("> All HADES packages are installed.")
     }
-
-    # Note: can have multiple versions of the same package due to renvs
-    # Sorting on LibPath to get packages in same environment together
-    packinfo <- as.data.frame(installed.packages())
-    packinfo <- packinfo[order(packinfo$LibPath, packinfo$Package), c("Package", "Version")]
     hadesPackageVersions <- packinfo[packinfo$Package %in% hadesPackages, ]
+
+    darwinPackages <- getDARWINpackages()
+    diffDARWINPackages <- setdiff(darwinPackages, packinfo$Package)
+    if (length(diffDARWINPackages) > 0) {
+      ParallelLogger::logInfo("> Not all the DARWIN EU\u00AE packages are installed.")
+      ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffDARWINPackages, collapse = ', ')))
+    } else {
+      ParallelLogger::logInfo("> All DARWIN EU\u00AE packages are installed.")
+    }
+    darwinPackageVersions <- packinfo[packinfo$Package %in% darwinPackages, ]
 
     sys_details <- benchmarkme::get_sys_details(sys_info = FALSE)
     ParallelLogger::logInfo(
@@ -356,11 +353,16 @@ cdmOnboarding <- function(connectionDetails,
     ParallelLogger::logInfo("Running Performance Checks SQL")
     performanceResults <- performanceChecks(
       connectionDetails = connectionDetails,
-      vocabDatabaseSchema = vocabDatabaseSchema,
+      cdmDatabaseSchema = cdmDatabaseSchema,
       resultsDatabaseSchema = resultsDatabaseSchema,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder
     )
+    performanceResults$sys_details <- sys_details
+    performanceResults$dmsVersion <- dmsVersion
+    performanceResults$packinfo <- packinfo
+    performanceResults$hadesPackageVersions <- hadesPackageVersions
+    performanceResults$darwinPackageVersions <- darwinPackageVersions
   }
 
   webApiVersion <- "unknown"
@@ -402,16 +404,11 @@ cdmOnboarding <- function(connectionDetails,
     databaseDescription = databaseDescription,
     vocabularyResults = vocabularyResults,
     dataTablesResults = dataTablesResults,
-    packinfo = packinfo,
-    hadesPackageVersions = hadesPackageVersions,
-    missingPackages = missingPackages,
     performanceResults = performanceResults,
-    sys_details = sys_details,
     webAPIversion = webApiVersion,
+    dms = connectionDetails$dbms,
     cdmSource = cdmSource,
     achillesMetadata = achillesMetadata,
-    dms = connectionDetails$dbms,
-    dmsVersion = dmsVersion,
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
     dqdResults = dqdResults,
@@ -475,49 +472,35 @@ cdmOnboarding <- function(connectionDetails,
   return(cdmSource)
 }
 
-.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
+.checkAchillesTablesExist <- function(connectionDetails, resultsDatabaseSchema) {
   required_achilles_tables <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
-  errorReportFile <- file.path(outputFolder, "errorAchillesExistsSql.txt")
-  achilles_tables_exist <- tryCatch({
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    for (x in required_achilles_tables) {
-      sql <- SqlRender::translate(
-               SqlRender::render(
-                 "SELECT COUNT(*) FROM @resultsDatabaseSchema.@table",
-                 resultsDatabaseSchema = resultsDatabaseSchema,
-                 table = x
-               ),
-               targetDialect = 'postgresql'
-             )
-      DatabaseConnector::executeSql(
-        connection = connection,
-        sql = sql,
-        progressBar = FALSE,
-        reportOverallTime = FALSE,
-        errorReportFile = errorReportFile
+
+  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = connection))
+
+  achilles_tables_exist <- TRUE
+  for (table in required_achilles_tables) {
+    table_exists <- DatabaseConnector::existsTable(connection, resultsDatabaseSchema, table)
+    if (!table_exists) {
+      ParallelLogger::logWarn(
+        sprintf("Achilles table '%s.%s' has not been found", resultsDatabaseSchema, table)
       )
     }
-    TRUE
-  },
-  error = function(e) {
-    ParallelLogger::logWarn(sprintf("> The Achilles tables have not been found (%s). Please see error report in %s",
-                            paste(required_achilles_tables, collapse = ', '),
-                            errorReportFile))
-    FALSE
-  },
-  finally = {
-    DatabaseConnector::disconnect(connection = connection)
-    rm(connection)
-  })
+    achilles_tables_exist <- achilles_tables_exist && table_exists
+  }
+
   return(achilles_tables_exist)
 }
 
 .getAchillesMetadata <- function(connectionDetails, resultsDatabaseSchema, outputFolder) {
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("checks", "get_achilles_metadata.sql"),
-                                           packageName = "CdmOnboarding",
-                                           dbms = connectionDetails$dbms,
-                                           warnOnMissingParameters = FALSE,
-                                           resultsDatabaseSchema = resultsDatabaseSchema)
+  sql <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = file.path("checks", "get_achilles_metadata.sql"),
+    packageName = "CdmOnboarding",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    resultsDatabaseSchema = resultsDatabaseSchema
+  )
+
   errorReportFile <- file.path(outputFolder, "getAchillesMetadataError.txt")
   achillesMetadata <- tryCatch({
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -560,7 +543,7 @@ cdmOnboarding <- function(connectionDetails,
       startTimestamp = df$startTimestamp,
       executionTime = df$executionTime
     )
-    ParallelLogger::logInfo(sprintf("> Succesfully extracted DQD results overview from '%s'", dqdJsonPath))
+    ParallelLogger::logInfo(sprintf("> Successfully extracted DQD results overview from '%s'", dqdJsonPath))
     }, error = function(e) {
       ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
     }
@@ -571,7 +554,7 @@ cdmOnboarding <- function(connectionDetails,
 .getAvailableAchillesAnalysisIds <- function(connectionDetails, resultsDatabaseSchema) {
     sql <- SqlRender::loadRenderTranslateSql(
         sqlFilename = "getAchillesAnalyses.sql",
-        packageName = "DashboardExport",
+        packageName = "CdmOnboarding",
         dbms = connectionDetails$dbms,
         results_database_schema = resultsDatabaseSchema
     )
