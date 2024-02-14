@@ -4,10 +4,10 @@ select
   concept_name as type_concept_name,
   standard_concept as type_standard_concept,
   count_value as count_value,
-	left(cast(first_start_date as varchar), 7) as first_start_month,
-  left(cast(last_start_date as varchar), 7) as last_start_month,
-	left(cast(first_end_date as varchar), 7) as first_end_month,
-  left(cast(last_end_date as varchar), 7) as last_end_month
+	first_start_date as first_start_date,
+  last_start_date as last_start_date,
+	first_end_date as first_end_date,
+  last_end_date as last_end_date
 from (
 	select
 		'Obs. Period' as domain,
