@@ -699,8 +699,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           my_table_caption(
             sprintf(
               "Execution time of Achilles analyses. Total: %s. Median: %s. Longest duration: %s (analysis %s).",
-              prettyunits::pretty_sec(sum(arTimings$DURATION)),
-              prettyunits::pretty_sec(stats::median(arTimings$DURATION)),
+              prettyunits::pretty_sec(sum(arTimings$DURATION, na.rm = TRUE)),
+              prettyunits::pretty_sec(stats::median(arTimings$DURATION, na.rm = TRUE)),
               prettyunits::pretty_sec(longestAnalysis$DURATION),
               longestAnalysis$ID
             ),
