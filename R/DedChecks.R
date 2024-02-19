@@ -26,7 +26,8 @@
 #' @returns list of DED diagnostics_summary and duration
 .runDedChecks <- function(
     connectionDetails,
-    cdmDatabaseSchema
+    cdmDatabaseSchema,
+    scratchDatabaseSchema
 ) {
     dedIngredients <- getDedIngredients()
     dedIngredientIds <- dedIngredients$concept_id
@@ -38,7 +39,11 @@
 
     tryCatch({
         connection <- DatabaseConnector::connect(connectionDetails)
-        cdm <- CDMConnector::cdm_from_con(connection, cdm_schema = cdmDatabaseSchema)
+        cdm <- CDMConnector::cdm_from_con(
+          connection,
+          cdm_schema = cdmDatabaseSchema,
+          write_schema = scratchDatabaseSchema
+        )
 
         ded_start_time <- Sys.time()
 

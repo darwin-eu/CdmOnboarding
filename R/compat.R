@@ -18,7 +18,7 @@ compat <- function(r, target_version = package_version('3.0.0')) {
     r$cdmOnboardingVersion <- dplyr::coalesce(r$cdmOnboardingVersion, .get_cdmonboarding_version(r))
     r$runWithOptimizedQueries <- dplyr::coalesce(r$runWithOptimizedQueries, FALSE)
 
-    if (.get_cdmonboarding_version(r) > '2.1') {
+    if (.get_cdmonboarding_version(r) >= '2.1') {
         date_format <- "%Y-%m-%d"
     } else {
         date_format <- "%a %b %d %T %Y"

@@ -385,7 +385,8 @@ cdmOnboarding <- function(connectionDetails,
   if (runDedChecks) {
     drugExposureDiagnostics <- .runDedChecks(
       connectionDetails,
-      cdmDatabaseSchema
+      cdmDatabaseSchema,
+      scratchDatabaseSchema
     )
   }
 

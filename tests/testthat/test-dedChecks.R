@@ -3,7 +3,8 @@ test_that("Drug Exposure Diagnostics Checks", {
   # Will be fixed by #103
   dedResults <- CdmOnboarding:::.runDedChecks(
     connectionDetails = params$connectionDetails,
-    cdmDatabaseSchema = params$cdmDatabaseSchema
+    cdmDatabaseSchema = params$cdmDatabaseSchema,
+    scratchDatabaseSchema = params$scratchDatabaseSchema
   )
 
   testthat::expect_type(dedResults, 'list')

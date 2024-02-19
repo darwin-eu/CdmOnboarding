@@ -263,8 +263,16 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         `Domain` = DOMAIN,
         `N` = COUNT_VALUE,
         `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
-        `Start date [Min, Max]` = sprintf("[%s, %s]", FIRST_START_MONTH, LAST_START_MONTH),
-        `End date [Min, Max]` = sprintf("[%s, %s]", FIRST_END_MONTH, LAST_END_MONTH),
+        `Start date [Min, Max]` = sprintf(
+          "[%s, %s]", 
+          substr(FIRST_START_DATE, 1, 7), 
+          substr(LAST_START_DATE, 1, 7)
+        ),
+        `End date [Min, Max]` = sprintf(
+          "[%s, %s]",
+          substr(FIRST_END_DATE, 1, 7),
+          substr(LAST_END_DATE, 1, 7)
+        ),
         .keep = "none"  # do not display other columns
       ) %>%
       arrange(Domain)
@@ -691,8 +699,8 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           my_table_caption(
             sprintf(
               "Execution time of Achilles analyses. Total: %s. Median: %s. Longest duration: %s (analysis %s).",
-              prettyunits::pretty_sec(sum(arTimings$DURATION)),
-              prettyunits::pretty_sec(stats::median(arTimings$DURATION)),
+              prettyunits::pretty_sec(sum(arTimings$DURATION, na.rm = TRUE)),
+              prettyunits::pretty_sec(stats::median(arTimings$DURATION, na.rm = TRUE)),
               prettyunits::pretty_sec(longestAnalysis$DURATION),
               longestAnalysis$ID
             ),
