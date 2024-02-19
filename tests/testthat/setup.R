@@ -11,6 +11,7 @@ params <- list(
     connectionDetails = Eunomia::getEunomiaConnectionDetails(),
     cdmDatabaseSchema = 'main',
     resultsDatabaseSchema = 'main',
+    scratchDatabaseSchema = 'main',  # Required DED
     databaseId = 'Eunomia',
     cdmVersion = '5.3',
     outputFolder = testthat::test_path('test_output'),
