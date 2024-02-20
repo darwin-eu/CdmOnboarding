@@ -36,10 +36,21 @@ compat <- function(r, target_version = package_version('3.0.0')) {
 
     # Backwards compatibility, typeConcepts and tableDateRange were merged into dateRangeByTypeConcept (v3)
     if (!is.null(r$dataTablesResults$dateRangeByTypeConcept)) {
+        if(is.null(r$dataTablesResults$dateRangeByTypeConcept$result$FIRST_START_DATE)) {
+            r$dataTablesResults$dateRangeByTypeConcept$result <- r$dataTablesResults$dateRangeByTypeConcept$result %>%
+                mutate(
+                    FIRST_START_DATE = ifelse(!is.na(FIRST_START_MONTH), paste0(FIRST_START_MONTH, '-01'), NA),
+                    LAST_START_DATE = ifelse(!is.na(LAST_START_MONTH), paste0(LAST_START_MONTH, '-01'), NA),
+                    FIRST_END_DATE = ifelse(!is.na(FIRST_END_MONTH), paste0(FIRST_END_MONTH, '-01'), NA),
+                    LAST_END_DATE = ifelse(!is.na(LAST_END_MONTH), paste0(LAST_END_MONTH, '-01'), NA),
+                    .keep = "unused"
+                )
+        }
+
         r$dataTablesResults$tableDateRange$result <- r$dataTablesResults$dateRangeByTypeConcept$result %>%
             summarise(
-                FIRST_START_MONTH = min(FIRST_START_MONTH),
-                LAST_START_MONTH = max(LAST_START_MONTH),
+                FIRST_START_MONTH = min(FIRST_START_DATE),
+                LAST_START_MONTH = max(LAST_START_DATE),
                 .by = DOMAIN
             )
         r$dataTablesResults$tableDateRange$duration <- NA

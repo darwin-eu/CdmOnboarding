@@ -11,6 +11,8 @@
 
 \item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM schema.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
+
+\item{scratchDatabaseSchema}{Fully qualified name of database schema where temporary tables can be written.}
 }
 \value{
 list of DED diagnostics_summary and duration

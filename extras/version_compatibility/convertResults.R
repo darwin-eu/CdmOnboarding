@@ -40,11 +40,15 @@ print(CdmOnboarding:::.get_cdmonboarding_version(results_v22))
 results_v30 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v3.0.0.rds')
 print(CdmOnboarding:::.get_cdmonboarding_version(results_v30))
 
+results_v31 <- readRDS('./extras/version_compatibility/onboarding_results_synthea20k-v3.1.0.rds')
+print(CdmOnboarding:::.get_cdmonboarding_version(results_v31))
+
 results_v10_fixed <- compat(results_v1)
 results_v20_fixed <- compat(results_v20)
 results_v21_fixed <- compat(results_v21)
 results_v22_fixed <- compat(results_v22)
 results_v30_fixed <- compat(results_v30)
+results_v31_fixed <- compat(results_v31)
 
 my_setdiff <- function(a, b) {
   set <- setdiff(a, b)
@@ -94,8 +98,13 @@ my_compare(results_v22_fixed, results_v30_fixed) # "In x but not in y: 1 element
 #        appliedIndexes, darwinPackageVersions, packinfo$LibPath, packinfo$URL,
 #        mappedValuesMeas, mappedValuesObs, mappedVisitDetails, unmappedValuesMeas, unmappedValuesObs, unmappedVisitDetails
 
+my_compare(results_v30_fixed, results_v31_fixed) # "In x but not in y: 0 elements.\nIn y but not in x: 3 elements"
+# Removed: none
+# Added: sys_details$machine$sizeof.time_t, mappedSpecialty, unmappedSpecialty -> should be part of v3.0 as well
+
 my_compare(results_v22, results_v22_fixed) # "In x but not in y: 4 elements.\nIn y but not in x: 4 elements"
 my_compare(results_v30, results_v30_fixed) # "In x but not in y: 17 elements.\nIn y but not in x: 11 elements"
+my_compare(results_v31, results_v31_fixed) # "In x but not in y: 17 elements.\nIn y but not in x: 11 elements"
 
 #' TODO:
 #' - Run v21 and v22 with dqdJson and drugExposureDiagnostics
