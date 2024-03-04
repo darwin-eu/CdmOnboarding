@@ -51,15 +51,13 @@ pkg.env$sources <- list(
 #' @param silent              Flag to not create output in the terminal (default = FALSE)
 #' @export
 generateResultsDocument <- function(results, outputFolder, authors, silent = FALSE) {
-  docTemplate <- system.file("templates", "Template-DarwinEU.docx", package = "CdmOnboarding")
-  logo <- system.file("templates", "img", "darwin-logo.jpg", package = "CdmOnboarding")
+  docTemplate <- system.file("templates", "Template-CdmOnboarding.docx", package = "CdmOnboarding")
 
   # open a new doc from the doctemplate
   doc <- officer::read_docx(path = docTemplate)
 
   # add Title Page
   doc <- doc %>%
-    officer::body_add_img(logo, width = 5.00, height = 2.39, style = pkg.env$styles$title) %>%
     officer::body_add_par(sprintf(
       "CDM Onboarding report for the %s database",
       results$databaseName

@@ -4,13 +4,15 @@
 \alias{.runDedChecks}
 \title{Run DrugExposureDiagnostics for a set of default ingredient concepts}
 \usage{
-.runDedChecks(connectionDetails, cdmDatabaseSchema)
+.runDedChecks(connectionDetails, cdmDatabaseSchema, scratchDatabaseSchema)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
 \item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM schema.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
+
+\item{scratchDatabaseSchema}{Fully qualified name of database schema where temporary tables can be written.}
 }
 \value{
 list of DED diagnostics_summary and duration
