@@ -5,7 +5,15 @@ rds <- list.files(path, '.rds')
 results <- readRDS(file.path(path, rds))
 authors <- c('-')
 
-# options(error = browser)
+# Optional, add separate DED results
+path_ded <- readline("Enter the path for DED file: ")
+results$drugExposureDiagnostics <- ded_results
+
+# Optional, make compatible with current version
+results <- CdmOnboarding::compat(results)
+
+# options(error = default)
+# devtools::reload()
 CdmOnboarding::generateResultsDocument(
     results = results,
     outputFolder = path,

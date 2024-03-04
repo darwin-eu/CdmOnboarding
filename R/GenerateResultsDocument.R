@@ -221,28 +221,38 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(df$observationPeriodLength)
 
     # Combine Observation Periods per Person and overlap in one table
-    obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
-      mutate(
-        Field = sprintf("Persons with %s observation period(s)", N_OBSERVATION_PERIODS),
-        Value = N_PERSONS,
-        `%Persons` = N_PERSONS / personCount * 100,
-        .keep = "none"  # do not display other columns
+    if (!is.null(df$observationPeriodsPerPerson$result)) {
+      obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
+        mutate(
+          Field = sprintf("Persons with %s observation period(s)", N_OBSERVATION_PERIODS),
+          Value = N_PERSONS,
+          `%Persons` = N_PERSONS / personCount * 100,
+          .keep = "none"  # do not display other columns
+        )
+    } else {
+      obsPeriodStats <- data.frame(
+        Field = "Persons with observation period(s)",
+        Value = NA,
+        `%Persons` = NA,
+        check.names = FALSE  # To allow `%Persons`
       )
+    }
 
-    # Note: remove once implemented as DQD check, https://github.com/OHDSI/DataQualityDashboard/issues/510
-    new_rows <- data.frame(
-      A = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
-      B = c(
-        nrow(df$observationPeriodOverlap),
-        sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS)
-      ),
-      C = c(
-        nrow(df$observationPeriodOverlap) / personCount * 100,
-        NA
+    obsPeriodStats <- rbind(
+      obsPeriodStats,
+      data.frame(
+        Field = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
+        Value = c(
+          nrow(df$observationPeriodOverlap),
+          sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS)
+        ),
+        `%Persons` = c(
+          nrow(df$observationPeriodOverlap) / personCount * 100,
+          NA
+        ),
+        check.names = FALS
       )
     )
-    names(new_rows) <- c("Field", "Value", "%Persons")
-    obsPeriodStats <- rbind(obsPeriodStats, new_rows)
 
     doc <- doc %>%
       my_table_caption(

@@ -8,7 +8,7 @@
 #' @return A list of results from CdmOnboarding, forwards compatible with v3.
 #' @export
 #' @importFrom stringr str_replace str_replace_all str_to_title
-compat <- function(r, target_version = package_version('3.0.0')) {
+compat <- function(r, target_version = package_version('3.0')) {
     if (target_version$major != 3) {
         print("Only target version v3 is supported")
     }
@@ -165,13 +165,14 @@ compat <- function(r, target_version = package_version('3.0.0')) {
         str_replace("CATEGORY", "DOMAIN") |>
         str_replace("AVERAGE", "AVG_VALUE") |>
         str_replace("STD_DEV", "STDEV_VALUE") |>
+        str_replace("MEDIAN", "MEDIAN_VALUE") |>
         str_replace("MIN", "MIN_VALUE") |>
         str_replace("MAX", "MAX_VALUE") |>
         str_replace("P10", "P10_VALUE") |>
         str_replace("P25", "P25_VALUE") |>
         str_replace("P75", "P75_VALUE") |>
         str_replace("P90", "P90_VALUE") |>
-        str_replace("(?<!SOURCE|COUNT|AVG|STDEV|MIN|MAX|P\\d\\d)_VALUE", "") |>
+        str_replace("(?<!SOURCE|COUNT|MEDIAN|AVG|STDEV|MIN|MAX|P\\d\\d)_VALUE", "") |>  # Remove _VALUE suffix if not starting with one of the keywords
         str_replace("%", "P_") |>
         str_replace("#", "N_") |>
         str_replace_all(" ", "_")
