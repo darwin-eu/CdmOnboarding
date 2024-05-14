@@ -4,7 +4,7 @@
 \alias{compat}
 \title{Compatibility of CdmOnboarding results}
 \usage{
-compat(r, target_version = package_version("3.0.0"))
+compat(r, target_version = package_version("3.0"))
 }
 \arguments{
 \item{r}{A list of results from CdmOnboarding.}

@@ -49,7 +49,7 @@
 #' @param runDedChecks                     Boolean to determine if DrugExposureDiagnostics checks need to be run. Default = TRUE
 #' @param smallCellCount                   To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)
 #' @param baseUrl                          WebAPI url, example: http://server.org:80/WebAPI
-#' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param sqlOnly                          If TRUE, queries will be written to file instead of executed. Not supported for DED Checks.
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @param dqdJsonPath                      Path to the json of the DQD
@@ -113,31 +113,40 @@ cdmOnboarding <- function(connectionDetails,
   documentGenerated <- NULL
   if (!sqlOnly) {
     documentGenerated <- tryCatch({
-        generateResultsDocument(
-          results = results,
-          outputFolder = outputFolder,
-          authors = authors
-        )
-        TRUE
-      },
-      error = function(e) {
-        ParallelLogger::logError("Could not generate results document: ", e)
-        ParallelLogger::logInfo("Results from the checks have been saved as an RDS object to the output folder.")
-        FALSE
+      generateResultsDocument(
+        results = results,
+        outputFolder = outputFolder,
+        authors = authors
+      )
+      TRUE
+    }, error = function(e) {
+      ParallelLogger::logError("Could not generate results document: ", e)
+      ParallelLogger::logInfo("Results from the checks have been saved as an RDS object to the output folder.")
+      FALSE
+    })
+  }
+
+  if (runDedChecks) {
+    tryCatch({
+      .exportDedResults(
+        results = results,
+        outputFolder = outputFolder
+      )
+    }, error = function(e) {
+      ParallelLogger::logError("Could not export DrugExposureDiagnostics results: ", e)
+      ParallelLogger::logInfo("Results from DrugExposureDiagnostics have been saved as an RDS object to the output folder.")
     })
   }
 
   tryCatch({
-      bundledResultsLocation <- bundleResults(outputFolder, databaseId)
-      ParallelLogger::logInfo(sprintf(
-        "All generated CDM Onboarding results are bundled for sharing at: %s",
-        bundledResultsLocation
-      ))
-    },
-    error = function(e) {
-      ParallelLogger::logWarn(sprintf("Failed to bundle CDM Onboarding results, no zip bundle has been created: %s", e))
-    }
-  )
+    bundledResultsLocation <- bundleResults(outputFolder, databaseId)
+    ParallelLogger::logInfo(sprintf(
+      "All generated CDM Onboarding results are bundled for sharing at: %s",
+      bundledResultsLocation
+    ))
+  }, error = function(e) {
+    ParallelLogger::logWarn(sprintf("Failed to bundle CDM Onboarding results, no zip bundle has been created: %s", e))
+  })
 
   if (!(is.null(documentGenerated) || documentGenerated)) {
     ParallelLogger::logError("CdmOnboarding document generation failed. Please fix any issues or reach out to the DARWIN-EU Coordination Centre.") # nolint
@@ -258,11 +267,11 @@ cdmOnboarding <- function(connectionDetails,
   analysisIdsAvailable <- .getAvailableAchillesAnalysisIds(connectionDetails, resultsDatabaseSchema)
   missingAnalysisIds <- setdiff(expectedAnalysisIds, analysisIdsAvailable)
   if (length(missingAnalysisIds) > 0) {
-      ParallelLogger::logWarn(
-          sprintf("Missing Achilles analysis ids in result tables: %s.",
-          paste(missingAnalysisIds, collapse = ", "))
-      )
-      answer <- readline("> If this is expected, press enter to continue. If not, abort (ctrl-c) and rerun Achilles including above analyses.")
+    ParallelLogger::logWarn(sprintf(
+      "Missing Achilles analysis ids in result tables: %s.",
+      paste(missingAnalysisIds, collapse = ", ")
+    ))
+    readline("> If this is expected, press enter to continue. If not, abort (ctrl-c) and rerun Achilles including above analyses.")
   }
 
   dqdResults <- NULL
@@ -370,15 +379,14 @@ cdmOnboarding <- function(connectionDetails,
     ParallelLogger::logInfo("Running WebAPIChecks")
 
     webApiVersion <- tryCatch({
-        version <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
-        ParallelLogger::logInfo(sprintf("> Connected successfully to '%s'", baseUrl))
-        ParallelLogger::logInfo(sprintf("> WebAPI version: %s", version))
-        version
-      }, error = function(e) {
-        ParallelLogger::logError(sprintf("Could not connect to the WebAPI on '%s':\n%s", baseUrl, e))
-        return("Failed")
-      }
-    )
+      version <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
+      ParallelLogger::logInfo(sprintf("> Connected successfully to '%s'", baseUrl))
+      ParallelLogger::logInfo(sprintf("> WebAPI version: %s", version))
+      version
+    }, error = function(e) {
+      ParallelLogger::logError(sprintf("Could not connect to the WebAPI on '%s':\n%s", baseUrl, e))
+      return("Failed")
+    })
   }
 
   drugExposureDiagnostics <- NULL
@@ -392,8 +400,10 @@ cdmOnboarding <- function(connectionDetails,
 
   ParallelLogger::logInfo("Done.")
 
-  ParallelLogger::logInfo(sprintf("Complete CdmOnboarding took %.2f minutes",
-    as.numeric(difftime(Sys.time(), start_time), units = "mins")))
+  ParallelLogger::logInfo(sprintf(
+    "Complete CdmOnboarding took %.2f minutes",
+    as.numeric(difftime(Sys.time(), start_time), units = "mins")
+  ))
 
   # save results
   results <- list(
@@ -417,14 +427,11 @@ cdmOnboarding <- function(connectionDetails,
   )
 
   tryCatch({
-      saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s_%s.rds", databaseId, format(Sys.time(), "%Y%m%d"))))
-      ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
-    },
-    error = function(e) {
-      ParallelLogger::logWarn(
-        sprintf("Failed to export CDM Onboarding results object, no rds file has been created: %s", e))
-    }
-  )
+    saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s_%s.rds", databaseId, format(Sys.time(), "%Y%m%d"))))
+    ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
+  }, error = function(e) {
+    ParallelLogger::logWarn(sprintf("Failed to export CDM Onboarding results object, no rds file has been created: %s", e))
+  })
 
   return(results)
 }
@@ -446,30 +453,27 @@ cdmOnboarding <- function(connectionDetails,
   }
   errorReportFile <- file.path(outputFolder, "cdmSourceError.txt")
   cdmSource <- tryCatch({
-      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-      cdmSource <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
-      if (nrow(cdmSource) > 1) {
-        ParallelLogger::logWarn("Multiple records found in the cdm_source table. The first record is used.")
-        cdmSource <- cdmSource[1, ]
-      }
-      if (nrow(cdmSource) == 0) {
-        stop("No records found in the cdm_source table. Please populate the table.")
-      }
-      ParallelLogger::logInfo("> CDM Source table successfully extracted")
-      cdmSource
-    },
-    error = function(e) {
-      ParallelLogger::logError(sprintf(
-        "> CDM Source table could not be extracted, see %s for more details",
-        errorReportFile
-      ))
-      NULL
-    },
-    finally = {
-      DatabaseConnector::disconnect(connection = connection)
-      rm(connection)
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    cdmSource <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
+    if (nrow(cdmSource) > 1) {
+      ParallelLogger::logWarn("Multiple records found in the cdm_source table. The first record is used.")
+      cdmSource <- cdmSource[1, ]
     }
-  )
+    if (nrow(cdmSource) == 0) {
+      stop("No records found in the cdm_source table. Please populate the table.")
+    }
+    ParallelLogger::logInfo("> CDM Source table successfully extracted")
+    cdmSource
+  }, error = function(e) {
+    ParallelLogger::logError(sprintf(
+      "> CDM Source table could not be extracted, see %s for more details",
+      errorReportFile
+    ))
+    NULL
+  }, finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
   return(cdmSource)
 }
 
@@ -545,36 +549,32 @@ cdmOnboarding <- function(connectionDetails,
       executionTime = df$executionTime
     )
     ParallelLogger::logInfo(sprintf("> Successfully extracted DQD results overview from '%s'", dqdJsonPath))
-    }, error = function(e) {
-      ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
-    }
-  )
+  }, error = function(e) {
+    ParallelLogger::logError(sprintf("Could not process dqdJsonPath '%s'", dqdJsonPath))
+  })
   return(dqdResults)
 }
 
 .getAvailableAchillesAnalysisIds <- function(connectionDetails, resultsDatabaseSchema) {
-    sql <- SqlRender::loadRenderTranslateSql(
-        sqlFilename = "getAchillesAnalyses.sql",
-        packageName = "CdmOnboarding",
-        dbms = connectionDetails$dbms,
-        results_database_schema = resultsDatabaseSchema
-    )
+  sql <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "getAchillesAnalyses.sql",
+    packageName = "CdmOnboarding",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema
+  )
 
-    connection <- DatabaseConnector::connect(connectionDetails)
-    result <- tryCatch({
-            DatabaseConnector::querySql(
-                connection = connection,
-                sql = sql
-            )
-        },
-        error = function(e) {
-            ParallelLogger::logError("Could not get available achilles analyses")
-            ParallelLogger::logError(e)
-        },
-        finally = {
-            DatabaseConnector::disconnect(connection = connection)
-            rm(connection)
-        }
+  connection <- DatabaseConnector::connect(connectionDetails)
+  result <- tryCatch({
+    DatabaseConnector::querySql(
+      connection = connection,
+      sql = sql
     )
-    result$ANALYSIS_ID
+  }, error = function(e) {
+    ParallelLogger::logError("Could not get available achilles analyses")
+    ParallelLogger::logError(e)
+  }, finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
+  result$ANALYSIS_ID
 }

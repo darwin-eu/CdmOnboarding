@@ -238,7 +238,7 @@ my_mapped_section <- function(x, data, domain, smallCellCount) {
 #' @param databaseId    ID of your database, this will be used as subfolder for the results.
 #' @export
 bundleResults <- function(outputFolder, databaseId) {
-  zipName <- file.path(outputFolder, paste0("Results_Onboarding_", databaseId, ".zip"))
+  zipName <- file.path(outputFolder, sprintf("Results_Onboarding_%s_%s.zip", databaseId, format(Sys.time(), "%Y%m%d")))
   files <- list.files(outputFolder, "*.*", full.names = TRUE, recursive = TRUE)
   oldWd <- setwd(outputFolder)
   on.exit(setwd(oldWd), add = TRUE)

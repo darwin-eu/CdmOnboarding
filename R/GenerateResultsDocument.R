@@ -58,10 +58,10 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   # add Title Page
   doc <- doc %>%
-    officer::body_add_par(sprintf(
-      "CDM Onboarding report for the %s database",
-      results$databaseName
-      ), style = pkg.env$styles$title) %>%
+    officer::body_add_par(
+      sprintf("CDM Onboarding report for the %s database", results$databaseName),
+      style = pkg.env$styles$title
+    ) %>%
     officer::body_add_par(paste(authors, collapse = ","), style = pkg.env$styles$subTitle) %>%
     officer::body_add_break()
 
@@ -250,7 +250,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           nrow(df$observationPeriodOverlap) / personCount * 100,
           NA
         ),
-        check.names = FALS
+        check.names = FALSE
       )
     )
 
