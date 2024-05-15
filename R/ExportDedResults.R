@@ -19,9 +19,9 @@
 # @author Darwin EU Coordination Center
 # @author Maxim Moinat
 
-#' Export DrugExposureDiagnostics results to csv file in same folder as input path
+#' Export DrugExposureDiagnostics results to csv file in same folder as input file path
 #'
-#' @param path path to the CdmOnboarding .rds results file
+#' @param path path to the CdmOnboarding .rds results file, output is written to the same folder
 #' @export
 exportDedResults <- function(
   path
@@ -43,11 +43,22 @@ exportDedResults <- function(
   if (is.null(ded_results)) {
     ParallelLogger::logInfo("No DrugExposureDiagnostics results to export")
   }
+
+  ded_results$ingredient_concept_id <- as.character(ded_results$ingredient_concept_id)
+  ded_results$n_records <- format(ded_results$n_records, big.mark = ",", format = 'd')
+  ded_results$n_patients <- format(ded_results$n_patients, big.mark = ",", format = 'd')
+
   ded_results %>%
+    add_row( # add metadata
+      ingredient = sprintf("Execution Date: %s", results$executionDate),
+      ingredient_concept_id = sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
+      n_records = sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE)
+    ) %>%
     select(
       `Ingredient` = ingredient,
       `Concept ID` = ingredient_concept_id,
-      `#` = n_records,
+      `#Records` = n_records,
+      `#Persons` = n_patients,
       `Type (n,%)` = proportion_of_records_by_drug_type,
       `Route (n,%)` = proportion_of_records_by_route_type,
       `Dose Form present n (%)` = proportion_of_records_with_dose_form,
@@ -59,7 +70,7 @@ exportDedResults <- function(
     ) %>%
     write.csv(
       file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),
-      row.names = FALSE
+      row.names = TRUE # first column will be removed when uploading to portal
     )
   ParallelLogger::logInfo(sprintf("DrugExposureDiagnostics results written to '%s'", file.path(outputFolder, 'ded_results.csv')))
 }

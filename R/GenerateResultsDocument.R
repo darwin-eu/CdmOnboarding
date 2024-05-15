@@ -537,19 +537,19 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     dedResults$result <- dedResults$result %>%
       mutate(
-          `Ingredient` = ingredient,
-          `Concept ID` = ingredient_concept_id,
-          `#` = n_records,
-          `Type (n,%)` = proportion_of_records_by_drug_type,
-          `Route (n,%)` = proportion_of_records_by_route_type,
-          `Dose Form present n (%)` = proportion_of_records_with_dose_form,
-          `Fixed amount dose form n (%)` = proportion_of_records_missing_denominator_unit_concept_id,
-          `Amount distrib. [null or missing]` = median_amount_value_q05_q95,
-          `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
-          `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
-          `Neg. Days n (%)` = proportion_of_records_with_negative_drug_exposure_days,
-          .keep = "none"  # do not display other columns
-        )
+        `Ingredient` = ingredient,
+        `Concept ID` = ingredient_concept_id,
+        `#` = n_records,
+        `Type (n,%)` = proportion_of_records_by_drug_type,
+        `Route (n,%)` = proportion_of_records_by_route_type,
+        `Dose Form present n (%)` = proportion_of_records_with_dose_form,
+        `Fixed amount dose form n (%)` = proportion_of_records_missing_denominator_unit_concept_id,
+        `Amount distrib. [null or missing]` = median_amount_value_q05_q95,
+        `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
+        `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
+        `Neg. Days n (%)` = proportion_of_records_with_negative_drug_exposure_days,
+        .keep = "none"  # do not display other columns
+      )
 
     doc <- doc %>%
       my_table_caption(
