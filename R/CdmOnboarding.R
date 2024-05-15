@@ -219,7 +219,9 @@ cdmOnboarding <- function(connectionDetails,
 
   cdmSource$CDM_RELEASE_DATE <- as.character(cdmSource$CDM_RELEASE_DATE)
   cdmSource$SOURCE_RELEASE_DATE <- as.character(cdmSource$SOURCE_RELEASE_DATE)
+  # Parse cdmVersion to format major.minor (e.g. 5.4)
   cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
+  cdmVersion <- substr(cdmVersion, 1, 3)
   ParallelLogger::logInfo(sprintf(
     "Found database '%s' with CDM release date '%s'",
     cdmSource$CDM_SOURCE_NAME,
