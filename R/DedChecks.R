@@ -62,6 +62,10 @@
 
     duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
     ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
+
+    dedResults$diagnosticsSummary$n_records <- round(dedResults$diagnosticsSummary$n_records / 10) * 10
+    dedResults$diagnosticsSummary$n_patients <- round(dedResults$diagnosticsSummary$n_patients / 10) * 10
+
     # Return result with duration
     list(result = dedResults$diagnosticsSummary, duration = duration)
   }, error = function(e) {

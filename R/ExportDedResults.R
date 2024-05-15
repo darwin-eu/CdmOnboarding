@@ -45,8 +45,8 @@ exportDedResults <- function(
   }
 
   ded_results$ingredient_concept_id <- as.character(ded_results$ingredient_concept_id)
-  ded_results$n_records <- format(ded_results$n_records, big.mark = ",", format = 'd')
-  ded_results$n_patients <- format(ded_results$n_patients, big.mark = ",", format = 'd')
+  ded_results$n_records <- format(round(ded_results$n_records / 10) * 10, big.mark = ",", format = 'd')
+  ded_results$n_patients <- format(round(ded_results$n_patients / 10) * 10, big.mark = ",", format = 'd')
 
   ded_results %>%
     add_row( # add metadata
