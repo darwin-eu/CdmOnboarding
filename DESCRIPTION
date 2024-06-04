@@ -17,6 +17,7 @@ Authors@R:
            role = "aut",
            email = "anne@thehyve.nl")
    )
+Maintainer: Maxim Moinat <m.moinat@erasmusmc.nl>
 Description: The goal this R Package is to generate a report to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the data network and participate in research studies.
 License: Apache License (>= 2)
 VignetteBuilder: knitr
