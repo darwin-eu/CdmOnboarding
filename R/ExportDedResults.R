@@ -42,6 +42,7 @@ exportDedResults <- function(
   ded_results <- results$drugExposureDiagnostics$result
   if (is.null(ded_results)) {
     ParallelLogger::logInfo("No DrugExposureDiagnostics results to export")
+    return()
   }
 
   ded_results$ingredient_concept_id <- as.character(ded_results$ingredient_concept_id)
