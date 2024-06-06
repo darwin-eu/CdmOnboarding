@@ -183,28 +183,31 @@ getDARWINpackages <- function() {
     "oracle" = "SELECT * FROM v$version WHERE banner LIKE 'Oracle%';",
     "snowflake" = "SELECT CURRENT_VERSION();",
     "sqlite" = "SELECT SQLITE_VERSION();",
-    "ERROR"
+    "spark" = "SELECT version();",
+    NULL
   )
+
+  if (is.null(versionQuery)) {
+    ParallelLogger::logWarn(sprintf("> DBMS '%s' is not supported for version retrieval.", connectionDetails$dbms))
+    return(NULL)
+  }
 
   errorReportFile <- file.path(outputFolder, "errorDBMSversion.txt")
   tryCatch({
-      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-      version <- DatabaseConnector::querySql(
-        connection = connection,
-        sql = versionQuery,
-        errorReportFile = errorReportFile
-      )
-      # Expect one row, one column
-      version[1, 1]
-    },
-    error = function(e) {
-      ParallelLogger::logWarn("> DBMS version could not be retrieved:")
-      ParallelLogger::logWarn(e)
-      NULL
-    },
-    finally = {
-      DatabaseConnector::disconnect(connection = connection)
-      rm(connection)
-    }
-  )
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    version <- DatabaseConnector::querySql(
+      connection = connection,
+      sql = versionQuery,
+      errorReportFile = errorReportFile
+    )
+    # Expect one row, one column
+    version[1, 1]
+  }, error = function(e) {
+    ParallelLogger::logWarn("> DBMS version could not be retrieved:")
+    ParallelLogger::logWarn(e)
+    NULL
+  }, finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
 }
