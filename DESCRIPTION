@@ -31,7 +31,6 @@ Depends:
     R (>= 4.0.0),
     DatabaseConnector (>= 5.0.2)
 Imports:
-    ROhdsiWebApi (>= 1.1.2),
     ParallelLogger,
     SqlRender,
     DrugExposureDiagnostics (>= 1.0.0),
@@ -48,16 +47,14 @@ Imports:
     stats,
     cowplot,
     scales,
-    stringr
+    stringr,
+    httr,
+    utils
 Suggests:
     flextable,
     devtools,
     knitr,
     testthat (>= 3.0.0),
     Eunomia,
-    Achilles
-Remotes:
-    OHDSI/ROhdsiWebApi,
-    OHDSI/Eunomia,
-    OHDSI/Achilles
+    Achilles (>= 1.7.2)
 Config/testthat/edition: 3
