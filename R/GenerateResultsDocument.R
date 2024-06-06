@@ -115,20 +115,20 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   if (!is.null(df)) {
     # Pre-compute counts
     personCount <- df$dataTablesCounts$result %>%
-      dplyr::filter(TABLENAME == 'person') %>%
-      pull(COUNT)
+      dplyr::filter(.data$TABLENAME == 'person') %>%
+      pull(.data$COUNT)
     deathCount <- df$dataTablesCounts$result %>%
-      dplyr::filter(TABLENAME == 'death') %>%
-      pull(COUNT)
+      dplyr::filter(.data$TABLENAME == 'death') %>%
+      pull(.data$COUNT)
 
     # Total records per table
     df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
-      arrange(desc(COUNT)) %>%
+      arrange(desc(.data$COUNT)) %>%
       mutate(
-        Table = TABLENAME,
-        `#Records` = COUNT,
-        `#Persons` = N_PERSONS,
-        `%Persons` = prettyPc(N_PERSONS / personCount * 100),
+        Table = .data$TABLENAME,
+        `#Records` = .data$COUNT,
+        `#Persons` = .data$N_PERSONS,
+        `%Persons` = prettyPc(.data$N_PERSONS / personCount * 100),
         .keep = "none"  # do not display other columns
       )
 
@@ -157,7 +157,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     if (deathCount > 0) {
       totalDeath <- df$totalRecords$result %>%
-        dplyr::filter(SERIES_NAME %in% 'Death')
+        dplyr::filter(.data$SERIES_NAME %in% 'Death')
       totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), hide_legend = TRUE)
       doc <- doc %>%
         officer::body_add_gg(totalDeathPlot, height = 4)
@@ -212,15 +212,15 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       df$observationPeriodLength$result <- round(df$observationPeriodLength$result / 365, 1)
       df$observationPeriodLength$result <- df$observationPeriodLength$result %>%
         mutate(
-          AVG = AVG_VALUE,
-          STDEV = STDEV_VALUE,
-          MIN = MIN_VALUE,
-          P10 = P10_VALUE,
-          P25 = P25_VALUE,
-          MEDIAN = MEDIAN_VALUE,
-          P75 = P75_VALUE,
-          P90 = P90_VALUE,
-          MAX = MAX_VALUE,
+          AVG = .data$AVG_VALUE,
+          STDEV = .data$STDEV_VALUE,
+          MIN = .data$MIN_VALUE,
+          P10 = .data$P10_VALUE,
+          P25 = .data$P25_VALUE,
+          MEDIAN = .data$MEDIAN_VALUE,
+          P75 = .data$P75_VALUE,
+          P90 = .data$P90_VALUE,
+          MAX = .data$MAX_VALUE,
           .keep = "none"  # do not display other columns
         )
     }
@@ -233,9 +233,9 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     if (!is.null(df$observationPeriodsPerPerson$result)) {
       obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
         mutate(
-          Field = sprintf("Persons with %s observation period(s)", N_OBSERVATION_PERIODS),
-          Value = N_PERSONS,
-          `%Persons` = N_PERSONS / personCount * 100,
+          Field = sprintf("Persons with %s observation period(s)", .data$N_OBSERVATION_PERIODS),
+          Value = .data$N_PERSONS,
+          `%Persons` = .data$N_PERSONS / personCount * 100,
           .keep = "none"  # do not display other columns
         )
     } else {
@@ -281,21 +281,21 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     if (!is.null(df$dateRangeByTypeConcept$result)) {
       df$dateRangeByTypeConcept$result <- df$dateRangeByTypeConcept$result %>%
         mutate(
-          `Domain` = DOMAIN,
-          `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
+          `Domain` = .data$DOMAIN,
+          `Type` = sprintf("%s (%s)", .data$TYPE_CONCEPT_NAME, .data$TYPE_STANDARD_CONCEPT),
           `Start date [Min, Max]` = sprintf(
             "[%s, %s]",
-            substr(FIRST_START_DATE, 1, 7),
-            substr(LAST_START_DATE, 1, 7)
+            substr(.data$FIRST_START_DATE, 1, 7),
+            substr(.data$LAST_START_DATE, 1, 7)
           ),
           `End date [Min, Max]` = sprintf(
             "[%s, %s]",
-            substr(FIRST_END_DATE, 1, 7),
-            substr(LAST_END_DATE, 1, 7)
+            substr(.data$FIRST_END_DATE, 1, 7),
+            substr(.data$LAST_END_DATE, 1, 7)
           ),
           .keep = "none"  # do not display other columns
         ) %>%
-        arrange(Domain)
+        arrange(.data$Domain)
     }
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
@@ -308,20 +308,20 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     if (!is.null(df$visitLength$result)) {
       df$visitLength$result <- df$visitLength$result %>%
         mutate(
-          Domain = DOMAIN,
-          `Concept Name` = CONCEPT_NAME,
-          AVG = round(AVG_VALUE, 1),
-          STDEV = round(STDEV_VALUE, 1),
-          MIN = MIN_VALUE,
-          P10 = P10_VALUE,
-          P25 = P25_VALUE,
-          MEDIAN = MEDIAN_VALUE,
-          P75 = P75_VALUE,
-          P90 = P90_VALUE,
-          MAX = MAX_VALUE,
+          Domain = .data$DOMAIN,
+          `Concept Name` = .data$CONCEPT_NAME,
+          AVG = round(.data$AVG_VALUE, 1),
+          STDEV = round(.data$STDEV_VALUE, 1),
+          MIN = .data$MIN_VALUE,
+          P10 = .data$P10_VALUE,
+          P25 = .data$P25_VALUE,
+          MEDIAN = .data$MEDIAN_VALUE,
+          P75 = .data$P75_VALUE,
+          P90 = .data$P90_VALUE,
+          MAX = .data$MAX_VALUE,
           .keep = "none"  # do not display other columns
         ) %>%
-        arrange(Domain)
+        arrange(.data$Domain)
     }
 
     doc <- doc %>%
@@ -366,17 +366,17 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       officer::body_add_par("Day, Month, Year of Birth", style = pkg.env$styles$heading2)
     if (!is.null(df$dayMonthYearOfBirth$result)) {
       df$dayMonthYearOfBirth$result <- df$dayMonthYearOfBirth$result %>%
-        arrange(desc(VARIABLE)) %>% # Year, Month, Day
+        arrange(desc(.data$VARIABLE)) %>% # Year, Month, Day
         mutate(
-          ` ` = VARIABLE,
-          `%Missing` = prettyPc(P_MISSING),
-          MIN = MIN_VALUE,
-          P10 = P10_VALUE,
-          P25 = P25_VALUE,
-          MEDIAN = MEDIAN_VALUE,
-          P75 = P75_VALUE,
-          P90 = P90_VALUE,
-          MAX = MAX_VALUE,
+          ` ` = .data$VARIABLE,
+          `%Missing` = prettyPc(.data$P_MISSING),
+          MIN = .data$MIN_VALUE,
+          P10 = .data$P10_VALUE,
+          P25 = .data$P25_VALUE,
+          MEDIAN = .data$MEDIAN_VALUE,
+          P75 = .data$P75_VALUE,
+          P90 = .data$P90_VALUE,
+          MAX = .data$MAX_VALUE,
           .keep = "none"  # do not display other columns
         )
       doc <- doc %>%
@@ -426,15 +426,15 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   if (!is.null(vocabResults$mappingCompleteness$result)) {
     # TODO: report all missing values at the end of execution
     vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%
-      arrange(DOMAIN) %>%
+      arrange(.data$DOMAIN) %>%
       mutate(
-        Domain = DOMAIN,
-        `#Codes Source` = N_CODES_SOURCE,
-        `#Codes Mapped` = N_CODES_MAPPED,
-        `%Codes Mapped` = prettyPc(P_CODES_MAPPED),
-        `#Records Source` = N_RECORDS_SOURCE,
-        `#Records Mapped` = N_RECORDS_MAPPED,
-        `%Records Mapped` = prettyPc(P_RECORDS_MAPPED),
+        Domain = .data$DOMAIN,
+        `#Codes Source` = .data$N_CODES_SOURCE,
+        `#Codes Mapped` = .data$N_CODES_MAPPED,
+        `%Codes Mapped` = prettyPc(.data$P_CODES_MAPPED),
+        `#Records Source` = .data$N_RECORDS_SOURCE,
+        `#Records Mapped` = .data$N_RECORDS_MAPPED,
+        `%Records Mapped` = prettyPc(.data$P_RECORDS_MAPPED),
         .keep = "none"  # do not display other columns
       )
   }
@@ -455,13 +455,13 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   # Drug Level Mappings
   if (!is.null(vocabResults$drugMapping$result)) {
     vocabResults$drugMapping$result <- vocabResults$drugMapping$result %>%
-      arrange(desc(N_RECORDS)) %>%
+      arrange(desc(.data$N_RECORDS)) %>%
       mutate(
-        Class = CLASS,
-        `#Records` = N_RECORDS,
-        `#Patients` = N_PATIENTS,
-        `#Codes` = N_SOURCE_CODES,
-        `%Records` = prettyPc(P_RECORDS),
+        Class = .data$CLASS,
+        `#Records` = .data$N_RECORDS,
+        `#Patients` = .data$N_PATIENTS,
+        `#Codes` = .data$N_SOURCE_CODES,
+        `%Records` = prettyPc(.data$P_RECORDS),
         .keep = "none"  # do not display other columns
       )
   }
@@ -621,11 +621,11 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     packageVersions <- dplyr::union(df_pr$hadesPackageVersions, df_pr$darwinPackageVersions) %>%
       dplyr::full_join(allPackages, by = c("Package")) %>%
       dplyr::mutate(
-        Version = dplyr::coalesce(Version.x, "Not installed")
+        Version = dplyr::coalesce(.data$Version.x, "Not installed")
       ) %>%
       # Sorting on LibPath to get packages in same environment together (if multiple versions of the same package installed due to renvs)
-      dplyr::arrange(Organisation, LibPath, Package) %>%
-      dplyr::select(Organisation, Package, Version)
+      dplyr::arrange(.data$Organisation, .data$LibPath, .data$Package) %>%
+      dplyr::select(.data$Organisation, .data$Package, .data$Version)
 
     doc <- doc %>%
       officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
@@ -676,16 +676,16 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       if (!is.null(results$dataTablesResults$dataTablesCounts)) {
         omop_table_names <- results$dataTablesResults$dataTablesCounts$result[,1]
         df_pr$appliedIndexes$result <- df_pr$appliedIndexes$result %>%
-          dplyr::filter(TABLENAME %in% omop_table_names)
+          dplyr::filter(.data$TABLENAME %in% omop_table_names)
       }
 
       missingIndexes <- setdiff(expectedIndexes, df_pr$appliedIndexes$result$INDEXNAME)
       additionalIndexes <- setdiff(df_pr$appliedIndexes$result$INDEXNAME, expectedIndexes)
 
       df_pr$appliedIndexes$result <- df_pr$appliedIndexes$result %>%
-        dplyr::group_by(TABLENAME) %>%
+        dplyr::group_by(.data$TABLENAME) %>%
         dplyr::summarize(
-          INDEXNAMES = paste(INDEXNAME, collapse = ",")
+          INDEXNAMES = paste(.data$INDEXNAME, collapse = ",")
         )
 
       doc <- doc %>%
@@ -733,7 +733,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         arTimings$DURATION <- as.numeric(arTimings$DURATION)
         # TODO: condition if no durations available
         # all(is.na(arTimings$DURATION))
-        longestAnalysis <- arTimings %>% slice_max(DURATION, n = 1, na_rm = TRUE)
+        longestAnalysis <- arTimings %>% slice_max(.data$DURATION, n = 1, na_rm = TRUE)
         doc <- doc %>%
           my_table_caption(
             sprintf(
@@ -763,7 +763,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     # add vocabulary table counts
     if (!is.null(vocabResults$vocabularyCounts$result)) {
       vocabResults$vocabularyCounts$result <- vocabResults$vocabularyCounts$result %>%
-        arrange(desc(COUNT))
+        arrange(desc(.data$COUNT))
       doc <- doc %>%
         officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
         my_table_caption("The number of records in all vocabulary tables.", sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm) %>% #nolint
