@@ -137,6 +137,9 @@ my_figure_caption <- function(x, caption, sourceSymbol) {
 my_body_add_table <- function(x, value, pos = "after", header = TRUE,
           alignment = NULL, first_row = TRUE, first_column = FALSE, last_row = FALSE, last_column = FALSE,
           no_hband = FALSE, no_vband = TRUE, align = "left", auto_format = TRUE) {
+  if (is.null(value)) {
+    return(x)
+  }
   pt <- officer::prop_table(
     style = pkg.env$styles$table,
     layout = officer::table_layout(),
@@ -175,16 +178,40 @@ my_body_add_table <- function(x, value, pos = "after", header = TRUE,
     alignment = alignment
   )
   xml_elt <- officer::to_wml(bt, add_ns = TRUE, base_document = x)
-  officer::body_add_xml(x = x, str = xml_elt, pos = pos)
+  officer::body_add_xml(x, str = xml_elt, pos = pos)
 }
 
-my_body_add_table_runtime <- function(x, value, duration = NULL, ...) {
-  if (is.null(duration)) {
-    duration <- value$duration
+my_body_add_runtime <- function(x, duration) {
+  if (is.null(duration) || duration <= 0) {
+    officer::body_add_par(x, "No query duration found", style = pkg.env$styles$footnote)
+    return(x)
   }
-  # TODO: if $result null, add a warning message instead of failing. Report all missing values at the end of execution.
-  my_body_add_table(x, value$result, ...) %>%
-    officer::body_add_par(sprintf("Query executed in %.2f seconds", value$duration), style = pkg.env$styles$footnote)
+
+  officer::body_add_par(x, sprintf("Query executed in %.2f seconds", duration), style = pkg.env$styles$footnote)
+}
+
+my_body_add_table_runtime <- function(x, data, duration = NULL, ...) {
+  if (is.null(duration)) {
+    duration <- data$duration
+  }
+
+  x %>% 
+    my_body_add_table(data$result, ...) %>%
+    my_body_add_runtime(duration)
+}
+
+my_table <- function(x, data, caption, sourceSymbol, duration = NULL, ...) {
+  if (is.null(data$result)) {
+    caption <- sprintf("Omitted because the query did not return results.")
+  }
+
+  if (is.null(duration)) {
+    duration <- data$duration
+  }
+
+  x %>% 
+    my_table_caption(caption, sourceSymbol) %>%
+    my_body_add_table_runtime(data, duration, ...)
 }
 
 my_source_value_count_section <- function(x, data, domain, kind, smallCellCount) {
@@ -196,14 +223,16 @@ my_source_value_count_section <- function(x, data, domain, kind, smallCellCount)
   }
 
   caption <- sprintf("Top 25 %s %s. %s", kind, domain, msg)
-  if (n == 0) {
+  if (is.null(n)) {
+    caption <- sprintf("Omitted because the %s %s query did not return results.", kind, domain)
+  } else if (n == 0) {
     caption <- sprintf("Omitted because no %s %s were found with a count >%d.", kind, domain, smallCellCount)
   } else if (n < 25) {
     caption <- sprintf("All %d %s %s. %s", n, kind, domain, msg)
   }
   x <- my_table_caption(x, caption, sourceSymbol = pkg.env$sources$cdm)
 
-  if (n > 0) {
+  if (!is.null(n) && n > 0) {
     data$result$`%Records` <- prettyPc(data$result$`%Records`)
     if (kind == 'unmapped') {
       alignment <- c('r', 'l', 'r', 'r') # #,name,n,%
@@ -217,16 +246,20 @@ my_source_value_count_section <- function(x, data, domain, kind, smallCellCount)
     )
   }
 
-  officer::body_add_par(x, sprintf("Query executed in %.2f seconds", data$duration), style = pkg.env$styles$footnote)
+  my_body_add_runtime(x, data$duration)
 }
 
 my_unmapped_section <- function(x, data, domain, smallCellCount) {
-  names(data$result) <- c("#", "Source Value", "#Records", "%Records")
+  if (!is.null(data$result)) {
+    names(data$result) <- c("#", "Source Value", "#Records", "%Records")
+  }
   my_source_value_count_section(x, data, domain, "unmapped", smallCellCount)
 }
 
 my_mapped_section <- function(x, data, domain, smallCellCount) {
-  names(data$result) <- c("#", "Concept id", "Concept Name", "#Records", "%Records")
+  if (!is.null(data$result)) {
+    names(data$result) <- c("#", "Concept id", "Concept Name", "#Records", "%Records")
+  }
   my_source_value_count_section(x, data, domain, "mapped", smallCellCount)
 }
 

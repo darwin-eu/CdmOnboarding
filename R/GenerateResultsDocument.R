@@ -181,40 +181,49 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       my_body_add_table_runtime(df$conceptsPerPerson)
 
     # Observation Period
-    plot <- .recordsCountPlot(as.data.frame(df$observedByMonth$result), hide_legend = TRUE)
-    n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
-    active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
     doc <- doc %>%
       officer::body_add_par("") %>%
-      officer::body_add_par("Observation Period", style = pkg.env$styles$heading2) %>%
-      officer::body_add_gg(plot, height = 4) %>%
-      my_figure_caption(
-        sprintf(
-          "Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
-          pkg.env$sources$achilles,
-          active_index_date,
-          prettyHr(n_active_persons),
-          pkg.env$sources$cdm
-        ),
-        sourceSymbol = ''  # already in caption text
-      ) %>%
-      officer::body_add_par("")
+      officer::body_add_par("Observation Period", style = pkg.env$styles$heading2)
+
+    if (!is.null(df$observedByMonth$result)) {
+      plot <- .recordsCountPlot(as.data.frame(df$observedByMonth$result), hide_legend = TRUE)
+      n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
+      active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
+      doc <- doc %>%
+        officer::body_add_gg(plot, height = 4) %>%
+        my_figure_caption(
+          sprintf(
+            "Persons with continuous observation by month.%s In the last 6 months (before %s), there are %s persons with an active observation period.%s",
+            pkg.env$sources$achilles,
+            active_index_date,
+            prettyHr(n_active_persons),
+            pkg.env$sources$cdm
+          ),
+          sourceSymbol = ''  # already in caption text
+        )
+    } else {
+      doc <- doc %>%
+        my_figure_caption("No observation period by Month results.", sourceSymbol = pkg.env$sources$cdm)
+    }
+    doc <- doc %>% officer::body_add_par("")
 
     # Length of first observation period
-    df$observationPeriodLength$result <- round(df$observationPeriodLength$result / 365, 1)
-    df$observationPeriodLength$result <- df$observationPeriodLength$result %>%
-      mutate(
-        AVG = AVG_VALUE,
-        STDEV = STDEV_VALUE,
-        MIN = MIN_VALUE,
-        P10 = P10_VALUE,
-        P25 = P25_VALUE,
-        MEDIAN = MEDIAN_VALUE,
-        P75 = P75_VALUE,
-        P90 = P90_VALUE,
-        MAX = MAX_VALUE,
-        .keep = "none"  # do not display other columns
-      )
+    if (!is.null(df$observationPeriodLength$result)) {
+      df$observationPeriodLength$result <- round(df$observationPeriodLength$result / 365, 1)
+      df$observationPeriodLength$result <- df$observationPeriodLength$result %>%
+        mutate(
+          AVG = AVG_VALUE,
+          STDEV = STDEV_VALUE,
+          MIN = MIN_VALUE,
+          P10 = P10_VALUE,
+          P25 = P25_VALUE,
+          MEDIAN = MEDIAN_VALUE,
+          P75 = P75_VALUE,
+          P90 = P90_VALUE,
+          MAX = MAX_VALUE,
+          .keep = "none"  # do not display other columns
+        )
+    }
 
     doc <- doc %>%
       my_table_caption("Length of first observation period (years).", sourceSymbol = pkg.env$sources$achilles) %>%
@@ -261,29 +270,33 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       ) %>%
       my_body_add_table(obsPeriodStats) %>%
       officer::body_add_par(
-        sprintf("Queries executed in %.2f seconds and %.2f seconds",
+        sprintf(
+          "Queries executed in %.2f seconds and %.2f seconds",
           df$observationPeriodsPerPerson$duration,
           df$observationPeriodOverlap$duration
-        ), style = pkg.env$styles$footnote)
+        ), 
+        style = pkg.env$styles$footnote
+      )
 
-    df$dateRangeByTypeConcept$result <- df$dateRangeByTypeConcept$result %>%
-      mutate(
-        `Domain` = DOMAIN,
-        `N` = COUNT_VALUE,
-        `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
-        `Start date [Min, Max]` = sprintf(
-          "[%s, %s]", 
-          substr(FIRST_START_DATE, 1, 7), 
-          substr(LAST_START_DATE, 1, 7)
-        ),
-        `End date [Min, Max]` = sprintf(
-          "[%s, %s]",
-          substr(FIRST_END_DATE, 1, 7),
-          substr(LAST_END_DATE, 1, 7)
-        ),
-        .keep = "none"  # do not display other columns
-      ) %>%
-      arrange(Domain)
+    if (!is.null(df$dateRangeByTypeConcept$result)) {
+      df$dateRangeByTypeConcept$result <- df$dateRangeByTypeConcept$result %>%
+        mutate(
+          `Domain` = DOMAIN,
+          `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
+          `Start date [Min, Max]` = sprintf(
+            "[%s, %s]",
+            substr(FIRST_START_DATE, 1, 7),
+            substr(LAST_START_DATE, 1, 7)
+          ),
+          `End date [Min, Max]` = sprintf(
+            "[%s, %s]",
+            substr(FIRST_END_DATE, 1, 7),
+            substr(LAST_END_DATE, 1, 7)
+          ),
+          .keep = "none"  # do not display other columns
+        ) %>%
+        arrange(Domain)
+    }
     doc <- doc %>%
       officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
       my_table_caption("Minimum and maximum event start date in each table, within an observation period and at least 5 records. Floored to the nearest month.", sourceSymbol = pkg.env$sources$achilles) %>% #nolint
@@ -292,22 +305,24 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         alignment = c('l', 'l', rep('r', ncol(df$dateRangeByTypeConcept$result) - 2))
       )
 
-    df$visitLength$result <- df$visitLength$result %>%
-      mutate(
-        Domain = DOMAIN,
-        `Concept Name` = CONCEPT_NAME,
-        AVG = round(AVG_VALUE, 1),
-        STDEV = round(STDEV_VALUE, 1),
-        MIN = MIN_VALUE,
-        P10 = P10_VALUE,
-        P25 = P25_VALUE,
-        MEDIAN = MEDIAN_VALUE,
-        P75 = P75_VALUE,
-        P90 = P90_VALUE,
-        MAX = MAX_VALUE,
-        .keep = "none"  # do not display other columns
-      ) %>%
-      arrange(Domain)
+    if (!is.null(df$visitLength$result)) {
+      df$visitLength$result <- df$visitLength$result %>%
+        mutate(
+          Domain = DOMAIN,
+          `Concept Name` = CONCEPT_NAME,
+          AVG = round(AVG_VALUE, 1),
+          STDEV = round(STDEV_VALUE, 1),
+          MIN = MIN_VALUE,
+          P10 = P10_VALUE,
+          P25 = P25_VALUE,
+          MEDIAN = MEDIAN_VALUE,
+          P75 = P75_VALUE,
+          P90 = P90_VALUE,
+          MAX = MAX_VALUE,
+          .keep = "none"  # do not display other columns
+        ) %>%
+        arrange(Domain)
+    }
 
     doc <- doc %>%
       my_table_caption("Length of stay by visit concept. The length should be interpreted as number of nights, meaning a length of 0 is a same-day visit.", sourceSymbol = pkg.env$sources$achilles) %>%
@@ -315,7 +330,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     # Day of the week and month
     combinedPlot <- cowplot::ggdraw()
-    if (!is.null(df$dayOfTheWeek$result)) {
+    if (!is.null(df$dayOfTheWeek$result) && nrow(df$dayOfTheWeek$result) > 0) {
       dayOfTheWeekPlot <- .heatMapPlot(df$dayOfTheWeek$result, "DAY_OF_THE_WEEK")
       combinedPlot <- combinedPlot +
         cowplot::draw_plot(dayOfTheWeekPlot, x = 0, y = .48, width = .5, height = .5) +
@@ -325,7 +340,7 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         officer::body_add_par("No Day of the Week results.")
     }
 
-    if (!is.null(df$dayOfTheMonth$result)) {
+    if (!is.null(df$dayOfTheMonth$result) && nrow(df$dayOfTheMonth$result) > 0) {
       dayOfTheMonthPlot <- .heatMapPlot(df$dayOfTheMonth$result, "DAY_OF_THE_MONTH")
       combinedPlot <- combinedPlot +
         cowplot::draw_plot(dayOfTheMonthPlot, x = .5, y = 0, width = .5, height = 1) +
@@ -348,23 +363,23 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
     # Day, Month, Year of Birth
     doc <- doc %>%
-        officer::body_add_par("Day, Month, Year of Birth", style = pkg.env$styles$heading2)
+      officer::body_add_par("Day, Month, Year of Birth", style = pkg.env$styles$heading2)
     if (!is.null(df$dayMonthYearOfBirth$result)) {
-        df$dayMonthYearOfBirth$result <- df$dayMonthYearOfBirth$result %>%
-          arrange(desc(VARIABLE)) %>% # Year, Month, Day
-          mutate(
-            ` ` = VARIABLE,
-            `%Missing` = prettyPc(P_MISSING),
-            MIN = MIN_VALUE,
-            P10 = P10_VALUE,
-            P25 = P25_VALUE,
-            MEDIAN = MEDIAN_VALUE,
-            P75 = P75_VALUE,
-            P90 = P90_VALUE,
-            MAX = MAX_VALUE,
-            .keep = "none"  # do not display other columns
-          )
-       doc <- doc %>%
+      df$dayMonthYearOfBirth$result <- df$dayMonthYearOfBirth$result %>%
+        arrange(desc(VARIABLE)) %>% # Year, Month, Day
+        mutate(
+          ` ` = VARIABLE,
+          `%Missing` = prettyPc(P_MISSING),
+          MIN = MIN_VALUE,
+          P10 = P10_VALUE,
+          P25 = P25_VALUE,
+          MEDIAN = MEDIAN_VALUE,
+          P75 = P75_VALUE,
+          P90 = P90_VALUE,
+          MAX = MAX_VALUE,
+          .keep = "none"  # do not display other columns
+        )
+      doc <- doc %>%
         my_table_caption("Distribution of day, month and year of birth of persons.", sourceSymbol = pkg.env$sources$cdm) %>%
         my_body_add_table_runtime(
           df$dayMonthYearOfBirth,
@@ -382,25 +397,34 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
   ## Vocabulary checks section
   doc <- doc %>%
     officer::body_add_par("Vocabulary mappings", style = pkg.env$styles$heading1)
-
   vocabResults <- results$vocabularyResults
   if (!is.null(vocabResults)) {
     doc <- doc %>%
       officer::body_add_par(
         sprintf(
           "Vocabulary version: %s",
-          results$vocabularyResults$version
+          dplyr::coalesce(vocabResults$version, "Not available")
         )
-      ) %>%
+      )
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style = pkg.env$styles$highlight)
+  }
+
+  if (!is.null(vocabResults$mappingTempTableCreation$duration)) {
+    doc <- doc %>%
       officer::body_add_par(
         sprintf(
           "Pre-processing query executed in %.2f seconds",
-          results$vocabularyResults$mappingTempTableCreation$duration
+          vocabResults$mappingTempTableCreation$duration
         ),
         style = pkg.env$styles$footnote
       )
+  }
 
-    # Mapping Completeness
+  # Mapping Completeness
+  if (!is.null(vocabResults$mappingCompleteness$result)) {
+    # TODO: report all missing values at the end of execution
     vocabResults$mappingCompleteness$result <- vocabResults$mappingCompleteness$result %>%
       arrange(DOMAIN) %>%
       mutate(
@@ -413,19 +437,23 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         `%Records Mapped` = prettyPc(P_RECORDS_MAPPED),
         .keep = "none"  # do not display other columns
       )
-    doc <- doc %>%
-      officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
-      my_table_caption(
-        paste(
-          "The number and percentage of codes and records that are mapped to an OMOP concept (not 0 and <2B)."
-          , "Note: for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes"
-          , "could be bigger than actual number of unique source codes."
-        ),
-        sourceSymbol = pkg.env$sources$cdm
-      ) %>%
-      my_body_add_table_runtime(vocabResults$mappingCompleteness, alignment = c('l', rep('r', 6)))
+  }
 
-    # Drug Level Mappings
+  doc <- doc %>%
+    officer::body_add_par("Mapping Completeness", style = pkg.env$styles$heading2) %>%
+    my_table(
+      data = vocabResults$mappingCompleteness,
+      caption = paste(
+        "The number and percentage of codes and records that are mapped to an OMOP concept (not 0 and <2B)."
+        , "Note: for one-to-many mappings, the source codes will be counted multiple times so the reported total source codes"
+        , "could be bigger than actual number of unique source codes."
+      ),
+      sourceSymbol = pkg.env$sources$cdm,
+      alignment =  c('l', rep('r', 6))
+    )
+
+  # Drug Level Mappings
+  if (!is.null(vocabResults$drugMapping$result)) {
     vocabResults$drugMapping$result <- vocabResults$drugMapping$result %>%
       arrange(desc(N_RECORDS)) %>%
       mutate(
@@ -436,61 +464,64 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         `%Records` = prettyPc(P_RECORDS),
         .keep = "none"  # do not display other columns
       )
-    doc <- doc %>%
-      officer::body_add_par("Drug Mappings", style = pkg.env$styles$heading2) %>%
-      my_table_caption("The level of the drug mappings", sourceSymbol = pkg.env$sources$cdm) %>%
-      my_body_add_table_runtime(vocabResults$drugMapping, alignment =  c('l', rep('r', 4)))
-
-    # Top 25 unmapped codes
-    doc <- doc %>%
-      officer::body_add_par("Unmapped Codes", style = pkg.env$styles$heading2) %>%
-      my_unmapped_section(vocabResults$unmappedDrugs, "drugs", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedConditions, "conditions", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedMeasurements, "measurements", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedObservations, "observations", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedProcedures, "procedures", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedDevices, "devices", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedVisits, "visits", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedVisitDetails, "visit details", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedValuesMeas, "measurement values", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedValuesObs, "observation values", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount) %>%
-      my_unmapped_section(vocabResults$unmappedSpecialty, "specialty", results$smallCellCount)
-
-    # Top 25 mapped concepts
-    doc <- doc %>%
-      officer::body_add_par("Mapped Codes", style = pkg.env$styles$heading2) %>%
-      my_mapped_section(vocabResults$mappedDrugs, "drugs", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedConditions, "conditions", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedMeasurements, "measurements", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedObservations, "observations", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedProcedures, "procedures", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedDevices, "devices", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedVisits, "visits", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedVisitDetails, "visit details", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedValuesMeas, "measurement values", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedValuesObs, "observation values", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount) %>%
-      my_mapped_section(vocabResults$mappedSpecialty, "specialty", results$smallCellCount)
-
-    ## add source_to_concept_map breakdown
-    doc <- doc %>%
-      officer::body_add_par("Source to concept map", style = pkg.env$styles$heading2) %>%
-      my_table_caption("Source to concept map breakdown", sourceSymbol = pkg.env$sources$cdm) %>%
-      my_body_add_table_runtime(vocabResults$sourceConceptFrequency) %>%
-      officer::body_add_par("") %>%
-      officer::body_add_par("Note that the full source_to_concept_map table is added in the results rds", style = pkg.env$styles$highlight)
-
-  } else {
-    doc <- doc %>%
-      officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style = pkg.env$styles$highlight) %>%
-      officer::body_add_break()
   }
+  doc <- doc %>%
+    officer::body_add_par("Drug Mappings", style = pkg.env$styles$heading2) %>%
+    my_table(
+      data = vocabResults$drugMapping,
+      caption = "The level of the drug mappings",
+      sourceSymbol = pkg.env$sources$cdm,
+      alignment =  c('l', rep('r', 4))
+    )
 
+  # Top 25 unmapped codes
+  doc <- doc %>%
+    officer::body_add_par("Unmapped Codes", style = pkg.env$styles$heading2) %>%
+    my_unmapped_section(vocabResults$unmappedDrugs, "drugs", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedConditions, "conditions", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedMeasurements, "measurements", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedObservations, "observations", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedProcedures, "procedures", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedDevices, "devices", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedVisits, "visits", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedVisitDetails, "visit details", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedValuesMeas, "measurement values", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedValuesObs, "observation values", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedDrugRoute, "drug route", results$smallCellCount) %>%
+    my_unmapped_section(vocabResults$unmappedSpecialty, "specialty", results$smallCellCount)
+
+  # Top 25 mapped concepts
+  doc <- doc %>%
+    officer::body_add_par("Mapped Codes", style = pkg.env$styles$heading2) %>%
+    my_mapped_section(vocabResults$mappedDrugs, "drugs", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedConditions, "conditions", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedMeasurements, "measurements", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedObservations, "observations", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedProcedures, "procedures", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedDevices, "devices", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedVisits, "visits", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedVisitDetails, "visit details", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedUnitsObs, "observation units", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedValuesMeas, "measurement values", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedValuesObs, "observation values", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedDrugRoute, "drug route", results$smallCellCount) %>%
+    my_mapped_section(vocabResults$mappedSpecialty, "specialty", results$smallCellCount)
+
+  doc <- doc %>%
+    officer::body_add_par("Source to concept map", style = pkg.env$styles$heading2) %>%
+    my_table(
+      data = vocabResults$sourceConceptFrequency,
+      caption = "The number of records per source concept.",
+      sourceSymbol = pkg.env$sources$cdm
+    ) %>%
+    officer::body_add_par("") %>%
+    officer::body_add_par("Note that the full source_to_concept_map table is added in the results rds", style = pkg.env$styles$highlight) %>%
+    officer::body_add_break()
+
+  # Data Quality Dashboard
   doc <- doc %>%
     officer::body_add_par("Data Quality Dashboard", style = pkg.env$styles$heading1)
 
@@ -730,20 +761,24 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
 
   if (!is.null(vocabResults)) {
     # add vocabulary table counts
-    vocabResults$vocabularyCounts$result <- vocabResults$vocabularyCounts$result %>%
-      arrange(desc(COUNT))
-    doc <- doc %>%
-      officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
-      my_table_caption("The number of records in all vocabulary tables.", sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm) %>% #nolint
-      my_body_add_table_runtime(vocabResults$vocabularyCounts)
+    if (!is.null(vocabResults$vocabularyCounts$result)) {
+      vocabResults$vocabularyCounts$result <- vocabResults$vocabularyCounts$result %>%
+        arrange(desc(COUNT))
+      doc <- doc %>%
+        officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
+        my_table_caption("The number of records in all vocabulary tables.", sourceSymbol = if (counts_optimized) pkg.env$sources$system else pkg.env$sources$cdm) %>% #nolint
+        my_body_add_table_runtime(vocabResults$vocabularyCounts)
+    }
 
     # vocabularies table
-    names(vocabResults$conceptCounts$result) <- c('ID', 'Name', 'Version', 'S', 'C', '-')
-    doc <- doc %>%
-      officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(sprintf("Vocabulary version: %s", results$vocabularyResults$version)) %>%
-      my_table_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm) %>% #nolint
-      my_body_add_table_runtime(vocabResults$conceptCounts)
+    if (!is.null(vocabResults$conceptCounts$result)) {
+      names(vocabResults$conceptCounts$result) <- c('ID', 'Name', 'Version', 'S', 'C', '-')
+      doc <- doc %>%
+        officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
+        officer::body_add_par(sprintf("Vocabulary version: %s", results$vocabularyResults$version)) %>%
+        my_table_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm) %>% #nolint
+        my_body_add_table_runtime(vocabResults$conceptCounts)
+    }
   }
 
   ## save the doc as a word file
