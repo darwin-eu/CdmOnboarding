@@ -567,19 +567,19 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
     }
 
     dedResults$result <- dedResults$result %>%
-      mutate(
-        `Ingredient` = ingredient,
-        `Concept ID` = ingredient_concept_id,
-        `#` = n_records,
-        `Type (n,%)` = proportion_of_records_by_drug_type,
-        `Route (n,%)` = proportion_of_records_by_route_type,
-        `Dose Form present n (%)` = proportion_of_records_with_dose_form,
-        `Fixed amount dose form n (%)` = proportion_of_records_missing_denominator_unit_concept_id,
-        `Amount distrib. [null or missing]` = median_amount_value_q05_q95,
-        `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
-        `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
-        `Neg. Days n (%)` = proportion_of_records_with_negative_drug_exposure_days,
-        .keep = "none"  # do not display other columns
+      select(
+        `Ingredient` = .data$ingredient,
+        `#Records` = .data$n_records,
+        `#Persons` = .data$n_patients,
+        `Type (n,%)` = .data$proportion_of_records_by_drug_type,
+        `Route (n,%)` = .data$proportion_of_records_by_route_type,
+        `Dose Form present n (%)` = .data$proportion_of_records_with_dose_form,
+        `Missingness` = .data$missing_quantity_exp_start_end_days_supply,
+        `Dose ` = .data$n_dose_and_missingness,
+        `Dose distrib.` = .data$median_daily_dose_q05_q95,
+        `Quantity distrib.` = .data$median_quantity_q05_q95,
+        `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,
+        `Neg. Days n (%)` = .data$proportion_of_records_with_negative_drug_exposure_days
       )
 
     doc <- doc %>%
@@ -587,15 +587,18 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         paste(
           "Drug Exposure Diagnostics results for selected ingredients.",
           "Executed with minCellCount = 5, sample = 1e+06, earliestStartDate = 2010-01-01.",
-          "# = Number of records.",
+          "#Records = Number of records.",
+          "#Persons = Number of unique persons.",
           "Type (n,%) = Frequency and percentage of available drug types.",
           "Route (n,%) = Frequency and percentage of available routes.",
           "Dose Form present n (%) = Frequency and percentage with dose form present.",
-          "Fixed amount dose form n (%) = Frequency and percentage of missing denominator unit concept id.",
-          "Amount distrib. [null or missing] = Distribution of amount (median q05-q95), frequency and percentage of null or missing amount.",
-          "Quantity distrib. [null or missing] = Distribution of quantity (median q05-q95), frequency and percentage of null or missing quantity.",
-          "Exposure days distrib. [null or missing] = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
-          "Neg. Days n (%) = Frequency and percentage of negative exposure days."),
+          "Missingness n (%) = Independent missingness of quantity, drug exposure start date, drug exposure end date, and days supply.",
+          "Dose = The count of records for which dose estimation is theoretically possible, yet how many of are missing due to missing values.",
+          "Dose distrib. = Distribution of calculated daily dose per unit (media q05-q95 [unit]).",
+          "Quantity distrib. = Distribution of quantity (median q05-q95), frequency and percentage of null or missing quantity.",
+          "Exposure days distrib. = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
+          "Neg. Days n (%) = Frequency and percentage of negative exposure days."
+        ),
         sourceSymbol = pkg.env$sources$cdm
       ) %>%
       my_body_add_table_runtime(dedResults)

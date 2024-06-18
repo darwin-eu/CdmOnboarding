@@ -56,18 +56,18 @@ exportDedResults <- function(
       n_records = sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE)
     ) %>%
     select(
-      `Ingredient` = ingredient,
-      `Concept ID` = ingredient_concept_id,
-      `#Records` = n_records,
-      `#Persons` = n_patients,
-      `Type (n,%)` = proportion_of_records_by_drug_type,
-      `Route (n,%)` = proportion_of_records_by_route_type,
-      `Dose Form present n (%)` = proportion_of_records_with_dose_form,
-      `Fixed amount dose form n (%)` = proportion_of_records_missing_denominator_unit_concept_id,
-      `Amount distrib. [null or missing]` = median_amount_value_q05_q95,
-      `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
-      `Exposure days distrib. [null or missing]` = median_drug_exposure_days_q05_q95,
-      `Neg. Days n (%)` = proportion_of_records_with_negative_drug_exposure_days
+      `Ingredient` = .data$ingredient,
+      `#Records` = .data$n_records,
+      `#Persons` = .data$n_patients,
+      `Type (n,%)` = .data$proportion_of_records_by_drug_type,
+      `Route (n,%)` = .data$proportion_of_records_by_route_type,
+      `Dose Form present n (%)` = .data$proportion_of_records_with_dose_form,
+      `Missingness` = .data$missing_quantity_exp_start_end_days_supply,
+      `Dose ` = .data$n_dose_and_missingness,
+      `Dose distrib.` = .data$median_daily_dose_q05_q95,
+      `Quantity distrib.` = .data$median_quantity_q05_q95,
+      `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,
+      `Neg. Days n (%)` = .data$proportion_of_records_with_negative_drug_exposure_days
     ) %>%
     write.csv(
       file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),
