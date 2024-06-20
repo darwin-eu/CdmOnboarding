@@ -579,15 +579,15 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
         `Ingredient` = .data$ingredient,
         `#Records` = .data$n_records,
         `#Persons` = .data$n_patients,
-        `Type (n,%)` = .data$proportion_of_records_by_drug_type,
-        `Route (n,%)` = .data$proportion_of_records_by_route_type,
-        `Dose Form present n (%)` = .data$proportion_of_records_with_dose_form,
-        `Missingness` = .data$missing_quantity_exp_start_end_days_supply,
-        `Dose ` = .data$n_dose_and_missingness,
+        `Type` = .data$proportion_of_records_by_drug_type,
+        `Route` = .data$proportion_of_records_by_route_type,
+        `Dose Form present` = .data$proportion_of_records_with_dose_form,
+        `Missingness [quantity, start, end, days_supply]` = .data$missing_quantity_exp_start_end_days_supply,
+        `Dose` = .data$n_dose_and_missingness,
         `Dose distrib.` = .data$median_daily_dose_q05_q95,
         `Quantity distrib.` = .data$median_quantity_q05_q95,
         `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,
-        `Neg. Days n (%)` = .data$proportion_of_records_with_negative_drug_exposure_days
+        `Neg. Days` = .data$proportion_of_records_with_negative_drug_exposure_days
       )
 
     doc <- doc %>%
