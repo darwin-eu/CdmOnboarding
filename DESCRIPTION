@@ -50,6 +50,7 @@ Imports:
     scales,
     stringr
 Suggests:
+    RPostgres,
     flextable,
     devtools,
     knitr,

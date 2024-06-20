@@ -4,7 +4,7 @@
 \alias{.exportDedResults}
 \title{Export DrugExposureDiagnostics results to csv file}
 \usage{
-.exportDedResults(results, outputFolder = getwd())
+.exportDedResults(results, outputFolder = getwd(), ded_version = "1.0.5")
 }
 \arguments{
 \item{results}{results object from \code{cdmOnboarding}}

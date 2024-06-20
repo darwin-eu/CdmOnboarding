@@ -566,9 +566,13 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       dedResults <- list(result = dedResults, duration = NULL)
     }
 
-    dedVersion <- results$performanceResults$darwinPackageVersions %>%
-      filter(.data$Package == 'DrugExposureDiagnostics') %>%
-      pull(Version)
+    dedVersion <- tryCatch({
+      results$performanceResults$darwinPackageVersions %>%
+        filter(.data$Package == 'DrugExposureDiagnostics') %>%
+        pull(Version)
+    }, error = function(e) {
+      "Unknown"
+    })
 
     dedResults$result <- dedResults$result %>%
       select(

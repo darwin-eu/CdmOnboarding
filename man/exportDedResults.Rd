@@ -2,15 +2,13 @@
 % Please edit documentation in R/ExportDedResults.R
 \name{exportDedResults}
 \alias{exportDedResults}
-\title{Export DrugExposureDiagnostics results to csv file}
+\title{Export DrugExposureDiagnostics results to csv file in same folder as input file path}
 \usage{
-exportDedResults(path, outputFolder = getwd())
+exportDedResults(path)
 }
 \arguments{
-\item{path}{path to the CdmOnboarding .rds results file}
-
-\item{outputFolder}{folder to store the results}
+\item{path}{path to the CdmOnboarding .rds results file, output is written to the same folder}
 }
 \description{
-Export DrugExposureDiagnostics results to csv file
+Export DrugExposureDiagnostics results to csv file in same folder as input file path
 }

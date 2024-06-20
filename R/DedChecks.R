@@ -38,14 +38,34 @@
     length(dedIngredientIds)
   ))
 
-  tryCatch({
+  # Connect to the database
+  if (connectionDetails$dbms == 'postgresql') {
+    library(RPostgres)
+    server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
+
+    connection <- DBI::dbConnect(
+      RPostgres::Postgres(),
+      dbname = server_parts[2],
+      host = server_parts[1],
+      user = connectionDetails$user(),
+      password = connectionDetails$password()
+    )
+
+    cdm <- cdm_from_con(
+      connection,
+      cdm_schema = cdmDatabaseSchema,
+      write_schema = scratchDatabaseSchema
+    )
+  } else {
     connection <- DatabaseConnector::connect(connectionDetails)
     cdm <- CDMConnector::cdm_from_con(
       connection,
       cdm_schema = cdmDatabaseSchema,
       write_schema = scratchDatabaseSchema
     )
+  }
 
+  tryCatch({
     ded_start_time <- Sys.time()
 
     # Reduce output lines by suppressing both warnings and messages. Only progress bars displayed.
@@ -63,16 +83,17 @@
     duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
     ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
 
-    dedResults$diagnosticsSummary$n_records <- round(dedResults$diagnosticsSummary$n_records / 10) * 10
-    dedResults$diagnosticsSummary$n_patients <- round(dedResults$diagnosticsSummary$n_patients / 10) * 10
-
     # Return result with duration
     list(result = dedResults$diagnosticsSummary, duration = duration)
   }, error = function(e) {
     ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
     NULL
   }, finally = {
-    DatabaseConnector::disconnect(connection)
+    if (connectionDetails$dbms == 'postgresql') {
+      DBI::dbDisconnect(connection)
+    } else {
+      DatabaseConnector::disconnect(connection)
+    }
     rm(connection)
   })
 }
