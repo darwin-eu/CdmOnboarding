@@ -34,7 +34,7 @@ Imports:
     ROhdsiWebApi (>= 1.1.2),
     ParallelLogger,
     SqlRender,
-    DrugExposureDiagnostics (>= 1.0.0),
+    DrugExposureDiagnostics (>= 1.0.5),
     CDMConnector (>= 1.0.0),
     benchmarkme,
     prettyunits,

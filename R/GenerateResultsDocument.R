@@ -566,6 +566,10 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
       dedResults <- list(result = dedResults, duration = NULL)
     }
 
+    dedVersion <- results$performanceResults$darwinPackageVersions %>%
+      filter(.data$Package == 'DrugExposureDiagnostics') %>%
+      pull(Version)
+
     dedResults$result <- dedResults$result %>%
       select(
         `Ingredient` = .data$ingredient,
@@ -597,7 +601,9 @@ generateResultsDocument <- function(results, outputFolder, authors, silent = FAL
           "Dose distrib. = Distribution of calculated daily dose per unit (media q05-q95 [unit]).",
           "Quantity distrib. = Distribution of quantity (median q05-q95), frequency and percentage of null or missing quantity.",
           "Exposure days distrib. = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
-          "Neg. Days n (%) = Frequency and percentage of negative exposure days."
+          "Neg. Days n (%) = Frequency and percentage of negative exposure days.",
+          "DrugExposureDiagnostics version:",
+          dedVersion
         ),
         sourceSymbol = pkg.env$sources$cdm
       ) %>%
