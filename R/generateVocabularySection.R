@@ -1,4 +1,4 @@
-# @file GenerateResultsDocument
+# @file generateVocabularySection.R
 #
 # Copyright 2024 Darwin EU Coordination Center
 #

@@ -1,4 +1,4 @@
-# @file GenerateResultsDocument
+# @file generateAppendixSection.R
 #
 # Copyright 2024 Darwin EU Coordination Center
 #

@@ -1,4 +1,4 @@
-# @file GenerateResultsDocument
+# @file generateDqdSection.R
 #
 # Copyright 2023 Darwin EU Coordination Center
 #

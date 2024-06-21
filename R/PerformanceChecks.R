@@ -38,32 +38,115 @@
 #' @param outputFolder                     Path to store logs and SQL files
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
 #' @export
-performanceChecks <- function(connectionDetails,
-                              cdmDatabaseSchema,
-                              resultsDatabaseSchema,
-                              sqlOnly = FALSE,
-                              outputFolder = "output") {
-  achillesTiming <- executeQuery(outputFolder, "achilles_timing.sql", "Retrieving duration of Achilles queries",
-                                 connectionDetails, sqlOnly, resultsDatabaseSchema = resultsDatabaseSchema)
+performanceChecks <- function(
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema,
+  sqlOnly = FALSE,
+  outputFolder = "output"
+) {
+    ParallelLogger::logInfo("Running Performance Checks SQL")
+    performanceResults <- performanceChecks(
+      connectionDetails = connectionDetails,
+      cdmDatabaseSchema = cdmDatabaseSchema,
+      resultsDatabaseSchema = resultsDatabaseSchema,
+      sqlOnly = sqlOnly,
+      outputFolder = outputFolder
+    )
 
-  performanceBenchmark <- executeQuery(outputFolder, "performance_benchmark.sql", "Executing vocabulary query benchmark",
-                                       connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
+}
 
+benchmark <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, sqlOnly = FALSE, outputFolder = "output") {
+  achillesTiming <- executeQuery(
+    outputFolder,
+    "achilles_timing.sql",
+    "Retrieving duration of Achilles queries",
+    connectionDetails,
+    sqlOnly,
+    resultsDatabaseSchema = resultsDatabaseSchema
+  )
+
+  performanceBenchmark <- executeQuery(
+    outputFolder,
+    "performance_benchmark.sql",
+    "Executing vocabulary query benchmark"
+    connectionDetails,
+    sqlOnly,
+    cdmDatabaseSchema = cdmDatabaseSchema
+  )
+
+  # Applied indexes
   appliedIndexes <- NULL
   if (connectionDetails$dbms == "postgresql") {
-    appliedIndexes <- executeQuery(outputFolder, "applied_indexes_postgres.sql", "Retrieving applied indexes",
-                                   connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
+    appliedIndexes <- executeQuery(
+      outputFolder,
+      "applied_indexes_postgres.sql",
+      "Retrieving applied indexes",
+      connectionDetails,
+      sqlOnly,
+      cdmDatabaseSchema = cdmDatabaseSchema
+    )
   } else if (connectionDetails$dbms == "sql server") {
-    appliedIndexes <- executeQuery(outputFolder, "applied_indexes_sql_server.sql", "Retrieving applied indexes",
-                                   connectionDetails, sqlOnly, cdmDatabaseSchema = cdmDatabaseSchema)
+    appliedIndexes <- executeQuery(
+      outputFolder,
+      "applied_indexes_sql_server.sql",
+      "Retrieving applied indexes",
+      connectionDetails,
+      sqlOnly,
+      cdmDatabaseSchema = cdmDatabaseSchema
+    )
   } else {
     ParallelLogger::logWarn(sprintf("The applied indexes query cannot be run for '%s', it is only implemented for PostgreSQL and MS Sql Server.", connectionDetails$dbms))
   }
 
+  # Installed Packages
+  packinfo <- as.data.frame(installed.packages(fields = c("URL")))
+  packinfo <- packinfo[, c("Package", "Version", "LibPath", "URL")]
+
+  hadesPackages <- getHADESpackages()
+  diffHADESPackages <- setdiff(hadesPackages, packinfo$Package)
+  if (length(diffHADESPackages) > 0) {
+    ParallelLogger::logInfo("> Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information") # nolint
+    ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffHADESPackages, collapse = ', ')))
+  } else {
+    ParallelLogger::logInfo("> All HADES packages are installed.")
+  }
+  hadesPackageVersions <- packinfo[packinfo$Package %in% hadesPackages, ]
+
+  darwinPackages <- getDARWINpackages()
+  diffDARWINPackages <- setdiff(darwinPackages, packinfo$Package)
+  if (length(diffDARWINPackages) > 0) {
+    ParallelLogger::logInfo("> Not all the DARWIN EU\u00AE packages are installed.")
+    ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffDARWINPackages, collapse = ', ')))
+  } else {
+    ParallelLogger::logInfo("> All DARWIN EU\u00AE packages are installed.")
+  }
+  darwinPackageVersions <- packinfo[packinfo$Package %in% darwinPackages, ]
+
+  # System details
+  sys_details <- benchmarkme::get_sys_details(sys_info = FALSE)
+  ParallelLogger::logInfo(
+    sprintf(
+      "Running Performance Checks on %s cpu with %s cores, and %s ram.",
+      sys_details$cpu$model_name,
+      sys_details$cpu$no_of_cores,
+      prettyunits::pretty_bytes(as.numeric(sys_details$ram))
+    )
+  )
+
+  # DBMS version
+  dmsVersion <- .getDbmsVersion(connectionDetails, outputFolder)
+  ParallelLogger::logInfo(sprintf('> DBMS version found: "%s"', dmsVersion))
+
   list(
     achillesTiming = achillesTiming,
     performanceBenchmark = performanceBenchmark,
-    appliedIndexes = appliedIndexes
+    appliedIndexes = appliedIndexes,
+    sys_details = sys_details,
+    dmsVersion = dmsVersion,
+    packinfo = packinfo,
+    hadesPackageVersions = hadesPackageVersions,
+    darwinPackageVersions = darwinPackageVersions
   )
 }
 
