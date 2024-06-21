@@ -11,12 +11,14 @@ test_that("Vocabulary Tables Checks", {
     "version", "mappingTempTableCreation", "mappingCompleteness", 
     "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements", 
     "unmappedObservations", "unmappedProcedures", "unmappedDevices", 
-    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", "unmappedUnitsObs", "unmappedValuesMeas", "unmappedValuesObs", "unmappedDrugRoute",
-    "mappedDrugs", "mappedConditions", "mappedMeasurements", "mappedObservations", 
-    "mappedProcedures", "mappedDevices", "mappedVisits", "mappedVisitDetails", "mappedUnitsMeas",
-    "mappedUnitsObs", "mappedValuesMeas", "mappedValuesObs", "mappedDrugRoute", "conceptCounts", "vocabularyCounts", 
-    "sourceConceptFrequency", "sourceConceptMap"
-    )
+    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", 
+    "unmappedUnitsObs", "unmappedValuesMeas", "unmappedValuesObs", 
+    "unmappedDrugRoute", "unmappedSpecialty", "mappedDrugs", "mappedConditions", 
+    "mappedMeasurements", "mappedObservations", "mappedProcedures", 
+    "mappedDevices", "mappedVisits", "mappedVisitDetails", "mappedUnitsMeas", 
+    "mappedUnitsObs", "mappedValuesMeas", "mappedValuesObs", "mappedDrugRoute", 
+    "mappedSpecialty", "conceptCounts", "vocabularyCounts", "sourceConceptFrequency", 
+    "sourceConceptMap")
   )
 
   # Check each element has a non-null result, except version and mappingTempTableCreation

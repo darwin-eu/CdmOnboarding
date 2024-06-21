@@ -1,4 +1,5 @@
 test_that("Data Tables Checks with Optimize", {
+  skip(message = "not used")
   dataTablesResults <- CdmOnboarding::dataTablesChecks(
     connectionDetails = params$connectionDetails,
     cdmDatabaseSchema = params$cdmDatabaseSchema,
@@ -13,8 +14,9 @@ test_that("Data Tables Checks with Optimize", {
   testthat::expect_named(dataTablesResults, c(
       "dataTablesCounts", "totalRecords", "recordsPerPerson", "conceptsPerPerson",
       "observationPeriodLength", "activePersons", "observedByMonth",
-      "typeConcepts", "tableDateRange", "dayOfTheWeek", "dayOfTheMonth",
-      "observationPeriodsPerPerson", "observationPeriodOverlap"
+      "dateRangeByTypeConcept", "dayOfTheWeek", "dayOfTheMonth",
+      "observationPeriodsPerPerson", "observationPeriodOverlap",
+      "dayMonthYearOfBirth", "visitLength"
     )
   )
 

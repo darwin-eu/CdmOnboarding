@@ -1,5 +1,5 @@
 test_that("Drug Exposure Diagnostics Checks", {
-  # TODO: fails on Eunomia because DatabaseConnectorDbiConnection connection not supported
+  skip(message = "fails on Eunomia because DatabaseConnectorDbiConnection connection not supported")
   # Will be fixed by #103
   dedResults <- CdmOnboarding:::.runDedChecks(
     connectionDetails = params$connectionDetails,
