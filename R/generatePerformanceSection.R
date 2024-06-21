@@ -141,7 +141,7 @@ generatePerformanceSection <- function(doc, results) {
   if (!is.null(arTimings)) {
     arTimings <- arTimings %>% arrange(arTimings$ID)
     arTimings$ID <- as.character(arTimings$ID)
-    if (utils::compareVersion(df$ACHILLES_VERSION, '1.6.3') < 1) {
+    if (utils::compareVersion(results$achillesMetadata$ACHILLES_VERSION, '1.6.3') < 1) {
       # version 1.6.3 contains unit, cannot convert to numeric.
       doc <- doc %>% my_table_caption("Execution time of Achilles analyses.", sourceSymbol = pkg.env$sources$achilles)
     } else {
