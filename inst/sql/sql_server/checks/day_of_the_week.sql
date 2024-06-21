@@ -38,7 +38,7 @@ FROM (
     SELECT (DATEDIFF(day, '19000101', procedure_date)) % 7 + 1 AS day_of_the_week
     FROM @cdmDatabaseSchema.procedure_occurrence
     WHERE procedure_date >= CAST('19000101' AS DATE)
-) [procedure]
+) t_procedure
 GROUP BY day_of_the_week
 
 UNION
