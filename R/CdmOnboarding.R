@@ -219,7 +219,7 @@ cdmOnboarding <- function(
   ))
 
   # CDM Source ------------------------------------------
-  cdmSource <- .getCdmSource(connectionDetails, cdmDatabaseSchema, sqlOnly, outputFolder)
+  cdmSource <- .getCdmSource(connectionDetails, cdmDatabaseSchema, outputFolder)
   if (is.null(cdmSource)) {
     ParallelLogger::logError(sprintf(
       "A populated cdm_source table is required for CdmOnboarding to run. Are your CDM tables in the '%s' schema?",
@@ -337,7 +337,6 @@ cdmOnboarding <- function(
       cdmDatabaseSchema = cdmDatabaseSchema,
       resultsDatabaseSchema = resultsDatabaseSchema,
       cdmVersion = cdmVersion,
-      outputFolder = outputFolder,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder
     )

@@ -4,7 +4,7 @@
 \alias{generateResultsDocument}
 \title{Generates the Results Document}
 \usage{
-generateResultsDocument(results, outputFolder, authors, silent = FALSE)
+generateResultsDocument(results, outputFolder, authors)
 }
 \arguments{
 \item{results}{Results object from \code{cdmOnboarding}}
@@ -12,8 +12,6 @@ generateResultsDocument(results, outputFolder, authors, silent = FALSE)
 \item{outputFolder}{Folder to store the results}
 
 \item{authors}{List of author names to be added in the document}
-
-\item{silent}{Flag to not create output in the terminal (default = FALSE)}
 }
 \description{
 \code{generateResultsDocument} creates a word document with results based on a template

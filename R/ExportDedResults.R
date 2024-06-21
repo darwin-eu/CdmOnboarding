@@ -37,8 +37,7 @@ exportDedResults <- function(
 #' @param outputFolder folder to store the results
 .exportDedResults <- function(
   results,
-  outputFolder = getwd(),
-  ded_version = "1.0.5"
+  outputFolder = getwd()
 ) {
   ded_results <- results$drugExposureDiagnostics$result
   if (is.null(ded_results)) {
@@ -50,7 +49,13 @@ exportDedResults <- function(
   ded_results$n_records <- format(round(ded_results$n_records / 10) * 10, big.mark = ",", format = 'd')
   ded_results$n_patients <- format(round(ded_results$n_patients / 10) * 10, big.mark = ",", format = 'd')
 
-  if (ded_version == '1.0.4') {
+  ded_version <- tryCatch(
+    results$drugExposureDiagnostics$packageVersion,
+    error = function(e) {
+      "Unknown"
+    }
+  )
+  if (ded_version == '1.0.5') {
     ded_results <- ded_results %>%
       select(
         `Ingredient` = .data$ingredient,
@@ -66,7 +71,7 @@ exportDedResults <- function(
         `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,
         `Neg. Days` = .data$proportion_of_records_with_negative_drug_exposure_days
       )
-  } else if (ded_version == '1.0.4') {
+  } else {
     ded_results <- ded_results %>%
       select(
         `Ingredient` = .data$ingredient,
@@ -77,8 +82,8 @@ exportDedResults <- function(
         `Route (n,%)` = .data$proportion_of_records_by_route_type,
         `Dose Form present n (%)` = .data$proportion_of_records_with_dose_form,
         `Fixed amount dose form n (%)` = .data$proportion_of_records_missing_denominator_unit_concept_id,
-        `Amount distrib. [null or missing]` = .data$.data$median_amount_value_q05_q95,
-        `Quantity distrib. [null or missing]` = median_quantity_q05_q95,
+        `Amount distrib. [null or missing]` = .data$median_amount_value_q05_q95,
+        `Quantity distrib. [null or missing]` = .data$median_quantity_q05_q95,
         `Exposure days distrib. [null or missing]` = .data$median_drug_exposure_days_q05_q95,
         `Neg. Days n (%)` = .data$proportion_of_records_with_negative_drug_exposure_days
       )

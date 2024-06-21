@@ -34,6 +34,7 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param cdmVersion                       Version of the CDM to check against. Default is "5.4".
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
@@ -42,21 +43,10 @@ performanceChecks <- function(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
+  cdmVersion = "5.4",
   sqlOnly = FALSE,
   outputFolder = "output"
 ) {
-    ParallelLogger::logInfo("Running Performance Checks SQL")
-    performanceResults <- performanceChecks(
-      connectionDetails = connectionDetails,
-      cdmDatabaseSchema = cdmDatabaseSchema,
-      resultsDatabaseSchema = resultsDatabaseSchema,
-      sqlOnly = sqlOnly,
-      outputFolder = outputFolder
-    )
-
-}
-
-benchmark <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, sqlOnly = FALSE, outputFolder = "output") {
   achillesTiming <- executeQuery(
     outputFolder,
     "achilles_timing.sql",
@@ -69,7 +59,7 @@ benchmark <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchem
   performanceBenchmark <- executeQuery(
     outputFolder,
     "performance_benchmark.sql",
-    "Executing vocabulary query benchmark"
+    "Executing vocabulary query benchmark",
     connectionDetails,
     sqlOnly,
     cdmDatabaseSchema = cdmDatabaseSchema

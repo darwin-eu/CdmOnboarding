@@ -1,4 +1,4 @@
-# @file cdmSource.R
+# @file getCdmSource.R
 #
 # Copyright 2024 Darwin EU Coordination Center
 #
@@ -22,7 +22,11 @@
 
 
 #' Get CDM source table
-#'
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
+#' @param outputFolder                     Path to store logs and SQL files
+#' @return                                 A data frame with the CDM source table
 .getCdmSource <- function(
   connectionDetails,
   cdmDatabaseSchema,
@@ -68,7 +72,7 @@
 }
 
 # Parse cdmVersion to format major.minor (e.g. 5.4)
-.parseCdmVersionFromCdmSource(cdmSource) {
+.parseCdmVersionFromCdmSource <- function(cdmSource) {
   cdmVersion <- gsub(pattern = "v", replacement = "", cdmSource$CDM_VERSION)
   cdmVersion <- substr(cdmVersion, 1, 3)
   return(cdmVersion)

@@ -23,8 +23,9 @@
 #' Generates the Performance section in the Results Document
 #'
 #' @param doc officer document object to add the section to
-#' @param df Results object from \code{cdmOnboarding}
-generatePerformanceSection <- function(doc, df) {
+#' @param results Results object from \code{cdmOnboarding}
+generatePerformanceSection <- function(doc, results) {
+  df <- results$performanceResults
   # Installed packages
   allPackages <- data.frame(
     Package = c(getHADESpackages(), getDARWINpackages()),
@@ -136,11 +137,11 @@ generatePerformanceSection <- function(doc, df) {
     doc <- doc %>% officer::body_add_par("WARNING: Achilles v1.7 was used. The run time is NOT standardised to one unit. Here, we assume they are all in seconds. This might not be accurate.") #nolint
   }
 
-  arTimings <- results$performanceResults$achillesTiming$result
+  arTimings <- df$achillesTiming$result
   if (!is.null(arTimings)) {
     arTimings <- arTimings %>% arrange(arTimings$ID)
     arTimings$ID <- as.character(arTimings$ID)
-    if (utils::compareVersion(results$achillesMetadata$ACHILLES_VERSION, '1.6.3') < 1) {
+    if (utils::compareVersion(df$ACHILLES_VERSION, '1.6.3') < 1) {
       # version 1.6.3 contains unit, cannot convert to numeric.
       doc <- doc %>% my_table_caption("Execution time of Achilles analyses.", sourceSymbol = pkg.env$sources$achilles)
     } else {
@@ -160,7 +161,7 @@ generatePerformanceSection <- function(doc, df) {
           sourceSymbol = pkg.env$sources$achilles
         )
     }
-    doc <- doc %>% my_body_add_table_runtime(results$performanceResults$achillesTiming)
+    doc <- doc %>% my_body_add_table_runtime(df$achillesTiming)
   } else {
     doc <- doc %>%
       officer::body_add_par("Query did not return results", style = pkg.env$styles$highlight)

@@ -20,7 +20,6 @@
 # @author Peter Rijnbeek
 # @author Maxim Moinat
 
-
 prettyHr <- function(x) {
   result <- sprintf("%.2f", x)
   result[is.na(x)] <- "NA"

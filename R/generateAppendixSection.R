@@ -26,17 +26,25 @@
 #' @param df Results object from \code{cdmOnboarding} vocabularyResults
 #' @param optimized boolean indicating if the optimized queries were used
 generateAppendixSection <- function(doc, df, optimized) {
-  # add vocabulary table counts
+  # vocabulary table counts
+  if (!is.null(df$vocabularyCounts$result)) {
+    df$vocabularyCounts$result <- df$vocabularyCounts$result %>%
       arrange(desc(.data$COUNT))
     doc <- doc %>%
-      officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
-      my_table_caption("The number of records in all vocabulary tables.", sourceSymbol = if (optimized) pkg.env$sources$system else pkg.env$sources$cdm) %>% #nolint
+        officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
+        my_table_caption("The number of records in all vocabulary tables.", sourceSymbol = if (optimized) pkg.env$sources$system else pkg.env$sources$cdm) %>% #nolint
+        my_body_add_table_runtime(df$vocabularyCounts)
   }
 
   # vocabularies table
+  if (!is.null(df$conceptCounts$result)) {
+    names(df$conceptCounts$result) <- c('ID', 'Name', 'Version', 'S', 'C', '-')
     doc <- doc %>%
       officer::body_add_par("Vocabulary concept counts", style = pkg.env$styles$heading2) %>%
-      officer::body_add_par(sprintf("Vocabulary version: %s", results$vocabularyResults$version)) %>%
+      officer::body_add_par(sprintf("Vocabulary version: %s", df$version)) %>%
       my_table_caption("The vocabularies available in the CDM with concept count. Note that this does not reflect which concepts are actually used in the clinical CDM tables. S=Standard, C=Classification and '-'=Non-standard", sourceSymbol = pkg.env$sources$cdm) %>% #nolint
+      my_body_add_table_runtime(df$conceptCounts)
   }
+
+  return(doc)
 }

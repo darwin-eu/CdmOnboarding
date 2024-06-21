@@ -29,14 +29,13 @@ generateDedSection <- function(doc, df) {
   if (!('result' %in% names(df))) {
     df <- list(result = df, duration = NULL)
   }
-
-  dedVersion <- tryCatch({
-    results$performanceResults$darwinPackageVersions %>%
-      filter(.data$Package == 'DrugExposureDiagnostics') %>%
-      pull(Version)
-  }, error = function(e) {
-    "Unknown"
-  })
+  
+  dedVersion <- tryCatch(
+    df$packageVersion,
+    error = function(e) {
+      "Unknown"
+    }
+  )
 
   df$result <- df$result %>%
     select(

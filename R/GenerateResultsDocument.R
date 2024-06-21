@@ -83,7 +83,7 @@ generateResultsDocument <- function(results, outputFolder, authors) {
   doc <- doc %>%
     officer::body_add_par("Clinical data", style = pkg.env$styles$heading1)
   if (!is.null(results$dataTablesResults)) {
-    doc <- generateDataTablesSection(doc, results$dataTablesResults, counts_optimized)
+    doc <- generateDataTablesSection(doc, results$dataTablesResults, results$cdmSource, counts_optimized)
   } else {
     doc <- doc %>%
       officer::body_add_par("Clinical data tables have not been retrieved, runDataTables = FALSE?", style = pkg.env$styles$highlight)
@@ -94,7 +94,7 @@ generateResultsDocument <- function(results, outputFolder, authors) {
   doc <- doc %>%
     officer::body_add_par("Vocabulary mappings", style = pkg.env$styles$heading1)
   if (!is.null(results$vocabularyResults)) {
-    doc <- generateVocabularySection(doc, results$vocabularyResults)
+    doc <- generateVocabularySection(doc, results$vocabularyResults, results$smallCellCount)
   } else {
     doc <- doc %>%
       officer::body_add_par("Vocabulary checks have not been executed, runVocabularyChecks = FALSE?", style = pkg.env$styles$highlight)
@@ -104,7 +104,7 @@ generateResultsDocument <- function(results, outputFolder, authors) {
   doc <- doc %>%
     officer::body_add_par("Data Quality Dashboard", style = pkg.env$styles$heading1)
   if (!is.null(results$dqdResults)) {
-    doc <- generateDqdSection(doc, dqdResults)
+    doc <- generateDqdSection(doc, results$dqdResults)
   } else {
     doc <- doc %>%
       officer::body_add_par("DataQualityDashboard results have not been provided, dqdJsonPath = NULL?", style = pkg.env$styles$highlight)
@@ -128,7 +128,7 @@ generateResultsDocument <- function(results, outputFolder, authors) {
     officer::body_add_par("Technical Infrastructure", style = pkg.env$styles$heading1)
 
   if (!is.null(results$performanceResults)) {
-    doc <- generatePerformanceSection(doc, results$performanceResults)
+    doc <- generatePerformanceSection(doc, results) # performance section also requires other results
   } else {
     doc <- doc %>%
       officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style = pkg.env$styles$highlight)

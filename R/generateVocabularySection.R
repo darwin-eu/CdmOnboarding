@@ -25,7 +25,8 @@
 #'
 #' @param doc officer document object to add the section to
 #' @param df Results object from \code{cdmOnboarding}
-generateVocabularySection <- function(doc, df) {
+#' @param smallCellCount number of cells to display in the unmapped/mapped tables
+generateVocabularySection <- function(doc, df, smallCellCount) {
   doc <- doc %>%
     officer::body_add_par(
       sprintf(
@@ -100,38 +101,38 @@ generateVocabularySection <- function(doc, df) {
   # Top 25 unmapped codes
   doc <- doc %>%
     officer::body_add_par("Unmapped Codes", style = pkg.env$styles$heading2) %>%
-    my_unmapped_section(df$unmappedDrugs, "drugs", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedConditions, "conditions", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedMeasurements, "measurements", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedObservations, "observations", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedProcedures, "procedures", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedDevices, "devices", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedVisits, "visits", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedVisitDetails, "visit details", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedUnitsMeas, "measurement units", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedUnitsObs, "observation units", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedValuesMeas, "measurement values", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedValuesObs, "observation values", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedDrugRoute, "drug route", results$smallCellCount) %>%
-    my_unmapped_section(df$unmappedSpecialty, "specialty", results$smallCellCount)
+    my_unmapped_section(df$unmappedDrugs, "drugs", smallCellCount) %>%
+    my_unmapped_section(df$unmappedConditions, "conditions", smallCellCount) %>%
+    my_unmapped_section(df$unmappedMeasurements, "measurements", smallCellCount) %>%
+    my_unmapped_section(df$unmappedObservations, "observations", smallCellCount) %>%
+    my_unmapped_section(df$unmappedProcedures, "procedures", smallCellCount) %>%
+    my_unmapped_section(df$unmappedDevices, "devices", smallCellCount) %>%
+    my_unmapped_section(df$unmappedVisits, "visits", smallCellCount) %>%
+    my_unmapped_section(df$unmappedVisitDetails, "visit details", smallCellCount) %>%
+    my_unmapped_section(df$unmappedUnitsMeas, "measurement units", smallCellCount) %>%
+    my_unmapped_section(df$unmappedUnitsObs, "observation units", smallCellCount) %>%
+    my_unmapped_section(df$unmappedValuesMeas, "measurement values", smallCellCount) %>%
+    my_unmapped_section(df$unmappedValuesObs, "observation values", smallCellCount) %>%
+    my_unmapped_section(df$unmappedDrugRoute, "drug route", smallCellCount) %>%
+    my_unmapped_section(df$unmappedSpecialty, "specialty", smallCellCount)
 
   # Top 25 mapped concepts
   doc <- doc %>%
     officer::body_add_par("Mapped Codes", style = pkg.env$styles$heading2) %>%
-    my_mapped_section(df$mappedDrugs, "drugs", results$smallCellCount) %>%
-    my_mapped_section(df$mappedConditions, "conditions", results$smallCellCount) %>%
-    my_mapped_section(df$mappedMeasurements, "measurements", results$smallCellCount) %>%
-    my_mapped_section(df$mappedObservations, "observations", results$smallCellCount) %>%
-    my_mapped_section(df$mappedProcedures, "procedures", results$smallCellCount) %>%
-    my_mapped_section(df$mappedDevices, "devices", results$smallCellCount) %>%
-    my_mapped_section(df$mappedVisits, "visits", results$smallCellCount) %>%
-    my_mapped_section(df$mappedVisitDetails, "visit details", results$smallCellCount) %>%
-    my_mapped_section(df$mappedUnitsMeas, "measurement units", results$smallCellCount) %>%
-    my_mapped_section(df$mappedUnitsObs, "observation units", results$smallCellCount) %>%
-    my_mapped_section(df$mappedValuesMeas, "measurement values", results$smallCellCount) %>%
-    my_mapped_section(df$mappedValuesObs, "observation values", results$smallCellCount) %>%
-    my_mapped_section(df$mappedDrugRoute, "drug route", results$smallCellCount) %>%
-    my_mapped_section(df$mappedSpecialty, "specialty", results$smallCellCount)
+    my_mapped_section(df$mappedDrugs, "drugs", smallCellCount) %>%
+    my_mapped_section(df$mappedConditions, "conditions", smallCellCount) %>%
+    my_mapped_section(df$mappedMeasurements, "measurements", smallCellCount) %>%
+    my_mapped_section(df$mappedObservations, "observations", smallCellCount) %>%
+    my_mapped_section(df$mappedProcedures, "procedures", smallCellCount) %>%
+    my_mapped_section(df$mappedDevices, "devices", smallCellCount) %>%
+    my_mapped_section(df$mappedVisits, "visits", smallCellCount) %>%
+    my_mapped_section(df$mappedVisitDetails, "visit details", smallCellCount) %>%
+    my_mapped_section(df$mappedUnitsMeas, "measurement units", smallCellCount) %>%
+    my_mapped_section(df$mappedUnitsObs, "observation units", smallCellCount) %>%
+    my_mapped_section(df$mappedValuesMeas, "measurement values", smallCellCount) %>%
+    my_mapped_section(df$mappedValuesObs, "observation values", smallCellCount) %>%
+    my_mapped_section(df$mappedDrugRoute, "drug route", smallCellCount) %>%
+    my_mapped_section(df$mappedSpecialty, "specialty", smallCellCount)
 
   doc <- doc %>%
     officer::body_add_par("Source to concept map", style = pkg.env$styles$heading2) %>%

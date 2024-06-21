@@ -38,9 +38,8 @@
     length(dedIngredientIds)
   ))
 
-  # Connect to the database
+  # Connect to the database. For postgres with DBI, otherwise via DatabaseConnector.
   if (connectionDetails$dbms == 'postgresql') {
-    library(RPostgres)
     server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
 
     connection <- DBI::dbConnect(
@@ -51,7 +50,7 @@
       password = connectionDetails$password()
     )
 
-    cdm <- cdm_from_con(
+    cdm <- CDMConnector::cdm_from_con(
       connection,
       cdm_schema = cdmDatabaseSchema,
       write_schema = scratchDatabaseSchema
@@ -84,7 +83,7 @@
     ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
 
     # Return result with duration
-    list(result = dedResults$diagnosticsSummary, duration = duration)
+    list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = packageVersion(pkg = "DrugExposureDiagnostics"))
   }, error = function(e) {
     ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
     NULL

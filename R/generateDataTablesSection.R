@@ -24,8 +24,9 @@
 #'
 #' @param doc officer document object to add the section to
 #' @param df Results object from \code{cdmOnboarding} dataTablesResults
+#' @param cdmSource CDM source object
 #' @param optimized boolean indicating if the optimized queries were used
-generateDataTablesSection <- function(doc, df, optimized) {
+generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
   # Pre-compute counts
   personCount <- df$dataTablesCounts$result %>%
     dplyr::filter(.data$TABLENAME == 'person') %>%
@@ -100,7 +101,7 @@ generateDataTablesSection <- function(doc, df, optimized) {
   if (!is.null(df$observedByMonth$result)) {
     plot <- .recordsCountPlot(as.data.frame(df$observedByMonth$result), hide_legend = TRUE)
     n_active_persons <- df$activePersons$result # dataframe of length one. Missing column name in some cases.
-    active_index_date <- dplyr::coalesce(results$cdmSource$SOURCE_RELEASE_DATE, results$cdmSource$CDM_RELEASE_DATE)
+    active_index_date <- dplyr::coalesce(cdmSource$SOURCE_RELEASE_DATE, cdmSource$CDM_RELEASE_DATE)
     doc <- doc %>%
       officer::body_add_gg(plot, height = 4) %>%
       my_figure_caption(
