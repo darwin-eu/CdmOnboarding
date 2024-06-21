@@ -33,7 +33,6 @@ generateVocabularySection <- function(doc, df) {
         dplyr::coalesce(df$version, "Not available")
       )
     )
-  }
 
   if (!is.null(df$mappingTempTableCreation$duration)) {
     doc <- doc %>%
@@ -50,15 +49,15 @@ generateVocabularySection <- function(doc, df) {
   if (!is.null(df$mappingCompleteness$result)) {
     # TODO: report all missing values at the end of execution
     df$mappingCompleteness$result <- df$mappingCompleteness$result %>%
-      arrange(DOMAIN) %>%
+      arrange(.data$DOMAIN) %>%
       mutate(
-        Domain = DOMAIN,
-        `#Codes Source` = N_CODES_SOURCE,
-        `#Codes Mapped` = N_CODES_MAPPED,
-        `%Codes Mapped` = prettyPc(P_CODES_MAPPED),
-        `#Records Source` = N_RECORDS_SOURCE,
-        `#Records Mapped` = N_RECORDS_MAPPED,
-        `%Records Mapped` = prettyPc(P_RECORDS_MAPPED),
+        Domain = .data$DOMAIN,
+        `#Codes Source` = .data$N_CODES_SOURCE,
+        `#Codes Mapped` = .data$N_CODES_MAPPED,
+        `%Codes Mapped` = prettyPc(.data$P_CODES_MAPPED),
+        `#Records Source` = .data$N_RECORDS_SOURCE,
+        `#Records Mapped` = .data$N_RECORDS_MAPPED,
+        `%Records Mapped` = prettyPc(.data$P_RECORDS_MAPPED),
         .keep = "none"  # do not display other columns
       )
   }
@@ -79,13 +78,13 @@ generateVocabularySection <- function(doc, df) {
   # Drug Level Mappings
   if (!is.null(df$drugMapping$result)) {
     df$drugMapping$result <- df$drugMapping$result %>%
-      arrange(desc(N_RECORDS)) %>%
+      arrange(desc(.data$N_RECORDS)) %>%
       mutate(
-        Class = CLASS,
-        `#Records` = N_RECORDS,
-        `#Patients` = N_PATIENTS,
-        `#Codes` = N_SOURCE_CODES,
-        `%Records` = prettyPc(P_RECORDS),
+        Class = .data$CLASS,
+        `#Records` = .data$N_RECORDS,
+        `#Patients` = .data$N_PATIENTS,
+        `#Codes` = .data$N_SOURCE_CODES,
+        `%Records` = prettyPc(.data$P_RECORDS),
         .keep = "none"  # do not display other columns
       )
   }

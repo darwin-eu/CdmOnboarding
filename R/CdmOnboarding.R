@@ -349,13 +349,13 @@ cdmOnboarding <- function(
     ParallelLogger::logInfo("Running WebAPIChecks")
 
     webApiVersion <- tryCatch({
-      version <- ROhdsiWebApi::getWebApiVersion(baseUrl = baseUrl)
+      version <- .getWebApiVersion(baseUrl)
       ParallelLogger::logInfo(sprintf("> Connected successfully to '%s'", baseUrl))
       ParallelLogger::logInfo(sprintf("> WebAPI version: %s", version))
       version
     }, error = function(e) {
-      ParallelLogger::logError(sprintf("Could not connect to the WebAPI on '%s':\n%s", baseUrl, e))
-      return("Failed")
+      ParallelLogger::logWarn(sprintf("Could not connect to the WebAPI on '%s':\n%s", baseUrl, e))
+      "Failed to reach WebApi"
     })
   }
 

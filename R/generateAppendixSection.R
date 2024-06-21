@@ -27,7 +27,7 @@
 #' @param optimized boolean indicating if the optimized queries were used
 generateAppendixSection <- function(doc, df, optimized) {
   # add vocabulary table counts
-      arrange(desc(COUNT))
+      arrange(desc(.data$COUNT))
     doc <- doc %>%
       officer::body_add_par("Vocabulary table counts", style = pkg.env$styles$heading2) %>%
       my_table_caption("The number of records in all vocabulary tables.", sourceSymbol = if (optimized) pkg.env$sources$system else pkg.env$sources$cdm) %>% #nolint

@@ -28,20 +28,20 @@
 generateDataTablesSection <- function(doc, df, optimized) {
   # Pre-compute counts
   personCount <- df$dataTablesCounts$result %>%
-    dplyr::filter(TABLENAME == 'person') %>%
-    pull(COUNT)
+    dplyr::filter(.data$TABLENAME == 'person') %>%
+    pull(.data$COUNT)
   deathCount <- df$dataTablesCounts$result %>%
-    dplyr::filter(TABLENAME == 'death') %>%
-    pull(COUNT)
+    dplyr::filter(.data$TABLENAME == 'death') %>%
+    pull(.data$COUNT)
 
   # Total records per table
   df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
-    arrange(desc(COUNT)) %>%
+    arrange(desc(.data$COUNT)) %>%
     mutate(
-      Table = TABLENAME,
-      `#Records` = COUNT,
-      `#Persons` = N_PERSONS,
-      `%Persons` = prettyPc(N_PERSONS / personCount * 100),
+      Table = .data$TABLENAME,
+      `#Records` = .data$COUNT,
+      `#Persons` = .data$N_PERSONS,
+      `%Persons` = prettyPc(.data$N_PERSONS / personCount * 100),
       .keep = "none"  # do not display other columns
     )
 
@@ -69,7 +69,7 @@ generateDataTablesSection <- function(doc, df, optimized) {
 
   if (deathCount > 0) {
     totalDeath <- df$totalRecords$result %>%
-      dplyr::filter(SERIES_NAME %in% 'Death')
+      dplyr::filter(.data$SERIES_NAME %in% 'Death')
     totalDeathPlot <- .recordsCountPlot(as.data.frame(totalDeath), hide_legend = TRUE)
     doc <- doc %>%
       officer::body_add_gg(totalDeathPlot, height = 4)
@@ -124,15 +124,15 @@ generateDataTablesSection <- function(doc, df, optimized) {
     df$observationPeriodLength$result <- round(df$observationPeriodLength$result / 365, 1)
     df$observationPeriodLength$result <- df$observationPeriodLength$result %>%
       mutate(
-        AVG = AVG_VALUE,
-        STDEV = STDEV_VALUE,
-        MIN = MIN_VALUE,
-        P10 = P10_VALUE,
-        P25 = P25_VALUE,
-        MEDIAN = MEDIAN_VALUE,
-        P75 = P75_VALUE,
-        P90 = P90_VALUE,
-        MAX = MAX_VALUE,
+        AVG = .data$AVG_VALUE,
+        STDEV = .data$STDEV_VALUE,
+        MIN = .data$MIN_VALUE,
+        P10 = .data$P10_VALUE,
+        P25 = .data$P25_VALUE,
+        MEDIAN = .data$MEDIAN_VALUE,
+        P75 = .data$P75_VALUE,
+        P90 = .data$P90_VALUE,
+        MAX = .data$MAX_VALUE,
         .keep = "none"  # do not display other columns
       )
   }
@@ -145,9 +145,9 @@ generateDataTablesSection <- function(doc, df, optimized) {
   if (!is.null(df$observationPeriodsPerPerson$result)) {
     obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
       mutate(
-        Field = sprintf("Persons with %s observation period(s)", N_OBSERVATION_PERIODS),
-        Value = N_PERSONS,
-        `%Persons` = N_PERSONS / personCount * 100,
+        Field = sprintf("Persons with %s observation period(s)", .data$N_OBSERVATION_PERIODS),
+        Value = .data$N_PERSONS,
+        `%Persons` = .data$N_PERSONS / personCount * 100,
         .keep = "none"  # do not display other columns
       )
   } else {
@@ -193,21 +193,21 @@ generateDataTablesSection <- function(doc, df, optimized) {
   if (!is.null(df$dateRangeByTypeConcept$result)) {
     df$dateRangeByTypeConcept$result <- df$dateRangeByTypeConcept$result %>%
       mutate(
-        `Domain` = DOMAIN,
-        `Type` = sprintf("%s (%s)", TYPE_CONCEPT_NAME, TYPE_STANDARD_CONCEPT),
+        `Domain` = .data$DOMAIN,
+        `Type` = sprintf("%s (%s)", .data$TYPE_CONCEPT_NAME, .data$TYPE_STANDARD_CONCEPT),
         `Start date [Min, Max]` = sprintf(
           "[%s, %s]",
-          substr(FIRST_START_DATE, 1, 7),
-          substr(LAST_START_DATE, 1, 7)
+          substr(.data$FIRST_START_DATE, 1, 7),
+          substr(.data$LAST_START_DATE, 1, 7)
         ),
         `End date [Min, Max]` = sprintf(
           "[%s, %s]",
-          substr(FIRST_END_DATE, 1, 7),
-          substr(LAST_END_DATE, 1, 7)
+          substr(.data$FIRST_END_DATE, 1, 7),
+          substr(.data$LAST_END_DATE, 1, 7)
         ),
         .keep = "none"  # do not display other columns
       ) %>%
-      arrange(Domain)
+      arrange(.data$Domain)
   }
   doc <- doc %>%
     officer::body_add_par("Date Range", style = pkg.env$styles$heading2) %>%
@@ -220,20 +220,20 @@ generateDataTablesSection <- function(doc, df, optimized) {
   if (!is.null(df$visitLength$result)) {
     df$visitLength$result <- df$visitLength$result %>%
       mutate(
-        Domain = DOMAIN,
-        `Concept Name` = CONCEPT_NAME,
-        AVG = round(AVG_VALUE, 1),
-        STDEV = round(STDEV_VALUE, 1),
-        MIN = MIN_VALUE,
-        P10 = P10_VALUE,
-        P25 = P25_VALUE,
-        MEDIAN = MEDIAN_VALUE,
-        P75 = P75_VALUE,
-        P90 = P90_VALUE,
-        MAX = MAX_VALUE,
+        Domain = .data$DOMAIN,
+        `Concept Name` = .data$CONCEPT_NAME,
+        AVG = round(.data$AVG_VALUE, 1),
+        STDEV = round(.data$STDEV_VALUE, 1),
+        MIN = .data$MIN_VALUE,
+        P10 = .data$P10_VALUE,
+        P25 = .data$P25_VALUE,
+        MEDIAN = .data$MEDIAN_VALUE,
+        P75 = .data$P75_VALUE,
+        P90 = .data$P90_VALUE,
+        MAX = .data$MAX_VALUE,
         .keep = "none"  # do not display other columns
       ) %>%
-      arrange(Domain)
+      arrange(.data$Domain)
   }
 
   doc <- doc %>%
@@ -278,17 +278,17 @@ generateDataTablesSection <- function(doc, df, optimized) {
     officer::body_add_par("Day, Month, Year of Birth", style = pkg.env$styles$heading2)
   if (!is.null(df$dayMonthYearOfBirth$result)) {
     df$dayMonthYearOfBirth$result <- df$dayMonthYearOfBirth$result %>%
-      arrange(desc(VARIABLE)) %>% # Year, Month, Day
+      arrange(desc(.data$VARIABLE)) %>% # Year, Month, Day
       mutate(
-        ` ` = VARIABLE,
-        `%Missing` = prettyPc(P_MISSING),
-        MIN = MIN_VALUE,
-        P10 = P10_VALUE,
-        P25 = P25_VALUE,
-        MEDIAN = MEDIAN_VALUE,
-        P75 = P75_VALUE,
-        P90 = P90_VALUE,
-        MAX = MAX_VALUE,
+        ` ` = .data$VARIABLE,
+        `%Missing` = prettyPc(.data$P_MISSING),
+        MIN = .data$MIN_VALUE,
+        P10 = .data$P10_VALUE,
+        P25 = .data$P25_VALUE,
+        MEDIAN = .data$MEDIAN_VALUE,
+        P75 = .data$P75_VALUE,
+        P90 = .data$P90_VALUE,
+        MAX = .data$MAX_VALUE,
         .keep = "none"  # do not display other columns
       )
     doc <- doc %>%

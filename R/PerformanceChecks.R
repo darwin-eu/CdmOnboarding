@@ -294,3 +294,18 @@ getDARWINpackages <- function() {
     rm(connection)
   })
 }
+
+#' @import httr
+.getWebApiVersion <- function(baseUrl) {
+  if (grepl("/$", baseUrl)) {
+    baseUrl <- sub("/$", "", baseUrl)
+  }
+  url <- paste0(baseUrl, "/info")
+
+  response <- httr::GET(url)
+  if (response$status %in% c(200)) {
+    content <- httr::content(response)
+    return(content$version)
+  }
+  return(NULL)
+}

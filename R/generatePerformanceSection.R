@@ -35,11 +35,11 @@ generatePerformanceSection <- function(doc, df) {
   packageVersions <- dplyr::union(df$hadesPackageVersions, df$darwinPackageVersions) %>%
     dplyr::full_join(allPackages, by = c("Package")) %>%
     dplyr::mutate(
-      Version = dplyr::coalesce(Version.x, "Not installed")
+      Version = dplyr::coalesce(.data$Version.x, "Not installed")
     ) %>%
     # Sorting on LibPath to get packages in same environment together (if multiple versions of the same package installed due to renvs)
-    dplyr::arrange(Organisation, LibPath, Package) %>%
-    dplyr::select(Organisation, Package, Version)
+    dplyr::arrange(.data$Organisation, .data$LibPath, .data$Package) %>%
+    dplyr::select(.data$Organisation, .data$Package, .data$Version)
 
   doc <- doc %>%
     officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
@@ -90,16 +90,16 @@ generatePerformanceSection <- function(doc, df) {
     if (!is.null(results$dataTablesResults$dataTablesCounts)) {
       omop_table_names <- results$dataTablesResults$dataTablesCounts$result[,1]
       df$appliedIndexes$result <- df$appliedIndexes$result %>%
-        dplyr::filter(TABLENAME %in% omop_table_names)
+        dplyr::filter(.data$TABLENAME %in% omop_table_names)
     }
 
     missingIndexes <- setdiff(expectedIndexes, df$appliedIndexes$result$INDEXNAME)
     additionalIndexes <- setdiff(df$appliedIndexes$result$INDEXNAME, expectedIndexes)
 
     df$appliedIndexes$result <- df$appliedIndexes$result %>%
-      dplyr::group_by(TABLENAME) %>%
+      dplyr::group_by(.data$TABLENAME) %>%
       dplyr::summarize(
-        INDEXNAMES = paste(INDEXNAME, collapse = ",")
+        INDEXNAMES = paste(.data$INDEXNAME, collapse = ",")
       )
 
     doc <- doc %>%
@@ -147,7 +147,7 @@ generatePerformanceSection <- function(doc, df) {
       arTimings$DURATION <- as.numeric(arTimings$DURATION)
       # TODO: condition if no durations available
       # all(is.na(arTimings$DURATION))
-      longestAnalysis <- arTimings %>% slice_max(DURATION, n = 1, na_rm = TRUE)
+      longestAnalysis <- arTimings %>% slice_max(.data$DURATION, n = 1, na_rm = TRUE)
       doc <- doc %>%
         my_table_caption(
           sprintf(

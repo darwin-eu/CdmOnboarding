@@ -21,12 +21,21 @@
 # @author Maxim Moinat
 
 .recordsCountPlot <- function(df, log_y_axis = FALSE, hide_legend = FALSE) {
-  temp <- df %>%
-    dplyr::rename(Date = X_CALENDAR_MONTH, Domain = SERIES_NAME, Count = Y_RECORD_COUNT) %>%
-    dplyr::mutate(Date = lubridate::parse_date_time(Date, "ym"))
-  plot <- ggplot2::ggplot(temp, aes(x = Date, y = Count)) +
-    ggplot2::geom_line(aes(color = Domain)) +
-    ggplot2::scale_colour_hue(l = 40)
+  plot <- df %>%
+    dplyr::mutate(
+      Date = lubridate::parse_date_time(.data$X_CALENDAR_MONTH, "ym"),
+      Domain = .data$SERIES_NAME,
+      Count = .data$Y_RECORD_COUNT
+    ) %>%
+    ggplot2::ggplot(
+      aes(x = .data$Date, y = .data$Count)
+    ) +
+    ggplot2::geom_line(
+      aes(color = .data$Domain)
+    ) +
+    ggplot2::scale_colour_hue(
+      l = 40
+    )
 
   if (log_y_axis) {
     plot <- plot + ggplot2::scale_y_log10()
@@ -43,38 +52,46 @@
   # https://rpubs.com/melike/heatmapTable
   maxYVar <- length(unique(df[[yVar]]))
   df %>%
-    dplyr::group_by(DOMAIN) %>%
+    dplyr::group_by(.data$DOMAIN) %>%
     dplyr::mutate(
-        PROPORTION = N_RECORDS / sum(N_RECORDS) * 100
+      PROPORTION = .data$N_RECORDS / sum(.data$N_RECORDS) * 100
     ) %>%
     dplyr::ungroup() %>%
-    ggplot2::ggplot(aes(x = DOMAIN, y = .data[[yVar]])) +
-    ggplot2::geom_tile(aes(fill = PROPORTION)) +
-    ggplot2::geom_text(aes(label = N_RECORDS)) +
+    ggplot2::ggplot(
+      aes(x = .data$DOMAIN, y = .data[[yVar]])
+    ) +
+    ggplot2::geom_tile(
+      aes(fill = .data$PROPORTION)
+    ) +
+    ggplot2::geom_text(
+      aes(label = .data$N_RECORDS)
+    ) +
     ggplot2::scale_fill_gradient2(
-        low = scales::muted("midnightblue"),
-        mid = "white",
-        high = scales::muted("darkred"),
-        n.breaks = 4,
-        midpoint = 1 / maxYVar * 100 # expected average proportion
+      low = scales::muted("midnightblue"),
+      mid = "white",
+      high = scales::muted("darkred"),
+      n.breaks = 4,
+      midpoint = 1 / maxYVar * 100 # expected average proportion
     ) +
     ggplot2::theme(
-        # no gridlines
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.minor.y = element_blank(),
-        panel.background = element_rect(fill = "white"),
-        axis.text.x = element_text(size = 6, face = "bold"),
-        axis.text.y = element_text(size = 12, face = "bold"),
-        legend.position = "bottom"
+      # no gridlines
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.background = element_rect(fill = "white"),
+      axis.text.x = element_text(size = 6, face = "bold"),
+      axis.text.y = element_text(size = 12, face = "bold"),
+      legend.position = "bottom"
     ) +
     ggplot2::scale_x_discrete(
       name = ""
     ) +
     ggplot2::scale_y_reverse(
-        name = "",
-        breaks = seq(1, maxYVar)
+      name = "",
+      breaks = seq(1, maxYVar)
     ) +
-    ggplot2::labs(fill = "Proportion (%)")
+    ggplot2::labs(
+      fill = "Proportion (%)"
+    )
 }
