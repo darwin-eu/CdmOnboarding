@@ -1,0 +1,4 @@
+cohortId,cohortName,jsonPath
+1,use_of_diazepam,diazepam.json
+2,visits_to_the_intensive_care,icu.json
+3,essential_hypertension_in_males,hypertension.json

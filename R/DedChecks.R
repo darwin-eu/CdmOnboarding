@@ -49,20 +49,14 @@
       user = connectionDetails$user(),
       password = connectionDetails$password()
     )
-
-    cdm <- CDMConnector::cdm_from_con(
-      connection,
-      cdm_schema = cdmDatabaseSchema,
-      write_schema = scratchDatabaseSchema
-    )
   } else {
     connection <- DatabaseConnector::connect(connectionDetails)
-    cdm <- CDMConnector::cdm_from_con(
-      connection,
-      cdm_schema = cdmDatabaseSchema,
-      write_schema = scratchDatabaseSchema
-    )
   }
+  cdm <- CDMConnector::cdm_from_con(
+    connection,
+    cdm_schema = cdmDatabaseSchema,
+    write_schema = scratchDatabaseSchema
+  )
 
   tryCatch({
     ded_start_time <- Sys.time()
