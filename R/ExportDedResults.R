@@ -92,9 +92,9 @@ exportDedResults <- function(
   ded_results %>%
     # add metadata
     add_row(
-      ingredient = sprintf("Execution Date: %s", results$executionDate),
-      ingredient_concept_id = sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
-      n_records = sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE)
+      `Ingredient` = sprintf("Execution Date: %s", results$executionDate),
+      `Concept ID` = sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
+      `#Records` = sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE)
     ) %>%
     write.csv(
       file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),

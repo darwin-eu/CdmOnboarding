@@ -29,7 +29,7 @@ generateDedSection <- function(doc, df) {
   if (!('result' %in% names(df))) {
     df <- list(result = df, duration = NULL)
   }
-  
+
   dedVersion <- tryCatch(
     df$packageVersion,
     error = function(e) {
@@ -75,6 +75,6 @@ generateDedSection <- function(doc, df) {
       sourceSymbol = pkg.env$sources$cdm
     ) %>%
     my_body_add_table_runtime(df)
-    
+
   return(doc)
 }

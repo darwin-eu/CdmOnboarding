@@ -85,6 +85,10 @@ cdmOnboarding <- function(
     stop("Argument databaseId is missing")
   }
 
+  if (!is.null(dedIngredientIds)) {
+    warning("Argument `dedIngredientIds` has been deprecated, default ingredient list is used (`getDedIngredients()`).")
+  }
+
   results <- .execute(
     connectionDetails = connectionDetails,
     cdmDatabaseSchema = cdmDatabaseSchema,
