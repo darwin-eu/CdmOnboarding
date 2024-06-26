@@ -123,6 +123,14 @@ compat <- function(r, target_version = package_version('3.0')) {
   }
   r <- .fixP_RECORDS(r)
 
+  # DED v1.0.5 has three additional columns
+  if (!('missing_quantity_exp_start_end_days_supply' %in% names(r$drugExposureDiagnostics$result))) {
+    r$drugExposureDiagnostics$result$missing_quantity_exp_start_end_days_supply <- NA
+    r$drugExposureDiagnostics$result$n_dose_and_missingness <- NA
+    r$drugExposureDiagnostics$result$median_daily_dose_q05_q95 <- NA
+  }
+
+  # Performance
   if (is.null(r$performanceResults$packinfo)) {
     r$performanceResults$sys_details <- r$sys_details
     r$performanceResults$dmsVersion <- r$dmsVersion
