@@ -20,7 +20,6 @@ Authors@R:
 Maintainer: Maxim Moinat <m.moinat@erasmusmc.nl>
 Description: The goal this R Package is to generate a report to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the data network and participate in research studies.
 License: Apache License (>= 2)
-VignetteBuilder: knitr
 URL: https://github.com/darwin-eu/CdmOnboarding
 BugReports: https://github.com/darwin-eu/CdmOnboarding/issue
 Encoding: UTF-8
@@ -31,11 +30,11 @@ Depends:
     R (>= 4.0.0),
     DatabaseConnector (>= 5.0.2)
 Imports:
-    ROhdsiWebApi (>= 1.1.2),
     ParallelLogger,
     SqlRender,
-    DrugExposureDiagnostics (>= 1.0.0),
+    DrugExposureDiagnostics (>= 1.0.5),
     CDMConnector (>= 1.0.0),
+    DBI,
     benchmarkme,
     prettyunits,
     tools,
@@ -48,16 +47,15 @@ Imports:
     stats,
     cowplot,
     scales,
-    stringr
+    stringr,
+    httr,
+    utils
 Suggests:
+    RPostgres,
     flextable,
     devtools,
     knitr,
     testthat (>= 3.0.0),
     Eunomia,
-    Achilles
-Remotes:
-    OHDSI/ROhdsiWebApi,
-    OHDSI/Eunomia,
-    OHDSI/Achilles
+    Achilles (>= 1.7.2)
 Config/testthat/edition: 3

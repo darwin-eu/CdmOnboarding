@@ -1,0 +1,80 @@
+# @file generateDedSection.R
+#
+# Copyright 2024 Darwin EU Coordination Center
+#
+# This file is part of CdmOnboarding
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @author Darwin EU Coordination Center
+# @author Peter Rijnbeek
+# @author Maxim Moinat
+
+#' Generates the Drug Exposure Diagnostics section for the Results Document
+#'
+#' @param doc officer document object to add the section to
+#' @param df Results object from \code{cdmOnboarding}
+generateDedSection <- function(doc, df) {
+  # Backwards compatibility with 2.1 where df was not wrapped in result object + duration.
+  if (!('result' %in% names(df))) {
+    df <- list(result = df, duration = NULL)
+  }
+  
+  dedVersion <- tryCatch(
+    df$packageVersion,
+    error = function(e) {
+      "Unknown"
+    }
+  )
+
+  df$result <- df$result %>%
+    select(
+      `Ingredient` = .data$ingredient,
+      `#Records` = .data$n_records,
+      `#Persons` = .data$n_patients,
+      `Type` = .data$proportion_of_records_by_drug_type,
+      `Route` = .data$proportion_of_records_by_route_type,
+      `Dose Form present` = .data$proportion_of_records_with_dose_form,
+      `Missingness [quantity, start, end, days_supply]` = .data$missing_quantity_exp_start_end_days_supply,
+      `Dose` = .data$n_dose_and_missingness,
+      `Dose distrib.` = .data$median_daily_dose_q05_q95,
+      `Quantity distrib.` = .data$median_quantity_q05_q95,
+      `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,
+      `Neg. Days` = .data$proportion_of_records_with_negative_drug_exposure_days
+    )
+
+  doc <- doc %>%
+    my_table_caption(
+      paste(
+        "Drug Exposure Diagnostics results for selected ingredients.",
+        "Executed with minCellCount = 5, sample = 1e+06, earliestStartDate = 2010-01-01.",
+        "#Records = Number of records.",
+        "#Persons = Number of unique persons.",
+        "Type (n,%) = Frequency and percentage of available drug types.",
+        "Route (n,%) = Frequency and percentage of available routes.",
+        "Dose Form present n (%) = Frequency and percentage with dose form present.",
+        "Missingness n (%) = Independent missingness of quantity, drug exposure start date, drug exposure end date, and days supply.",
+        "Dose = The count of records for which dose estimation is theoretically possible, yet how many of are missing due to missing values.",
+        "Dose distrib. = Distribution of calculated daily dose per unit (media q05-q95 [unit]).",
+        "Quantity distrib. = Distribution of quantity (median q05-q95), frequency and percentage of null or missing quantity.",
+        "Exposure days distrib. = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
+        "Neg. Days n (%) = Frequency and percentage of negative exposure days.",
+        "DrugExposureDiagnostics version:",
+        dedVersion
+      ),
+      sourceSymbol = pkg.env$sources$cdm
+    ) %>%
+    my_body_add_table_runtime(df)
+    
+  return(doc)
+}

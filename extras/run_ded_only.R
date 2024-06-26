@@ -31,7 +31,7 @@ dedResults <- DrugExposureDiagnostics::executeChecks(
     1703687,
     40225722
   ),
-  checks = c("exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
+  checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
   minCellCount = 5,
   sample = 1e+06,
   earliestStartDate = "2010-01-01"
