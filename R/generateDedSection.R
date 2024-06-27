@@ -30,28 +30,9 @@ generateDedSection <- function(doc, df) {
     df <- list(result = df, duration = NULL)
   }
 
-  dedVersion <- tryCatch(
-    df$packageVersion,
-    error = function(e) {
-      "Unknown"
-    }
-  )
+  dedVersion <- .getDedVersion(df)
 
-  df$result <- df$result %>%
-    select(
-      `Ingredient` = .data$ingredient,
-      `#Records` = .data$n_records,
-      `#Persons` = .data$n_patients,
-      `Type` = .data$proportion_of_records_by_drug_type,
-      `Route` = .data$proportion_of_records_by_route_type,
-      `Dose Form present` = .data$proportion_of_records_with_dose_form,
-      `Missingness [quantity, start, end, days_supply]` = .data$missing_quantity_exp_start_end_days_supply,
-      `Dose` = .data$n_dose_and_missingness,
-      `Dose distrib.` = .data$median_daily_dose_q05_q95,
-      `Quantity distrib.` = .data$median_quantity_q05_q95,
-      `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,
-      `Neg. Days` = .data$proportion_of_records_with_negative_drug_exposure_days
-    )
+  df$result <- .formatDedResults(df$result, ded_version)
 
   doc <- doc %>%
     my_table_caption(

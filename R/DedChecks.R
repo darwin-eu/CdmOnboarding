@@ -38,8 +38,8 @@
     length(dedIngredientIds)
   ))
 
-  # Connect to the database. For postgres with DBI, otherwise via DatabaseConnector.
-  if (connectionDetails$dbms == 'postgresql') {
+  # Connect to the database. For postgres with DBI if RPostgres installed, otherwise via DatabaseConnector.
+  if (connectionDetails$dbms == 'postgresql' && system.file(package = 'RPostgres') != '') {
     server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
 
     connection <- DBI::dbConnect(

@@ -39,22 +39,35 @@ exportDedResults <- function(
   results,
   outputFolder = getwd()
 ) {
-  ded_results <- results$drugExposureDiagnostics$result
-  if (is.null(ded_results)) {
+  df_ded <- results$drugExposureDiagnostics
+  if (is.null(df_ded$result)) {
     ParallelLogger::logInfo("No DrugExposureDiagnostics results to export")
     return()
   }
 
+  ded_version <- .getDedVersion(df_ded)
+
+  ded_result <- .formatDedResults(df_ded$result, ded_version)
+
+  ded_result %>%
+    # add metadata
+    add_row(
+      `Ingredient` = sprintf("Execution Date: %s", results$executionDate),
+      `Concept ID` = sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
+      `#Records` = sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE)
+    ) %>%
+    write.csv(
+      file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),
+      row.names = TRUE # first column will be removed when uploading to portal
+    )
+  ParallelLogger::logInfo(sprintf("DrugExposureDiagnostics results written to '%s'", file.path(outputFolder, 'ded_results.csv')))
+}
+
+.formatDedResults <- function(ded_results, ded_version) {
   ded_results$ingredient_concept_id <- as.character(ded_results$ingredient_concept_id)
   ded_results$n_records <- format(round(ded_results$n_records / 10) * 10, big.mark = ",", format = 'd')
   ded_results$n_patients <- format(round(ded_results$n_patients / 10) * 10, big.mark = ",", format = 'd')
 
-  ded_version <- tryCatch(
-    results$drugExposureDiagnostics$packageVersion,
-    error = function(e) {
-      "Unknown"
-    }
-  )
   if (ded_version == '1.0.5') {
     ded_results <- ded_results %>%
       select(
@@ -88,17 +101,14 @@ exportDedResults <- function(
         `Neg. Days n (%)` = .data$proportion_of_records_with_negative_drug_exposure_days
       )
   }
+  return(ded_results)
+}
 
-  ded_results %>%
-    # add metadata
-    add_row(
-      `Ingredient` = sprintf("Execution Date: %s", results$executionDate),
-      `Concept ID` = sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
-      `#Records` = sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE)
-    ) %>%
-    write.csv(
-      file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),
-      row.names = TRUE # first column will be removed when uploading to portal
-    )
-  ParallelLogger::logInfo(sprintf("DrugExposureDiagnostics results written to '%s'", file.path(outputFolder, 'ded_results.csv')))
+.getDedVersion <- function(df) {
+  tryCatch(
+    df$packageVersion,
+    error = function(e) {
+      "Unknown"
+    }
+  )
 }

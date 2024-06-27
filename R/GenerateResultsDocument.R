@@ -116,7 +116,9 @@ generateResultsDocument <- function(results, outputFolder, authors) {
     officer::body_add_par("Drug Exposure Diagnostics", style = pkg.env$styles$heading1)
 
   if (!is.null(results$drugExposureDiagnostics)) {
-    doc <- generateDedSection(doc, results$drugExposureDiagnostics)
+    doc <- tryCatch(
+      generateDedSection(doc, results$drugExposureDiagnostics),
+    )
   } else {
     doc <- doc %>%
       officer::body_add_par("Drug Exposure Diagnostics results are missing, runDedChecks = FALSE?", style = pkg.env$styles$highlight)

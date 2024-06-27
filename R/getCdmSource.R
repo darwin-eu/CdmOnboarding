@@ -41,8 +41,9 @@
   )
 
   errorReportFile <- file.path(outputFolder, "cdmSourceError.txt")
+  # connection outside of tryCatch, to get hard error if connection fails.
+  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   cdmSource <- tryCatch({
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     cdmSource <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = errorReportFile)
     if (nrow(cdmSource) > 1) {
       ParallelLogger::logWarn("Multiple records found in the cdm_source table. The first record is used.")
