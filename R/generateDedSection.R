@@ -32,7 +32,7 @@ generateDedSection <- function(doc, df) {
 
   dedVersion <- .getDedVersion(df)
 
-  df$result <- .formatDedResults(df$result, ded_version)
+  df$result <- .formatDedResults(df$result, dedVersion)
 
   doc <- doc %>%
     my_table_caption(
@@ -45,11 +45,12 @@ generateDedSection <- function(doc, df) {
         "Route (n,%) = Frequency and percentage of available routes.",
         "Dose Form present n (%) = Frequency and percentage with dose form present.",
         "Missingness n (%) = Independent missingness of quantity, drug exposure start date, drug exposure end date, and days supply.",
-        "Dose = The count of records for which dose estimation is theoretically possible, yet how many of are missing due to missing values.",
+        "Dose available = The count of records for which dose estimation is theoretically possible and how many of are missing due to missing values.",
         "Dose distrib. = Distribution of calculated daily dose per unit (media q05-q95 [unit]).",
         "Quantity distrib. = Distribution of quantity (median q05-q95), frequency and percentage of null or missing quantity.",
         "Exposure days distrib. = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
         "Neg. Days n (%) = Frequency and percentage of negative exposure days.",
+        "More information: https://darwin-eu.github.io/DrugExposureDiagnostics/articles/DiagnosticsSummary.html",
         "DrugExposureDiagnostics version:",
         dedVersion
       ),

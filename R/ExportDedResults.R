@@ -45,17 +45,19 @@ exportDedResults <- function(
     return()
   }
 
-  ded_version <- .getDedVersion(df_ded)
+  dedVersion <- .getDedVersion(df_ded)
 
-  ded_result <- .formatDedResults(df_ded$result, ded_version)
+  dedResult <- .formatDedResults(df_ded$result, dedVersion)
 
-  ded_result %>%
+  dedResult %>%
     # add metadata
-    add_row(
-      `Ingredient` = sprintf("Execution Date: %s", results$executionDate),
-      `Concept ID` = sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
-      `#Records` = sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE)
-    ) %>%
+    rbind(c(
+      sprintf("Execution Date: %s", results$executionDate),
+      sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
+      sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE),
+      sprintf("DED Version: %s", dedVersion),
+      rep(NA, ncol(dedResult) - 4)
+    )) %>%
     write.csv(
       file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),
       row.names = TRUE # first column will be removed when uploading to portal
@@ -63,12 +65,12 @@ exportDedResults <- function(
   ParallelLogger::logInfo(sprintf("DrugExposureDiagnostics results written to '%s'", file.path(outputFolder, 'ded_results.csv')))
 }
 
-.formatDedResults <- function(ded_results, ded_version) {
+.formatDedResults <- function(ded_results, dedVersion) {
   ded_results$ingredient_concept_id <- as.character(ded_results$ingredient_concept_id)
   ded_results$n_records <- format(round(ded_results$n_records / 10) * 10, big.mark = ",", format = 'd')
   ded_results$n_patients <- format(round(ded_results$n_patients / 10) * 10, big.mark = ",", format = 'd')
 
-  if (ded_version == '1.0.5') {
+  if (dedVersion >= '1.0.5') {
     ded_results <- ded_results %>%
       select(
         `Ingredient` = .data$ingredient,
@@ -78,7 +80,7 @@ exportDedResults <- function(
         `Route` = .data$proportion_of_records_by_route_type,
         `Dose Form present` = .data$proportion_of_records_with_dose_form,
         `Missingness [quantity, start, end, days_supply]` = .data$missing_quantity_exp_start_end_days_supply,
-        `Dose` = .data$n_dose_and_missingness,
+        `Dose availability` = .data$n_dose_and_missingness,
         `Dose distrib.` = .data$median_daily_dose_q05_q95,
         `Quantity distrib.` = .data$median_quantity_q05_q95,
         `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,

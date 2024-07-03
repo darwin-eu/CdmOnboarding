@@ -139,7 +139,7 @@ cdmOnboarding <- function(
         outputFolder = outputFolder
       )
     }, error = function(e) {
-      ParallelLogger::logError("Could not export DrugExposureDiagnostics results: ", e)
+      ParallelLogger::logError("Could not create DrugExposureDiagnostics csv: ", e)
       ParallelLogger::logInfo("Results from DrugExposureDiagnostics have been saved as an RDS object to the output folder.")
     })
   }

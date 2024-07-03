@@ -32,7 +32,7 @@ Depends:
 Imports:
     ParallelLogger,
     SqlRender,
-    DrugExposureDiagnostics (>= 1.0.5),
+    DrugExposureDiagnostics (>= 1.0.6),
     CDMConnector (>= 1.0.0),
     DBI,
     benchmarkme,
