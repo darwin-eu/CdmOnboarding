@@ -66,7 +66,7 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 
 \item{baseUrl}{WebAPI url, example: http://server.org:80/WebAPI}
 
-\item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
+\item{sqlOnly}{If TRUE, queries will be written to file instead of executed. Not supported for DED Checks.}
 
 \item{outputFolder}{Path to store logs and SQL files}
 

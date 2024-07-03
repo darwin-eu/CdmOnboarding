@@ -45,7 +45,6 @@ vignettes/*.pdf
 results/
 output/
 errorReport*.txt
-extras/example_input/
 
 # VS code
 .lntr

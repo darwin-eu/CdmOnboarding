@@ -1,4 +1,5 @@
 test_that("Full CdmOnboarding executable", {
+  skip(message = "tested in parts")
   # Run a minimal DQD
   library(DataQualityDashboard)
   dqdOutputFile <- 'dqd_test.json'

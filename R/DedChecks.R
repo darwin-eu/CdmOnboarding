@@ -26,54 +26,83 @@
 #' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
 #' @returns list of DED diagnostics_summary and duration
 .runDedChecks <- function(
-    connectionDetails,
-    cdmDatabaseSchema,
-    scratchDatabaseSchema
+  connectionDetails,
+  cdmDatabaseSchema,
+  scratchDatabaseSchema
 ) {
-    dedIngredients <- getDedIngredients()
-    dedIngredientIds <- dedIngredients$concept_id
+  dedIngredients <- getDedIngredients()
 
-    ParallelLogger::logInfo(sprintf(
-        "Starting execution of DrugExposureDiagnostics for %s ingredients",
-        length(dedIngredientIds)
+  dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
+  if (dedVersion <= '1.0.5') {
+    dedIngredients <- dedIngredients[5, ]
+    ParallelLogger::logWarn(sprintf(
+      "Old version of DrugExposureDiagnostics installed: '%s', only executing DED for '%s'.",
+      dedVersion,
+      dedIngredients$concept_name
     ))
+  }
 
-    tryCatch({
-        connection <- DatabaseConnector::connect(connectionDetails)
-        cdm <- CDMConnector::cdm_from_con(
-          connection,
-          cdm_schema = cdmDatabaseSchema,
-          write_schema = scratchDatabaseSchema
-        )
+  ParallelLogger::logInfo(sprintf(
+    "Starting execution of DrugExposureDiagnostics for %d ingredient%s",
+    nrow(dedIngredients),
+    if (nrow(dedIngredients) > 1) 's' else ''
+  ))
 
-        ded_start_time <- Sys.time()
+  # Connect to the database. For postgres with DBI if RPostgres installed, otherwise via DatabaseConnector.
+  if (connectionDetails$dbms == 'postgresql' && system.file(package = 'RPostgres') != '') {
+    server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
 
-        # Reduce output lines by suppressing both warnings and messages. Only progress bars displayed.
-        suppressWarnings(suppressMessages(
-          dedResults <- DrugExposureDiagnostics::executeChecks(
-            cdm = cdm,
-            ingredients = dedIngredientIds,
-            checks = c("exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
-            minCellCount = 5,
-            sample = 1e+06,
-            earliestStartDate = "2010-01-01"
-          )
-        ))
-
-        duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-        ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
-        # Return result with duration
-        list(result = dedResults$diagnosticsSummary, duration = duration)
-      },
-      error = function(e) {
-        ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
-        NULL
-      },
-      finally = {
-        DatabaseConnector::disconnect(connection)
-        rm(connection)
-      }
+    connection <- DBI::dbConnect(
+      RPostgres::Postgres(),
+      dbname = server_parts[2],
+      host = server_parts[1],
+      user = connectionDetails$user(),
+      password = connectionDetails$password()
     )
+
+    cdm <- CDMConnector::cdm_from_con(
+      connection,
+      cdm_schema = cdmDatabaseSchema,
+      write_schema = scratchDatabaseSchema
+    )
+  } else {
+    connection <- DatabaseConnector::connect(connectionDetails)
+    cdm <- CDMConnector::cdm_from_con(
+      connection,
+      cdm_schema = cdmDatabaseSchema,
+      write_schema = scratchDatabaseSchema
+    )
+  }
+
+  tryCatch({
+    ded_start_time <- Sys.time()
+
+    # Reduce output lines by suppressing both warnings and messages. Only progress bars displayed.
+    dedResults <- DrugExposureDiagnostics::executeChecks(
+      cdm = cdm,
+      ingredients = dedIngredients$concept_id,
+      checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
+      minCellCount = 5,
+      sample = 1e+06,
+      earliestStartDate = "2010-01-01"
+    )
+
+    duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
+    ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
+
+    # Return result with duration
+    list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
+  }, error = function(e) {
+    ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
+    NULL
+  }, finally = {
+    if (connectionDetails$dbms == 'postgresql') {
+      DBI::dbDisconnect(connection)
+    } else {
+      DatabaseConnector::disconnect(connection)
+    }
+    rm(connection)
+  })
 }
 
 #' Returns data frame with concept_id and concept_name of drug ingredients
@@ -92,7 +121,8 @@ getDedIngredients <- function() {
       1154343,
       1550557,
       1703687,
-      40225722),
+      40225722
+    ),
     concept_name = c(
       "hepatitis B surface antigen vaccine",
       "latanoprost",

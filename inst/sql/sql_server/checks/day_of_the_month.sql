@@ -1,62 +1,106 @@
-SELECT 
+SELECT
     'Condition' AS domain,
-    day(condition_start_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.condition_occurrence 
-GROUP BY 1,2
+FROM (
+    SELECT day(condition_start_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.condition_occurrence
+) condition
+GROUP BY day_of_the_month
+
 UNION
-SELECT 
+
+SELECT
     'Drug' AS domain,
-    day(drug_exposure_start_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.drug_exposure 
-GROUP BY 1,2
+FROM (
+    SELECT day(drug_exposure_start_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.drug_exposure 
+) drug
+GROUP BY day_of_the_month
+
 UNION
-SELECT 
+
+SELECT
     'Procedure' AS domain,
-    day(procedure_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.procedure_occurrence 
-GROUP BY 1,2
+FROM (
+    SELECT day(procedure_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.procedure_occurrence 
+) t_procedure
+GROUP BY day_of_the_month
+
 UNION
-SELECT 
+
+SELECT
     'Measurement' AS domain,
-    day(measurement_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.measurement 
-GROUP BY 1,2
+FROM (
+    SELECT day(measurement_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.measurement 
+) measurement
+GROUP BY day_of_the_month
+
 UNION
-SELECT 
+
+SELECT
     'Observation' AS domain,
-    day(observation_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.observation 
-GROUP BY 1,2
+FROM (
+    SELECT day(observation_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.observation 
+) observation
+GROUP BY day_of_the_month
+
 UNION
-SELECT 
+
+SELECT
     'Device' AS domain,
-    day(device_exposure_start_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.device_exposure 
-GROUP BY 1,2
+FROM (
+    SELECT day(device_exposure_start_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.device_exposure 
+) device
+GROUP BY day_of_the_month
+
 UNION
-SELECT 
+
+SELECT
     'Visit' AS domain,
-    day(visit_start_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.visit_occurrence
-GROUP BY 1,2
+FROM (
+    SELECT day(visit_start_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.visit_occurrence
+) visit
+GROUP BY day_of_the_month
+
 UNION
-SELECT 
+
+SELECT
     'Visit Detail' AS domain,
-    day(visit_detail_start_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.visit_detail
-GROUP BY 1,2
+FROM (
+    SELECT day(visit_detail_start_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.visit_detail
+) visit_detail
+GROUP BY day_of_the_month
+
 UNION
-SELECT 
+
+SELECT
     'Death' AS domain,
-    day(death_date) AS day_of_the_month,
+    day_of_the_month,
     COUNT_BIG(*) AS n_records
-FROM @cdmDatabaseSchema.death
-GROUP BY 1,2
+FROM (
+    SELECT day(death_date) AS day_of_the_month
+    FROM @cdmDatabaseSchema.death
+) death
+GROUP BY day_of_the_month
+;
