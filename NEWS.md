@@ -1,3 +1,10 @@
+# CdmOnboarding 3.2.0
+
+* Make document generation robust for missing data by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/130
+* Improve generation of observation periods table by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/153
+* Refactoring for CRAN submission by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/148
+* Support DED v1.0.6 by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/155
+
 # CdmOnboarding 3.1.0
 
 * Update Word template
