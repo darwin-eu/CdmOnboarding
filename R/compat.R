@@ -123,11 +123,9 @@ compat <- function(r, target_version = package_version('3.0')) {
   }
   r <- .fixP_RECORDS(r)
 
-  # DED v1.0.5 has three additional columns
-  if (!('missing_quantity_exp_start_end_days_supply' %in% names(r$drugExposureDiagnostics$result))) {
-    r$drugExposureDiagnostics$result$missing_quantity_exp_start_end_days_supply <- NA
-    r$drugExposureDiagnostics$result$n_dose_and_missingness <- NA
-    r$drugExposureDiagnostics$result$median_daily_dose_q05_q95 <- NA
+  # DED v1.0.6 has three additional columns
+  if (!is.null(r$drugExposureDiagnostics$result)) {
+    r <- .fixDED(r)
   }
 
   # Performance
@@ -219,6 +217,15 @@ compat <- function(r, target_version = package_version('3.0')) {
     if (tablename == 'drug_exposure') {
       r$vocabularyResults$drugMapping$result$P_RECORDS <- r$vocabularyResults$drugMapping$result$N_RECORDS / n_records * 100
     }
+  }
+  return(r)
+}
+
+.fixDED <- function(r) {
+  if (!('missing_quantity_exp_start_end_days_supply' %in% names(r$drugExposureDiagnostics$result))) {
+    r$drugExposureDiagnostics$result$missing_quantity_exp_start_end_days_supply <- NA
+    r$drugExposureDiagnostics$result$n_dose_and_missingness <- NA
+    r$drugExposureDiagnostics$result$median_daily_dose_q05_q95 <- NA
   }
   return(r)
 }

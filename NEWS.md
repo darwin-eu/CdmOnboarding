@@ -1,5 +1,6 @@
 # CdmOnboarding 3.2.0
 
+* Export DrugExposureDiagnostics results to csv
 * Make document generation robust for missing data by @MaximMoinat
 * Improve generation of observation periods table by @MaximMoinat
 * Refactoring for CRAN submission by @MaximMoinat
