@@ -38,5 +38,6 @@ dedResults <- DrugExposureDiagnostics::executeChecks(
 )
 
 duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-dedSummary <- list(result = dedResults$diagnosticsSummary, duration = duration)
+dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
+dedSummary <- list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
 saveRDS(dedSummary, "dedSummary.rds")
