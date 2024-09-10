@@ -382,7 +382,7 @@ cdmOnboarding <- function(
 
   # save results
   results <- list(
-    executionDate = format(Sys.time(), "%Y-%m-%d"),
+    executionDate = format(Sys.time(), "%Y-%m-%d %H:%M"),
     executionDuration = as.numeric(difftime(Sys.time(), start_time), units = "secs"),
     cdmOnboardingVersion = packageVersion("CdmOnboarding"),
     databaseId = databaseId,

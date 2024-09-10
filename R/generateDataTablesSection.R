@@ -250,7 +250,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
       cowplot::draw_plot_label("Day of the Week", x = .15, y = .99, size = 15)
   } else {
     doc <- doc %>%
-      officer::body_add_par("No Day of the Week results.")
+      officer::body_add_par("Missing Day of the Week results.")
   }
 
   if (!is.null(df$dayOfTheMonth$result) && nrow(df$dayOfTheMonth$result) > 0) {
@@ -260,7 +260,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
       cowplot::draw_plot_label("Day of the Month", x = .65, y = .98, size = 15)
   } else {
     doc <- doc %>%
-      officer::body_add_par("No Day of the Month results.")
+      officer::body_add_par("Missing Day of the Month results.")
   }
 
   doc <- doc %>%

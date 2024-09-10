@@ -44,7 +44,7 @@ generateExecutionDetails <- function(doc, df) {
     # Explanation of symbols
     officer::body_add_par(
       sprintf(
-        "Symbols used in table/figure captions: %s=Computed directly from OMOP CDM data, %s=Computed from Achilles df, %s=Estimated from system tables.", # nolint
+        "Symbols used in table/figure captions: %s=Computed directly from OMOP CDM data, %s=Computed from Achilles, %s=Estimated from system tables.", # nolint
         pkg.env$sources$cdm,
         pkg.env$sources$achilles,
         pkg.env$sources$system
