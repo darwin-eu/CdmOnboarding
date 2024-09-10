@@ -1,39 +1,19 @@
-# @file PackageMaintenance.R
-#
-# Copyright 2020 European Health Data and Evidence Network (EHDEN)
-#
-# This file is part of CatalogueExport
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# @author DARWIN EU Coordination Center
-# @author Peter Rijnbeek
+# Prerequisites
+# Have two remotes:
+# 1. To the private repository darwin-dev (darwin-eu-dev/DashboardExport)
+# 2. To the public repository darwin-public (darwin-eu/DashboardExport)
 
-# Manually delete package from library. Avoids "Already in use" message when rebuilding
-unloadNamespace("CdmOnboarding")
-.rs.restartR()
-folder <- system.file(package = "CdmOnboarding")
-folder
-unlink(folder, recursive = TRUE, force = TRUE)
-file.exists(folder)
+# Development should happen on the develop branch of darwin-dev
 
-# Format and check code:
-OhdsiRTools::formatRFolder()
-OhdsiRTools::checkUsagePackage("CdmOnboarding")
-OhdsiRTools::updateCopyrightYearFolder()
-OhdsiRTools::findNonAsciiStringsInFolder()
-devtools::spell_check()
-
-# Create manual and vignettes:
-unlink("extras/CdmOnboarding.pdf")
-system("R CMD Rd2pdf ./ --output=extras/CdmOnboarding.pdf")
+# Upon release:
+# 1. From develop, create a release-candidate branch from develop, e.g. release-v2.0
+# 1.1 Add release notes to NEWS.md
+# 2. Bump version in DESCRIPTION
+# 3. Create Github PR to main
+# 4. Review and merge PR
+# 5. Create Github release on darwin-eu-dev, creating a tag as well.
+#    * make sure to target main
+# 6. Git pull
+# 7. Push to darwin-public git push --tags darwin-public main
+# 8. Merge main into developm, bump dev version in DESCRIPTION (add .900)
+# 9. Create Github release on darwin-eu, reusing tag.

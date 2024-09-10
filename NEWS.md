@@ -1,3 +1,8 @@
+# CdmOnboarding 3.2.1
+
+* Fix bug in generation on SQL Server.
+* Soft validate CdmConnection when executing DED
+
 # CdmOnboarding 3.2.0
 
 * Make document generation robust for missing data by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/130
