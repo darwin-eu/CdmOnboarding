@@ -144,7 +144,6 @@ from (
     min(payer_plan_period_end_date) as first_end_date,
     max(payer_plan_period_end_date) as last_end_date
   from @cdmDatabaseSchema.payer_plan_period
-  group by 1
   union all
   select
   	'Note' as domain,
@@ -167,7 +166,7 @@ from (
     min(episode_end_date) as first_end_date,
     max(episode_end_date) as last_end_date
   from @cdmDatabaseSchema.episode
-  group by  episode_type_concept_id
+  group by episode_type_concept_id
   }
 ) cte
 left join @cdmDatabaseSchema.concept 

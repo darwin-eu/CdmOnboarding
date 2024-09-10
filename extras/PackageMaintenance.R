@@ -17,24 +17,3 @@
 # 7. Push to darwin-public git push --tags darwin-public main
 # 8. Merge main into develop, bump dev version in DESCRIPTION (add .900)
 # 9. Create Github release on darwin-eu, reusing tag.
-
-
-
-# Manually delete package from library. Avoids "Already in use" message when rebuilding
-unloadNamespace("CdmOnboarding")
-.rs.restartR()
-folder <- system.file(package = "CdmOnboarding")
-folder
-unlink(folder, recursive = TRUE, force = TRUE)
-file.exists(folder)
-
-# Format and check code:
-OhdsiRTools::formatRFolder()
-OhdsiRTools::checkUsagePackage("CdmOnboarding")
-OhdsiRTools::updateCopyrightYearFolder()
-OhdsiRTools::findNonAsciiStringsInFolder()
-devtools::spell_check()
-
-# Create manual and vignettes:
-unlink("extras/CdmOnboarding.pdf")
-system("R CMD Rd2pdf ./ --output=extras/CdmOnboarding.pdf")
