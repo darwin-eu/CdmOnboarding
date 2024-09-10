@@ -63,14 +63,16 @@
     cdm <- CDMConnector::cdm_from_con(
       connection,
       cdm_schema = cdmDatabaseSchema,
-      write_schema = scratchDatabaseSchema
+      write_schema = scratchDatabaseSchema,
+      .soft_validation = TRUE  # with validation hard error when observation period overlaps or negative durations
     )
   } else {
     connection <- DatabaseConnector::connect(connectionDetails)
     cdm <- CDMConnector::cdm_from_con(
       connection,
       cdm_schema = cdmDatabaseSchema,
-      write_schema = scratchDatabaseSchema
+      write_schema = scratchDatabaseSchema,
+      .soft_validation = TRUE
     )
   }
 
