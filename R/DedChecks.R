@@ -31,15 +31,25 @@
   scratchDatabaseSchema
 ) {
   dedIngredients <- getDedIngredients()
-  dedIngredientIds <- dedIngredients$concept_id
+
+  dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
+  if (dedVersion <= '1.0.5') {
+    dedIngredients <- dedIngredients[5, ]
+    ParallelLogger::logWarn(sprintf(
+      "Old version of DrugExposureDiagnostics installed: '%s', only executing DED for '%s'.",
+      dedVersion,
+      dedIngredients$concept_name
+    ))
+  }
 
   ParallelLogger::logInfo(sprintf(
-    "Starting execution of DrugExposureDiagnostics for %s ingredients",
-    length(dedIngredientIds)
+    "Starting execution of DrugExposureDiagnostics for %d ingredient%s",
+    nrow(dedIngredients),
+    if (nrow(dedIngredients) > 1) 's' else ''
   ))
 
-  # Connect to the database. For postgres with DBI, otherwise via DatabaseConnector.
-  if (connectionDetails$dbms == 'postgresql') {
+  # Connect to the database. For postgres with DBI if RPostgres installed, otherwise via DatabaseConnector.
+  if (connectionDetails$dbms == 'postgresql' && system.file(package = 'RPostgres') != '') {
     server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
 
     connection <- DBI::dbConnect(
@@ -49,35 +59,42 @@
       user = connectionDetails$user(),
       password = connectionDetails$password()
     )
+
+    cdm <- CDMConnector::cdm_from_con(
+      connection,
+      cdm_schema = cdmDatabaseSchema,
+      write_schema = scratchDatabaseSchema,
+      .soft_validation = TRUE  # with validation hard error when observation period overlaps or negative durations
+    )
   } else {
     connection <- DatabaseConnector::connect(connectionDetails)
+    cdm <- CDMConnector::cdm_from_con(
+      connection,
+      cdm_schema = cdmDatabaseSchema,
+      write_schema = scratchDatabaseSchema,
+      .soft_validation = TRUE
+    )
+
   }
-  cdm <- CDMConnector::cdm_from_con(
-    connection,
-    cdm_schema = cdmDatabaseSchema,
-    write_schema = scratchDatabaseSchema
-  )
 
   tryCatch({
     ded_start_time <- Sys.time()
 
     # Reduce output lines by suppressing both warnings and messages. Only progress bars displayed.
-    suppressWarnings(suppressMessages(
-      dedResults <- DrugExposureDiagnostics::executeChecks(
-        cdm = cdm,
-        ingredients = dedIngredientIds,
-        checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
-        minCellCount = 5,
-        sample = 1e+06,
-        earliestStartDate = "2010-01-01"
-      )
-    ))
+    dedResults <- DrugExposureDiagnostics::executeChecks(
+      cdm = cdm,
+      ingredients = dedIngredients$concept_id,
+      checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
+      minCellCount = 5,
+      sample = 1e+06,
+      earliestStartDate = "2010-01-01"
+    )
 
     duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
     ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
 
     # Return result with duration
-    list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = packageVersion(pkg = "DrugExposureDiagnostics"))
+    list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
   }, error = function(e) {
     ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
     NULL

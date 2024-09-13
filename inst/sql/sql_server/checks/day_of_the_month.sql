@@ -29,7 +29,7 @@ SELECT
 FROM (
     SELECT day(procedure_date) AS day_of_the_month
     FROM @cdmDatabaseSchema.procedure_occurrence 
-) [procedure]
+) t_procedure
 GROUP BY day_of_the_month
 
 UNION

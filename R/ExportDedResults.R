@@ -39,23 +39,38 @@ exportDedResults <- function(
   results,
   outputFolder = getwd()
 ) {
-  ded_results <- results$drugExposureDiagnostics$result
-  if (is.null(ded_results)) {
+  df_ded <- results$drugExposureDiagnostics
+  if (is.null(df_ded$result)) {
     ParallelLogger::logInfo("No DrugExposureDiagnostics results to export")
     return()
   }
 
+  dedVersion <- .getDedVersion(df_ded)
+
+  dedResult <- .formatDedResults(df_ded$result, dedVersion)
+
+  dedResult %>%
+    # add metadata
+    rbind(c(
+      sprintf("Execution Date: %s", results$executionDate),
+      sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
+      sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE),
+      sprintf("DED Version: %s", dedVersion),
+      rep(NA, ncol(dedResult) - 4)
+    )) %>%
+    write.csv(
+      file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),
+      row.names = TRUE # first column will be removed when uploading to portal
+    )
+  ParallelLogger::logInfo(sprintf("DrugExposureDiagnostics results written to '%s'", file.path(outputFolder, 'ded_results.csv')))
+}
+
+.formatDedResults <- function(ded_results, dedVersion) {
   ded_results$ingredient_concept_id <- as.character(ded_results$ingredient_concept_id)
   ded_results$n_records <- format(round(ded_results$n_records / 10) * 10, big.mark = ",", format = 'd')
   ded_results$n_patients <- format(round(ded_results$n_patients / 10) * 10, big.mark = ",", format = 'd')
 
-  ded_version <- tryCatch(
-    results$drugExposureDiagnostics$packageVersion,
-    error = function(e) {
-      "Unknown"
-    }
-  )
-  if (ded_version == '1.0.5') {
+  if (dedVersion >= '1.0.5') {
     ded_results <- ded_results %>%
       select(
         `Ingredient` = .data$ingredient,
@@ -65,7 +80,7 @@ exportDedResults <- function(
         `Route` = .data$proportion_of_records_by_route_type,
         `Dose Form present` = .data$proportion_of_records_with_dose_form,
         `Missingness [quantity, start, end, days_supply]` = .data$missing_quantity_exp_start_end_days_supply,
-        `Dose` = .data$n_dose_and_missingness,
+        `Dose availability` = .data$n_dose_and_missingness,
         `Dose distrib.` = .data$median_daily_dose_q05_q95,
         `Quantity distrib.` = .data$median_quantity_q05_q95,
         `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,
@@ -88,17 +103,14 @@ exportDedResults <- function(
         `Neg. Days n (%)` = .data$proportion_of_records_with_negative_drug_exposure_days
       )
   }
+  return(ded_results)
+}
 
-  ded_results %>%
-    # add metadata
-    add_row(
-      ingredient = sprintf("Execution Date: %s", results$executionDate),
-      ingredient_concept_id = sprintf("Source Release Date: %s", results$cdmSource$SOURCE_RELEASE_DATE),
-      n_records = sprintf("CDM Release Date: %s", results$cdmSource$CDM_RELEASE_DATE)
-    ) %>%
-    write.csv(
-      file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),
-      row.names = TRUE # first column will be removed when uploading to portal
-    )
-  ParallelLogger::logInfo(sprintf("DrugExposureDiagnostics results written to '%s'", file.path(outputFolder, 'ded_results.csv')))
+.getDedVersion <- function(df) {
+  tryCatch(
+    df$packageVersion,
+    error = function(e) {
+      "Unknown"
+    }
+  )
 }

@@ -1,6 +1,6 @@
 Package: CdmOnboarding
 Title: Generate report on an OMOP CDM instance
-Version: 3.1.0.900
+Version: 3.2.1.900
 Authors@R: 
   c(person(given = "Peter",
            family = "Rijnbeek",
@@ -32,7 +32,7 @@ Depends:
 Imports:
     ParallelLogger,
     SqlRender,
-    DrugExposureDiagnostics (>= 1.0.5),
+    DrugExposureDiagnostics (>= 1.0.6),
     CDMConnector (>= 1.0.0),
     DBI,
     benchmarkme,

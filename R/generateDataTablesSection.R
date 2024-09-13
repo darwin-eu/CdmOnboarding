@@ -148,7 +148,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
       mutate(
         Field = sprintf("Persons with %s observation period(s)", .data$N_OBSERVATION_PERIODS),
         Value = .data$N_PERSONS,
-        `%Persons` = .data$N_PERSONS / personCount * 100,
+        `%Persons` = prettyPc(.data$N_PERSONS / personCount * 100),
         .keep = "none"  # do not display other columns
       )
   } else {
@@ -179,15 +179,15 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
   doc <- doc %>%
     my_table_caption(
       sprintf("Number of observation periods per person %s and overlapping observation periods %s.", pkg.env$sources$achilles, pkg.env$sources$cdm),
-      sourceSymbol = NULL  # already in caption text
+      sourceSymbol = ''  # already in caption text
     ) %>%
-    my_body_add_table(obsPeriodStats) %>%
+    my_body_add_table(obsPeriodStats, alignment = c('l', 'r', 'r')) %>%
     officer::body_add_par(
       sprintf(
         "Queries executed in %.2f seconds and %.2f seconds",
         df$observationPeriodsPerPerson$duration,
         df$observationPeriodOverlap$duration
-      ), 
+      ),
       style = pkg.env$styles$footnote
     )
 
@@ -250,7 +250,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
       cowplot::draw_plot_label("Day of the Week", x = .15, y = .99, size = 15)
   } else {
     doc <- doc %>%
-      officer::body_add_par("No Day of the Week results.")
+      officer::body_add_par("Missing Day of the Week results.")
   }
 
   if (!is.null(df$dayOfTheMonth$result) && nrow(df$dayOfTheMonth$result) > 0) {
@@ -260,7 +260,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
       cowplot::draw_plot_label("Day of the Month", x = .65, y = .98, size = 15)
   } else {
     doc <- doc %>%
-      officer::body_add_par("No Day of the Month results.")
+      officer::body_add_par("Missing Day of the Month results.")
   }
 
   doc <- doc %>%

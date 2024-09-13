@@ -41,7 +41,7 @@ my_caption <- function(x, caption, sourceSymbol, style) {
     value = sprintf(
       "%s %s",
       caption,
-      sourceSymbol
+      dplyr::coalesce(sourceSymbol, '')
     ),
     style = style
   )

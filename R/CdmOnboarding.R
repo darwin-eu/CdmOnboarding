@@ -87,6 +87,10 @@ cdmOnboarding <- function(
     stop("Argument databaseId is missing")
   }
 
+  if (!is.null(dedIngredientIds)) {
+    warning("Argument `dedIngredientIds` has been deprecated, default ingredient list is used (`getDedIngredients()`).")
+  }
+
   results <- .execute(
     connectionDetails = connectionDetails,
     cdmDatabaseSchema = cdmDatabaseSchema,
@@ -138,7 +142,7 @@ cdmOnboarding <- function(
         outputFolder = outputFolder
       )
     }, error = function(e) {
-      ParallelLogger::logError("Could not export DrugExposureDiagnostics results: ", e)
+      ParallelLogger::logError("Could not create DrugExposureDiagnostics csv: ", e)
       ParallelLogger::logInfo("Results from DrugExposureDiagnostics have been saved as an RDS object to the output folder.")
     })
   }
@@ -393,7 +397,7 @@ cdmOnboarding <- function(
 
   # save results
   results <- list(
-    executionDate = format(Sys.time(), "%Y-%m-%d"),
+    executionDate = format(Sys.time(), "%Y-%m-%d %H:%M"),
     executionDuration = as.numeric(difftime(Sys.time(), start_time), units = "secs"),
     cdmOnboardingVersion = packageVersion("CdmOnboarding"),
     databaseId = databaseId,

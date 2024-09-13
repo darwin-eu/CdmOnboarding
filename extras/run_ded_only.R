@@ -4,15 +4,20 @@ library(CDMConnector)
 library(DrugExposureDiagnostics)
 
 # Connecting using dsn, to be set up in database driver
-con <- DBI::dbConnect(RPostgres::Postgres(),
-                      dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
-                      host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
-                      user = Sys.getenv("CDM5_POSTGRESQL_USER"),
-                      password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+con <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
+  host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
+  user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+  password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD")
+)
 
-cdm <- cdm_from_con(con,
-                    cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"),
-                    write_schema = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"))
+cdm <- cdm_from_con(
+  con,
+  cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"),
+  write_schema = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
+  .soft_validation = TRUE
+)
 
 ded_start_time <- Sys.time()
 
@@ -38,5 +43,6 @@ dedResults <- DrugExposureDiagnostics::executeChecks(
 )
 
 duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-dedSummary <- list(result = dedResults$diagnosticsSummary, duration = duration)
+dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
+dedSummary <- list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
 saveRDS(dedSummary, "dedSummary.rds")

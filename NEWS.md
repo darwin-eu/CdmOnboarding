@@ -1,3 +1,16 @@
+# CdmOnboarding 3.2.1
+
+* Fix bug in generation on SQL Server.
+* Soft validate CdmConnection when executing DED
+
+# CdmOnboarding 3.2.0
+
+* Export DrugExposureDiagnostics results to csv
+* Make document generation robust for missing data by @MaximMoinat
+* Improve generation of observation periods table by @MaximMoinat
+* Refactoring for CRAN submission by @MaximMoinat
+* Support DED v1.0.6 by @MaximMoinat
+
 # CdmOnboarding 3.1.0
 
 * Update Word template

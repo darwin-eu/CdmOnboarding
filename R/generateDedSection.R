@@ -29,29 +29,10 @@ generateDedSection <- function(doc, df) {
   if (!('result' %in% names(df))) {
     df <- list(result = df, duration = NULL)
   }
-  
-  dedVersion <- tryCatch(
-    df$packageVersion,
-    error = function(e) {
-      "Unknown"
-    }
-  )
 
-  df$result <- df$result %>%
-    select(
-      `Ingredient` = .data$ingredient,
-      `#Records` = .data$n_records,
-      `#Persons` = .data$n_patients,
-      `Type` = .data$proportion_of_records_by_drug_type,
-      `Route` = .data$proportion_of_records_by_route_type,
-      `Dose Form present` = .data$proportion_of_records_with_dose_form,
-      `Missingness [quantity, start, end, days_supply]` = .data$missing_quantity_exp_start_end_days_supply,
-      `Dose` = .data$n_dose_and_missingness,
-      `Dose distrib.` = .data$median_daily_dose_q05_q95,
-      `Quantity distrib.` = .data$median_quantity_q05_q95,
-      `Exposure days distrib.` = .data$median_drug_exposure_days_q05_q95,
-      `Neg. Days` = .data$proportion_of_records_with_negative_drug_exposure_days
-    )
+  dedVersion <- .getDedVersion(df)
+
+  df$result <- .formatDedResults(df$result, dedVersion)
 
   doc <- doc %>%
     my_table_caption(
@@ -64,17 +45,18 @@ generateDedSection <- function(doc, df) {
         "Route (n,%) = Frequency and percentage of available routes.",
         "Dose Form present n (%) = Frequency and percentage with dose form present.",
         "Missingness n (%) = Independent missingness of quantity, drug exposure start date, drug exposure end date, and days supply.",
-        "Dose = The count of records for which dose estimation is theoretically possible, yet how many of are missing due to missing values.",
+        "Dose available = The count of records for which dose estimation is theoretically possible and how many of are missing due to missing values.",
         "Dose distrib. = Distribution of calculated daily dose per unit (media q05-q95 [unit]).",
         "Quantity distrib. = Distribution of quantity (median q05-q95), frequency and percentage of null or missing quantity.",
         "Exposure days distrib. = Distribution of exposure days (median q05-q95), frequency and percentage of null days_supply or missing exposure dates.",
         "Neg. Days n (%) = Frequency and percentage of negative exposure days.",
+        "More information: https://darwin-eu.github.io/DrugExposureDiagnostics/articles/DiagnosticsSummary.html",
         "DrugExposureDiagnostics version:",
         dedVersion
       ),
       sourceSymbol = pkg.env$sources$cdm
     ) %>%
     my_body_add_table_runtime(df)
-    
+
   return(doc)
 }

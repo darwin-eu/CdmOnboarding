@@ -35,7 +35,7 @@ compat <- function(r, target_version = package_version('3.0')) {
   r$dataTablesResults$dayOfTheWeek <- .fixDataFrameNames(r$dataTablesResults$dayOfTheWeek)
 
   # Backwards compatibility, typeConcepts and tableDateRange were merged into dateRangeByTypeConcept (v3)
-  if (!is.null(r$dataTablesResults$dateRangeByTypeConcept)) {
+  if (!is.null(r$dataTablesResults$dateRangeByTypeConcept$result)) {
     if (is.null(r$dataTablesResults$dateRangeByTypeConcept$result$FIRST_START_DATE)) {
       r$dataTablesResults$dateRangeByTypeConcept$result <- r$dataTablesResults$dateRangeByTypeConcept$result %>%
         mutate(
@@ -80,7 +80,7 @@ compat <- function(r, target_version = package_version('3.0')) {
   r$vocabularyResults$unmappedProcedures <- .fixDataFrameNames(r$vocabularyResults$unmappedProcedures)
   r$vocabularyResults$unmappedDevices <- .fixDataFrameNames(r$vocabularyResults$unmappedDevices)
   r$vocabularyResults$unmappedVisits <- .fixDataFrameNames(r$vocabularyResults$unmappedVisits)
-  if (!is.null(r$vocabularyResults$unmappedUnits)) {
+  if (!is.null(r$vocabularyResults$unmappedUnits$result)) {
     r$vocabularyResults$unmappedUnits <- .fixDataFrameNames(r$vocabularyResults$unmappedUnits)
     r$vocabularyResults$unmappedUnitsMeas$result <- r$vocabularyResults$unmappedUnits$result %>%
       filter(.data$DOMAIN == "measurement") %>%  # Renamed from TABLE to DOMAIN with fixDataFrameNames
@@ -104,7 +104,7 @@ compat <- function(r, target_version = package_version('3.0')) {
   r$vocabularyResults$mappedProcedures <- .fixDataFrameNames(r$vocabularyResults$mappedProcedures)
   r$vocabularyResults$mappedDevices <- .fixDataFrameNames(r$vocabularyResults$mappedDevices)
   r$vocabularyResults$mappedVisits <- .fixDataFrameNames(r$vocabularyResults$mappedVisits)
-  if (!is.null(r$vocabularyResults$mappedUnits)) {
+  if (!is.null(r$vocabularyResults$mappedUnits$result)) {
     r$vocabularyResults$mappedUnits <- .fixDataFrameNames(r$vocabularyResults$mappedUnits)
 
     r$vocabularyResults$mappedUnitsMeas$result <- r$vocabularyResults$mappedUnits$result %>%
@@ -123,6 +123,12 @@ compat <- function(r, target_version = package_version('3.0')) {
   }
   r <- .fixP_RECORDS(r)
 
+  # DED v1.0.6 has three additional columns
+  if (!is.null(r$drugExposureDiagnostics$result)) {
+    r <- .fixDED(r)
+  }
+
+  # Performance
   if (is.null(r$performanceResults$packinfo)) {
     r$performanceResults$sys_details <- r$sys_details
     r$performanceResults$dmsVersion <- r$dmsVersion
@@ -212,5 +218,15 @@ compat <- function(r, target_version = package_version('3.0')) {
       r$vocabularyResults$drugMapping$result$P_RECORDS <- r$vocabularyResults$drugMapping$result$N_RECORDS / n_records * 100
     }
   }
+  return(r)
+}
+
+.fixDED <- function(r) {
+  if (!('missing_quantity_exp_start_end_days_supply' %in% names(r$drugExposureDiagnostics$result))) {
+    r$drugExposureDiagnostics$result$missing_quantity_exp_start_end_days_supply <- NA
+    r$drugExposureDiagnostics$result$n_dose_and_missingness <- NA
+    r$drugExposureDiagnostics$result$median_daily_dose_q05_q95 <- NA
+  }
+  r$drugExposureDiagnostics$packageVersion <- '1.0.5' # TODO: get from results$performanceResults$packinfo$Package
   return(r)
 }
