@@ -57,8 +57,8 @@ runCohortBenchmark <- function(
     .soft_validation = TRUE
   )
 
-  cohortSetDefinition <- CDMConnector::readCohortSet(cohortPath)
-  n_cohorts <- nrow(cohortSetDefinition)
+  cohort_set_definition <- CDMConnector::read_cohort_set(cohortPath)
+  n_cohorts <- nrow(cohort_set_definition)
 
   # Generate each cohort definition one by one to capture time taken and possible errors
   n_records <- c()
@@ -69,38 +69,39 @@ runCohortBenchmark <- function(
     start_time <- Sys.time()
     result <- tryCatch({
       suppressWarnings(suppressMessages(
-        cdm <- CDMConnector::generateCohortSet(
+        cdm <- CDMConnector::generate_cohort_set(
           cdm,
-          cohortSetDefinition[i, ],
+          cohort_set_definition[i, ],
           name = "cohort",
-          computeAttrition = FALSE,
+          compute_attrition = FALSE,
           overwrite = TRUE
         )
       ))
-      ParallelLogger::logInfo(sprintf("Generated: %s", cohortSetDefinition[[i, 'cohort_name']]))
-      cohortCount(cdm$cohort)
+      cohort_count <- CDMConnector::cohort_count(cdm$cohort)
+      ParallelLogger::logInfo(sprintf("Generated: %s", cohort_set_definition[[i, 'cohort_name']]))
+      cohort_count
     }, error = function(e) {
-      ParallelLogger::logInfo(sprintf("Error in generating: %s", cohortSetDefinition[[i, 'cohort_name']]))
+      ParallelLogger::logInfo(sprintf("Error in generating: %s", cohort_set_definition[[i, 'cohort_name']]))
       e
     })
-    duration <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
+    delta <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
 
     if (inherits(result, "error")) {
       n_records <- c(n_records, NA)
       n_subjects <- c(n_subjects, NA)
-      duration <- c(duration, duration)
+      duration <- c(duration, delta)
       error <- c(error, result$message)
       next
     } else {
       n_records <- c(n_records, result$number_records)
       n_subjects <- c(n_subjects, result$number_subjects)
-      duration <- c(duration, duration)
+      duration <- c(duration, delta)
       error <- c(error, NA)
     }
   }
 
   data.frame(
-    cohort_name = cohortSetDefinition$cohort_name,
+    cohort_name = cohort_set_definition$cohort_name,
     n_records = n_records,
     n_subjects = n_subjects,
     duration = duration,

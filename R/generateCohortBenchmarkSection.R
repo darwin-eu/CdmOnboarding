@@ -25,13 +25,14 @@
 #' @param doc officer document object to add the section to
 #' @param df Results object from \code{cdmOnboarding}
 generateCohortBenchmarkSection <- function(doc, df) {
-  df %>%
-    mutate(
+  df <- df %>%
+    dplyr::mutate(
       `Cohort` = .data$cohort_name,
       `#Records` = .data$n_records,
       `#Persons` = .data$n_subjects,
       `Duration (s)` = round(.data$duration, 2),
-      `Error` = .data$error
+      `Error` = .data$error,
+      .keep = "none"
     )
 
   doc <- doc %>%
