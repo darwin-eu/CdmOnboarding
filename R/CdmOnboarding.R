@@ -47,6 +47,7 @@
 #' @param runWebAPIChecks                  Boolean to determine if WebAPI checks need to be run. Default = TRUE
 #' @param runPerformanceChecks             Boolean to determine if performance checks need to be run. Default = TRUE
 #' @param runDedChecks                     Boolean to determine if DrugExposureDiagnostics checks need to be run. Default = TRUE
+#' @param runCohortBenchmarkChecks         Boolean to determine if CohortBenchMark checks need to be run. Default = TRUE
 #' @param smallCellCount                   To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)
 #' @param baseUrl                          WebAPI url, example: http://server.org:80/WebAPI
 #' @param sqlOnly                          If TRUE, queries will be written to file instead of executed. Not supported for DED Checks.
@@ -72,6 +73,7 @@ cdmOnboarding <- function(
   runPerformanceChecks = TRUE,
   runWebAPIChecks = TRUE,
   runDedChecks = TRUE,
+  runCohortBenchmarkChecks = TRUE,
   smallCellCount = 5,
   baseUrl = "",
   sqlOnly = FALSE,
@@ -99,6 +101,7 @@ cdmOnboarding <- function(
     runPerformanceChecks = runPerformanceChecks,
     runWebAPIChecks = runWebAPIChecks,
     runDedChecks = runDedChecks,
+    runCohortBenchmarkChecks = runCohortBenchmarkChecks,
     smallCellCount = smallCellCount,
     baseUrl = baseUrl,
     sqlOnly = sqlOnly,
@@ -160,26 +163,27 @@ cdmOnboarding <- function(
 # The main execution of CDM Onboarding analyses (for v5.x)
 # Results are returned as list, and stored as an .rds object in the provided output folder
 .execute <- function(
-    connectionDetails,
-    cdmDatabaseSchema,
-    resultsDatabaseSchema,
-    scratchDatabaseSchema,
-    oracleTempSchema,
-    databaseId,
-    databaseName,
-    databaseDescription,
-    runVocabularyChecks,
-    runDataTablesChecks,
-    runPerformanceChecks,
-    runWebAPIChecks,
-    runDedChecks,
-    smallCellCount,
-    baseUrl,
-    sqlOnly,
-    outputFolder,
-    verboseMode,
-    dqdJsonPath,
-    optimize
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema,
+  scratchDatabaseSchema,
+  oracleTempSchema,
+  databaseId,
+  databaseName,
+  databaseDescription,
+  runVocabularyChecks,
+  runDataTablesChecks,
+  runPerformanceChecks,
+  runWebAPIChecks,
+  runDedChecks,
+  runCohortBenchmarkChecks,
+  smallCellCount,
+  baseUrl,
+  sqlOnly,
+  outputFolder,
+  verboseMode,
+  dqdJsonPath,
+  optimize
 ) {
   # Log execution -------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
@@ -369,6 +373,17 @@ cdmOnboarding <- function(
     )
   }
 
+  # Cohort Benchmark checks -------------------------------------------------------------------------------------
+  cohortBenchmark <- NULL
+  if (runCohortBenchmarkChecks) {
+    ParallelLogger::logInfo("Running DED checks")
+    cohortBenchmark <- runCohortBenchmark(
+      connectionDetails,
+      cdmDatabaseSchema,
+      scratchDatabaseSchema
+    )
+  }
+
   ParallelLogger::logInfo("Done.")
 
   ParallelLogger::logInfo(sprintf(
@@ -394,7 +409,8 @@ cdmOnboarding <- function(
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
     dqdResults = dqdResults,
-    drugExposureDiagnostics = drugExposureDiagnostics
+    drugExposureDiagnostics = drugExposureDiagnostics,
+    cohortBenchmark = cohortBenchmark
   )
 
   tryCatch({

@@ -28,13 +28,14 @@
 #' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
 #' @param cohortPath Path to the folder containing cohort definitions in JSON format
 #' @returns list of DED diagnostics_summary and duration
-runBenchmarkCohorts <- function(
+runCohortBenchmark <- function(
   connectionDetails,
   cdmDatabaseSchema,
   scratchDatabaseSchema,
   cohortPath = "inst/json/cohorts"
 ) {
   # Connect to the database. For postgres with DBI, otherwise via DatabaseConnector.
+  # TODO: separate out the connection details for postgres and other databases
   if (connectionDetails$dbms == 'postgresql') {
     server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
 
@@ -52,7 +53,8 @@ runBenchmarkCohorts <- function(
   cdm <- CDMConnector::cdm_from_con(
     connection,
     cdm_schema = cdmDatabaseSchema,
-    write_schema = scratchDatabaseSchema
+    write_schema = scratchDatabaseSchema,
+    .soft_validation = TRUE
   )
 
   cohortSetDefinition <- CDMConnector::readCohortSet(cohortPath)
