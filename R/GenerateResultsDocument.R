@@ -134,6 +134,13 @@ generateResultsDocument <- function(results, outputFolder, authors) {
       officer::body_add_par("Performance checks have not been executed, runPerformanceChecks = FALSE?", style = pkg.env$styles$highlight)
   }
 
+  if (!is.null(results$cohortBenchmark)) {
+    doc <- generateCohortBenchmarkSection(doc, results$cohortBenchmark)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("Cohort Benchmark results are missing, runCohortBenchmark = FALSE?", style = pkg.env$styles$highlight)
+  }
+
   doc <- doc %>%
     officer::body_add_par("Appendix", style = pkg.env$styles$heading1)
   if (!is.null(results$vocabularyResults)) {

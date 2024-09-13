@@ -376,7 +376,7 @@ cdmOnboarding <- function(
   # Cohort Benchmark checks -------------------------------------------------------------------------------------
   cohortBenchmark <- NULL
   if (runCohortBenchmarkChecks) {
-    ParallelLogger::logInfo("Running DED checks")
+    ParallelLogger::logInfo("Running Cohort Benchmark")
     cohortBenchmark <- runCohortBenchmark(
       connectionDetails,
       cdmDatabaseSchema,
