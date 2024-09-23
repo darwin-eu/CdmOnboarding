@@ -1,11 +1,9 @@
 cohortId,cohortName,jsonPath
-1,use_of_diazepam,diazepam.json
-2,visits_to_the_intensive_care,icu.json
-3,essential_hypertension_in_males,hypertension.json
-4,Type 1 Diabetes,diabetes_type_1.json
-5,Guillain Barré syndrome broad,guillain_barre_broad_cohort.json
-6,Kawasaki broad,kawasaki_broad_cohort.json
-7,Myocarditis,myocarditis_narrow.json
-8,Haemorrhagic stroke,haemorrhagic_stroke.json
-9,Ischaemic stroke,ischemic_stroke.json
-10,COVID-19,covid_infection_any.json
+1,Visits to the Intensive Care Unit,icu.json
+2,Type 2 Diabetes,diabetes_type_2.json
+3,Guillain Barré syndrome,guillain_barre_syndrome.json
+4,Kawasaki broad,kawasaki_disease.json
+5,Myocarditis,myocarditis.json
+6,Haemorrhagic stroke,haemorrhagic_stroke.json
+7,Ischaemic stroke,ischaemic_stroke.json
+8,COVID-19,covid_19.json
