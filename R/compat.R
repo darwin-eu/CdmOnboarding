@@ -148,7 +148,11 @@ compat <- function(r, target_version = package_version('3.0')) {
 
 .get_cdmonboarding_version <- function(r) {
   if (is.null(r$cdmOnboardingVersion)) {
-    t <- as.data.frame(r$packinfo)
+    if (is.null(r$packinfo)) {
+      t <- r$performanceResults$packinfo
+    } else {
+      t <- as.data.frame(r$packinfo)
+    }
     version_string <- t[t$Package == 'CdmOnboarding', 'Version']
     return(package_version(version_string))
   }

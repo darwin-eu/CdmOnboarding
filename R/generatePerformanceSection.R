@@ -89,7 +89,7 @@ generatePerformanceSection <- function(doc, results) {
 
     # filter to the OMOP CDM tables only
     if (!is.null(results$dataTablesResults$dataTablesCounts)) {
-      omop_table_names <- results$dataTablesResults$dataTablesCounts$result[,1]
+      omop_table_names <- results$dataTablesResults$dataTablesCounts$result[, 1]
       df$appliedIndexes$result <- df$appliedIndexes$result %>%
         dplyr::filter(.data$TABLENAME %in% omop_table_names)
     }
@@ -97,12 +97,43 @@ generatePerformanceSection <- function(doc, results) {
     missingIndexes <- setdiff(expectedIndexes, df$appliedIndexes$result$INDEXNAME)
     additionalIndexes <- setdiff(df$appliedIndexes$result$INDEXNAME, expectedIndexes)
 
-    df$appliedIndexes$result <- df$appliedIndexes$result %>%
-      dplyr::group_by(.data$TABLENAME) %>%
+    df$appliedIndexes$result$actual <- 1
+    expectedIndexes$expected <- 1
+    # df$appliedIndexes$result <- 
+    indexOverview <- df$appliedIndexes$result %>%
+      mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
+      full_join(expectedIndexes) %>%
+      dplyr::group_by(.data$TABLENAME, .data$type) %>%
       dplyr::summarize(
-        INDEXNAMES = paste(.data$INDEXNAME, collapse = ",")
+        n_indexes_applied = sum(actual, na.rm = TRUE),
+        n_indexes_expected = sum(expected, na.rm = TRUE),
+        n_indexes_missing = sum(is.na(actual), na.rm = TRUE)
+      ) %>%
+      pivot_wider(
+        names_from = type,
+        values_from = c(n_indexes_applied, n_indexes_expected, n_indexes_missing),
+        names_glue = "{.name}",  #_{.value}
+        values_fill = 0,
+        names_sort = TRUE
       )
-
+    # Indexes
+    indexOverview %>%
+      select(
+        TABLENAME,
+        applied = n_indexes_applied_idx,
+        expected = n_indexes_expected_idx,
+        missing = n_indexes_missing_idx,
+      )
+    # Keys
+    indexOverview %>%
+      select(
+        TABLENAME,
+        applied = n_indexes_applied_xpk,
+        expected = n_indexes_expected_xpk,
+        missing = n_indexes_missing_xpk,
+      )
+    View(indexOverview)
+    
     doc <- doc %>%
       my_table_caption("The indexes applied on the OMOP CDM tables", sourceSymbol = pkg.env$sources$system) %>%
       my_body_add_table_runtime(df$appliedIndexes)
@@ -116,6 +147,7 @@ generatePerformanceSection <- function(doc, results) {
       doc <- doc %>%
         officer::body_add_par("All expected indexes are present")
     }
+    
 
     if (length(additionalIndexes) > 0) {
       doc <- doc %>%
