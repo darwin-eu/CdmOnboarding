@@ -95,7 +95,7 @@ generatePerformanceSection <- function(doc, results) {
     expectedIndexes$expected <- 1
     indexOverview <- df$appliedIndexes$result %>%
       dplyr::mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
-      dplyr::full_join(expectedIndexes) %>%
+      dplyr::full_join(expectedIndexes, by = join_by(TABLENAME, INDEXNAME)) %>%
       dplyr::group_by(.data$TABLENAME, .data$type) %>%
       dplyr::summarize(
         n_indexes_applied = sum(actual, na.rm = TRUE),
@@ -112,17 +112,17 @@ generatePerformanceSection <- function(doc, results) {
       dplyr::select(
         TABLENAME,
         xpk_applied = n_indexes_applied_xpk,
-        # xpk_expected = n_indexes_expected_xpk,
+        xpk_expected = n_indexes_expected_xpk,
         xpk_missing = n_indexes_missing_xpk,
         idx_applied = n_indexes_applied_idx,
-        # idx_expected = n_indexes_expected_idx,
+        idx_expected = n_indexes_expected_idx,
         idx_missing = n_indexes_missing_idx
       )
 
     indexOverview <- rbind(indexOverview, data.frame(TABLENAME  = "Total", t(colSums(indexOverview[, -1]))))
 
     doc <- doc %>%
-      my_table_caption("The number of indexes applied on the OMOP CDM tables.", sourceSymbol = pkg.env$sources$system) %>%
+      my_table_caption("The number of indexes applied on the OMOP CDM tables. xpk=primary key, idx=index.", sourceSymbol = pkg.env$sources$system) %>%
       my_body_add_table(indexOverview) %>%
       my_body_add_runtime(df$appliedIndexes$duration)
   } else {
