@@ -74,6 +74,7 @@
       write_schema = scratchDatabaseSchema,
       .soft_validation = TRUE
     )
+
   }
 
   tryCatch({
