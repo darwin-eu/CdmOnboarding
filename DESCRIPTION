@@ -39,6 +39,7 @@ Imports:
     prettyunits,
     tools,
     dplyr,
+    tidyr,
     officer,
     data.table,
     lubridate,

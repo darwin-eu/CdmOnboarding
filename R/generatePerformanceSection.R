@@ -94,22 +94,22 @@ generatePerformanceSection <- function(doc, results) {
     df$appliedIndexes$result$actual <- 1
     expectedIndexes$expected <- 1
     indexOverview <- df$appliedIndexes$result %>%
-      mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
-      full_join(expectedIndexes) %>%
+      dplyr::mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
+      dplyr::full_join(expectedIndexes) %>%
       dplyr::group_by(.data$TABLENAME, .data$type) %>%
       dplyr::summarize(
         n_indexes_applied = sum(actual, na.rm = TRUE),
         n_indexes_expected = sum(expected, na.rm = TRUE),
         n_indexes_missing = sum(is.na(actual), na.rm = TRUE)
       ) %>%
-      pivot_wider(
+      tidyr::pivot_wider(
         names_from = type,
         values_from = c(n_indexes_applied, n_indexes_expected, n_indexes_missing),
         names_glue = "{.name}",  #_{.value}
         values_fill = 0,
         names_sort = TRUE
       ) %>%
-      select(
+      dplyr::select(
         TABLENAME,
         xpk_applied = n_indexes_applied_xpk,
         # xpk_expected = n_indexes_expected_xpk,
