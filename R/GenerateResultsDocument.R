@@ -72,9 +72,9 @@ generateResultsDocument <- function(results, outputFolder, authors) {
   # Execution details
   doc <- doc %>%
     officer::body_add_par("Execution details", style = pkg.env$styles$heading1)
-  
+
   doc <- generateExecutionDetails(doc, results)
-  
+
   doc <- doc %>% officer::body_add_break()
 
   counts_optimized <- results$runWithOptimizedQueries && results$dms %in% c("postgresql", "sqlserver")
@@ -88,7 +88,6 @@ generateResultsDocument <- function(results, outputFolder, authors) {
     doc <- doc %>%
       officer::body_add_par("Clinical data tables have not been retrieved, runDataTables = FALSE?", style = pkg.env$styles$highlight)
   }
-  # doc <- doc %>% officer::body_add_break()
 
   ## Vocabulary checks section
   doc <- doc %>%
@@ -152,6 +151,6 @@ generateResultsDocument <- function(results, outputFolder, authors) {
 
   ## save the doc as a word file
   outputFile <- file.path(outputFolder, sprintf("CdmOnboarding_%s_%s.docx", results$databaseId, format(Sys.time(), "%Y%m%d")))
-  writeLines(paste("Saving doc to", outputFile))
+  ParallelLogger::logInfo("> Saving doc to ", outputFile)
   print(doc, target = outputFile)
 }

@@ -97,7 +97,7 @@ performanceChecks <- function(
   diffHADESPackages <- setdiff(hadesPackages, packinfo$Package)
   if (length(diffHADESPackages) > 0) {
     ParallelLogger::logInfo("> Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information") # nolint
-    ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffHADESPackages, collapse = ', ')))
+    ParallelLogger::logInfo("> Missing: ", paste(diffHADESPackages, collapse = ', '))
   } else {
     ParallelLogger::logInfo("> All HADES packages are installed.")
   }
@@ -107,7 +107,7 @@ performanceChecks <- function(
   diffDARWINPackages <- setdiff(darwinPackages, packinfo$Package)
   if (length(diffDARWINPackages) > 0) {
     ParallelLogger::logInfo("> Not all the DARWIN EU\u00AE packages are installed.")
-    ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffDARWINPackages, collapse = ', ')))
+    ParallelLogger::logInfo("> Missing: ", paste(diffDARWINPackages, collapse = ', '))
   } else {
     ParallelLogger::logInfo("> All DARWIN EU\u00AE packages are installed.")
   }
@@ -234,17 +234,49 @@ getDARWINpackages <- function() {
     "idx_source_to_concept_map_c", "idx_drug_strength_id_1", "idx_drug_strength_id_2"
   )
 
-  if (cdmVersion == '5.3') {
-    return(indexes)
-  } else if (cdmVersion == '5.4') {
+tables <- c(
+  "person", "observation_period", "visit_occurrence", "visit_detail", 
+  "condition_occurrence", "drug_exposure", "procedure_occurrence", 
+  "device_exposure", "measurement", "observation", "note", "note_nlp", 
+  "specimen", "location", "care_site", "provider", "payer_plan_period", 
+  "cost", "drug_era", "dose_era", "condition_era", "episode", "metadata", 
+  "concept", "vocabulary", "domain", "concept_class", "relationship", 
+  "person_id", "gender", "observation_period_id", "visit_occurrence", 
+  "visit_occurrence", "visit_detail", "visit_detail", 
+  "visit_detail", "condition_occurrence", "condition_occurrence", 
+  "condition_occurrence", "drug_exposure", "drug_exposure", "drug_exposure", 
+  "procedure_occurrence", "procedure_occurrence", "procedure_occurrence", 
+  "device_exposure", "device_exposure", "device_exposure", "measurement", 
+  "measurement", "measurement", "observation", 
+  "observation", "observation", "death", 
+  "note", "note", "note", "note", 
+  "note", "specimen", "specimen", 
+  "fact_relationship", "fact_relationship", "fact_relationship", 
+  "location", "care_site", "provider", "payer_plan_period", 
+  "cost_event", "drug_era", "drug_era", 
+  "dose_era", "dose_era", "condition_era", 
+  "condition_era", "metadata", "concept", 
+  "concept", "concept", "concept", 
+  "concept", "vocabulary", "domain", 
+  "concept_class", "concept_relationship", "concept_relationship", 
+  "concept_relationship", "relationship", "concept_synonym", 
+  "concept_ancestor", "concept_ancestor", "source_to_concept_map", 
+  "source_to_concept_map", "source_to_concept_map", "source_to_concept_map", 
+  "drug_strength", "drug_strength"
+)
+
+  if (cdmVersion == '5.4') {
     # Indexes for the episode and episode event table (note: not applied by default CDM DDL scripts)
-    return(
-      c(indexes, "idx_episode_person_id_1", "idx_episode_concept_id_1",
-      "idx_episode_event_id_1", "idx_ee_field_concept_id_1")
-    )
-  } else {
-    return(indexes)
+    indexes <- c(indexes, "idx_episode_person_id_1", "idx_episode_concept_id_1",
+                 "idx_episode_event_id_1", "idx_ee_field_concept_id_1")
+    tables <- c(tables, "episode", "episode", "episode_event", "episode_event")
   }
+
+  data.frame(
+    TABLENAME = tables,
+    INDEXNAME = indexes,
+    type = substr(indexes, 1, 3)
+  )
 }
 
 .getDbmsVersion <- function(connectionDetails, outputFolder) {

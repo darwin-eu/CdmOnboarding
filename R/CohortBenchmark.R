@@ -78,10 +78,10 @@ runCohortBenchmark <- function(
         )
       ))
       cohort_count <- CDMConnector::cohort_count(cdm$cohort)
-      ParallelLogger::logInfo(sprintf("Generated: %s", cohort_set_definition[[i, 'cohort_name']]))
+      ParallelLogger::logInfo("Generated: ", cohort_set_definition[[i, 'cohort_name']])
       cohort_count
     }, error = function(e) {
-      ParallelLogger::logInfo(sprintf("Error in generating: %s", cohort_set_definition[[i, 'cohort_name']]))
+      ParallelLogger::logInfo("Error in generating: ", cohort_set_definition[[i, 'cohort_name']])
       e
     })
     delta <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
