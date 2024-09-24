@@ -1,11 +1,8 @@
 SELECT
-    tablename as tablename,
-    indexname as indexname
+  tablename as tablename,
+  indexname as indexname
 FROM
-    pg_indexes
+  pg_indexes
 WHERE
-    schemaname = '@cdmDatabaseSchema'
-ORDER BY
-    tablename,
-    indexname
+  schemaname = '@cdmDatabaseSchema'
 ;
