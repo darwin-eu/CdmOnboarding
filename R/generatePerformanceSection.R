@@ -45,10 +45,7 @@ generatePerformanceSection <- function(doc, results) {
   doc <- doc %>%
     officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
     my_table_caption(
-      paste(
-        "Versions of all installed R packages from DARWIN EU\u00AE and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
-        "Packages can be installed from CRAN (install.packages(\"<package_name>\")) or Github (remotes::install_github(\"<organisation>/<package>\"))"
-      ),
+      "Installed versions of R packages from DARWIN EU\u00AE and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
       sourceSymbol = pkg.env$sources$system
     ) %>%
     my_body_add_table(packageVersions)
