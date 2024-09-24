@@ -94,23 +94,9 @@ performanceChecks <- function(
   packinfo <- packinfo[, c("Package", "Version", "LibPath", "URL")]
 
   hadesPackages <- getHADESpackages()
-  diffHADESPackages <- setdiff(hadesPackages, packinfo$Package)
-  if (length(diffHADESPackages) > 0) {
-    ParallelLogger::logInfo("> Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information") # nolint
-    ParallelLogger::logInfo("> Missing: ", paste(diffHADESPackages, collapse = ', '))
-  } else {
-    ParallelLogger::logInfo("> All HADES packages are installed.")
-  }
   hadesPackageVersions <- packinfo[packinfo$Package %in% hadesPackages, ]
 
   darwinPackages <- getDARWINpackages()
-  diffDARWINPackages <- setdiff(darwinPackages, packinfo$Package)
-  if (length(diffDARWINPackages) > 0) {
-    ParallelLogger::logInfo("> Not all the DARWIN EU\u00AE packages are installed.")
-    ParallelLogger::logInfo("> Missing: ", paste(diffDARWINPackages, collapse = ', '))
-  } else {
-    ParallelLogger::logInfo("> All DARWIN EU\u00AE packages are installed.")
-  }
   darwinPackageVersions <- packinfo[packinfo$Package %in% darwinPackages, ]
 
   # System details
@@ -145,26 +131,26 @@ performanceChecks <- function(
 #' @return character vector with HADES package names
 #' @export
 getHADESpackages <- function() {
-    ## To update the HADES package list:
-    # packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv" #nolint
-    # packageList <- read.table(packageListUrl, sep = ",", header = TRUE) #nolint
-    # packages <- packageList$name #nolint
-    # dump("packages", "") #nolint
-    c(
-      "CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
-      "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
-      "EnsemblePatientLevelPrediction", "Characterization", "Capr",
-      "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
-      "PheValuator", "CohortExplorer", "Achilles", "DataQualityDashboard",
-      "EmpiricalCalibration", "MethodEvaluation", "Andromeda", "BigKnn",
-      "BrokenAdaptiveRidge", "Cyclops", "DatabaseConnector", "Eunomia",
-      "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
-      "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
-      "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender"
-    )
-    # cran = c(
-    #     "SqlRender", "DatabaseConnector", "DatabaseConnectorJars"
-    #  )
+  ## To update the HADES package list:
+  # packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv" #nolint
+  # packageList <- read.table(packageListUrl, sep = ",", header = TRUE) #nolint
+  # packages <- packageList$name #nolint
+  # dump("packages", "") #nolint
+  c(
+    "CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
+    "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
+    "EnsemblePatientLevelPrediction", "Characterization", "CohortIncidence",
+    "Capr", "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
+    "PheValuator", "CohortExplorer", "Keeper", "Achilles", "DataQualityDashboard",
+    "EmpiricalCalibration", "MethodEvaluation", "Andromeda", "BigKnn",
+    "BrokenAdaptiveRidge", "Cyclops", "DatabaseConnector", "Eunomia",
+    "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
+    "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
+    "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender"
+  )
+  # cran = c(
+  #     "SqlRender", "DatabaseConnector", "DatabaseConnectorJars"
+  #  )
 }
 
 #' Hard coded list of DARWIN EU® packages that CdmOnboarding checks against.
@@ -182,8 +168,8 @@ getDARWINpackages <- function() {
   c(
     "PatientProfiles", "CDMConnector", "PaRe", "IncidencePrevalence",
     "DrugUtilisation", "DrugExposureDiagnostics", "TreatmentPatterns",
-    "CodelistGenerator", "CohortSurvival", "OMOPGenerics", "deckR",
-    "ReportGenerator", "CdmOnboarding", "DashboardExport"
+    "CodelistGenerator", "CohortSurvival", "OMOPGenerics", "ReportGenerator",
+    "CdmOnboarding", "DashboardExport"
   )
   # cran = c(
   #     "CdmConnector", "PaRe",
