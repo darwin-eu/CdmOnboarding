@@ -102,8 +102,7 @@ runCohortBenchmark <- function(
 
   data.frame(
     cohort_name = cohort_set_definition$cohort_name,
-    n_records = n_records,
-    n_subjects = n_subjects,
+    n_subject_bins = n_subject_bins,
     duration = duration,
     error = error
   )

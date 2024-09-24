@@ -28,8 +28,7 @@ generateCohortBenchmarkSection <- function(doc, df) {
   df <- df %>%
     dplyr::mutate(
       `Cohort` = .data$cohort_name,
-      `#Records` = .data$n_records,
-      `#Persons` = .data$n_subjects,
+      `#Persons` = .data$n_subject_bins,
       `Duration (s)` = round(.data$duration, 2),
       `Error` = .data$error,
       .keep = "none"

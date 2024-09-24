@@ -2,7 +2,7 @@ cohortId,cohortName,jsonPath
 1,Visits to the Intensive Care Unit,icu.json
 2,Type 2 Diabetes,diabetes_type_2.json
 3,Guillain Barré syndrome,guillain_barre_syndrome.json
-4,Kawasaki broad,kawasaki_disease.json
+4,Kawasaki,kawasaki_disease.json
 5,Myocarditis,myocarditis.json
 6,Haemorrhagic stroke,haemorrhagic_stroke.json
 7,Ischaemic stroke,ischaemic_stroke.json
