@@ -91,12 +91,8 @@ generatePerformanceSection <- function(doc, results) {
         dplyr::filter(.data$TABLENAME %in% omop_table_names)
     }
 
-    missingIndexes <- setdiff(expectedIndexes, df$appliedIndexes$result$INDEXNAME)
-    additionalIndexes <- setdiff(df$appliedIndexes$result$INDEXNAME, expectedIndexes)
-
     df$appliedIndexes$result$actual <- 1
     expectedIndexes$expected <- 1
-    # df$appliedIndexes$result <- 
     indexOverview <- df$appliedIndexes$result %>%
       mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
       full_join(expectedIndexes) %>%
@@ -112,47 +108,23 @@ generatePerformanceSection <- function(doc, results) {
         names_glue = "{.name}",  #_{.value}
         values_fill = 0,
         names_sort = TRUE
-      )
-    # Indexes
-    indexOverview %>%
+      ) %>%
       select(
         TABLENAME,
-        applied = n_indexes_applied_idx,
-        expected = n_indexes_expected_idx,
-        missing = n_indexes_missing_idx,
+        xpk_applied = n_indexes_applied_xpk,
+        # xpk_expected = n_indexes_expected_xpk,
+        xpk_missing = n_indexes_missing_xpk,
+        idx_applied = n_indexes_applied_idx,
+        # idx_expected = n_indexes_expected_idx,
+        idx_missing = n_indexes_missing_idx
       )
-    # Keys
-    indexOverview %>%
-      select(
-        TABLENAME,
-        applied = n_indexes_applied_xpk,
-        expected = n_indexes_expected_xpk,
-        missing = n_indexes_missing_xpk,
-      )
-    View(indexOverview)
-    
+
+    indexOverview <- rbind(indexOverview, data.frame(TABLENAME  = "Total", t(colSums(indexOverview[, -1]))))
+
     doc <- doc %>%
-      my_table_caption("The indexes applied on the OMOP CDM tables", sourceSymbol = pkg.env$sources$system) %>%
-      my_body_add_table_runtime(df$appliedIndexes)
-
-    if (length(missingIndexes) > 0) {
-      doc <- doc %>%
-        officer::body_add_par("The following expected indexes are missing:") %>%
-        officer::body_add_par("") %>%
-        officer::body_add_par(paste(missingIndexes, collapse = ", "))
-    } else {
-      doc <- doc %>%
-        officer::body_add_par("All expected indexes are present")
-    }
-    
-
-    if (length(additionalIndexes) > 0) {
-      doc <- doc %>%
-        officer::body_add_par("") %>%
-        officer::body_add_par("The following indexes have been applied additional to the expected indexes:") %>%
-        officer::body_add_par("") %>%
-        officer::body_add_par(paste(additionalIndexes, collapse = ", "))
-    }
+      my_table_caption("The number of indexes applied on the OMOP CDM tables.", sourceSymbol = pkg.env$sources$system) %>%
+      my_body_add_table(indexOverview) %>%
+      my_body_add_runtime(df$appliedIndexes$duration)
   } else {
     doc <- doc %>%
       officer::body_add_par("Applied indexes could not be retrieved", style = pkg.env$styles$highlight)

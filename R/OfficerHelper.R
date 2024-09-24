@@ -116,7 +116,7 @@ my_body_add_table_runtime <- function(x, data, duration = NULL, ...) {
     duration <- data$duration
   }
 
-  x %>% 
+  x %>%
     my_body_add_table(data$result, ...) %>%
     my_body_add_runtime(duration)
 }
