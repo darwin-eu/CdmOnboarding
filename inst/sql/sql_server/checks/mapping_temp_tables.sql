@@ -179,3 +179,14 @@ from @cdmDatabaseSchema.drug_exposure
 where route_concept_id IS NOT NULL
 group by route_concept_id, route_source_value
 ;
+
+{@cdmVersion == '5.4'} ? {
+select
+  ISNULL(episode_source_value, '') as source_value,
+  episode_concept_id as concept_id,
+  case when episode_concept_id = 0 or episode_concept_id > 2000000000 then 0 else 1 end as is_mapped,
+  count_big(*) as num_records
+into #episode
+from @cdmDatabaseSchema.episode
+group by episode_concept_id, episode_source_value
+;}

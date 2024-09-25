@@ -150,4 +150,15 @@ select  'Drug Route' ,
         sum(is_mapped * num_records),
         100.0*sum(is_mapped * num_records)/sum(num_records)
 from #drug_route
+{@cdmVersion == '5.4'} ? {
+union all
+select  'Episode',
+        count_big(source_value),
+        sum(is_mapped),
+        100.0*sum(is_mapped) / count_big(source_value),
+        sum(num_records),
+        sum(is_mapped * num_records),
+        100.0*sum(is_mapped * num_records)/sum(num_records)
+from #episode
+}
 ;

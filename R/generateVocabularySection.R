@@ -114,7 +114,8 @@ generateVocabularySection <- function(doc, df, smallCellCount) {
     my_unmapped_section(df$unmappedValuesMeas, "measurement values", smallCellCount) %>%
     my_unmapped_section(df$unmappedValuesObs, "observation values", smallCellCount) %>%
     my_unmapped_section(df$unmappedDrugRoute, "drug route", smallCellCount) %>%
-    my_unmapped_section(df$unmappedSpecialty, "specialty", smallCellCount)
+    my_unmapped_section(df$unmappedSpecialty, "specialty", smallCellCount) %>%
+    my_unmapped_section(df$unmappedEpisodes, "episode", smallCellCount)
 
   # Top 25 mapped concepts
   doc <- doc %>%
@@ -132,7 +133,8 @@ generateVocabularySection <- function(doc, df, smallCellCount) {
     my_mapped_section(df$mappedValuesMeas, "measurement values", smallCellCount) %>%
     my_mapped_section(df$mappedValuesObs, "observation values", smallCellCount) %>%
     my_mapped_section(df$mappedDrugRoute, "drug route", smallCellCount) %>%
-    my_mapped_section(df$mappedSpecialty, "specialty", smallCellCount)
+    my_mapped_section(df$mappedSpecialty, "specialty", smallCellCount) %>%
+    my_mapped_section(df$mappedEpisodes, "episode", smallCellCount)
 
   doc <- doc %>%
     officer::body_add_par("Source to concept map", style = pkg.env$styles$heading2) %>%

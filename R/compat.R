@@ -97,6 +97,10 @@ compat <- function(r, target_version = package_version('3.0')) {
     r$vocabularyResults$unmappedUnitsObs <- .fixDataFrameNames(r$vocabularyResults$unmappedUnitsObs)
   }
 
+  if (!("unmappedEpisodes" %in% r$vocabularyResults)) {
+    r$vocabularyResults$unmappedEpisodes <- NULL
+  }
+
   r$vocabularyResults$mappedDrugs <- .fixDataFrameNames(r$vocabularyResults$mappedDrugs)
   r$vocabularyResults$mappedConditions <- .fixDataFrameNames(r$vocabularyResults$mappedConditions)
   r$vocabularyResults$mappedMeasurements <- .fixDataFrameNames(r$vocabularyResults$mappedMeasurements)
@@ -121,6 +125,11 @@ compat <- function(r, target_version = package_version('3.0')) {
     r$vocabularyResults$mappedUnitsMeas <- .fixDataFrameNames(r$vocabularyResults$mappedUnitsMeas)
     r$vocabularyResults$mappedUnitsObs <- .fixDataFrameNames(r$vocabularyResults$mappedUnitsObs)
   }
+
+  if (!("mappedEpisodes" %in% r$vocabularyResults)) {
+    r$vocabularyResults$mappedEpisodes <- NULL
+  }
+
   r <- .fixP_RECORDS(r)
 
   # DED v1.0.6 has three additional columns
