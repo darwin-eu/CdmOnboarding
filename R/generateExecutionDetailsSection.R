@@ -27,7 +27,7 @@
 generateExecutionDetails <- function(doc, df) {
   metadata <- data.frame(rbind(
     c("CdmOnboarding package version", paste0(
-      results$cdmOnboardingVersion,
+      df$cdmOnboardingVersion,
       if (df$runWithOptimizedQueries) ' (performance optimized=TRUE)' else ''
     )),
     c("Database", df$dms),

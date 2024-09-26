@@ -34,21 +34,12 @@ runCohortBenchmark <- function(
   scratchDatabaseSchema,
   cohortPath = "inst/json/cohorts"
 ) {
-  # Connect to the database. For postgres with DBI, otherwise via DatabaseConnector.
-  # TODO: separate out the connection details for postgres and other databases
-  if (connectionDetails$dbms == 'postgresql') {
-    server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
-
-    connection <- DBI::dbConnect(
-      RPostgres::Postgres(),
-      dbname = server_parts[2],
-      host = server_parts[1],
-      user = connectionDetails$user(),
-      password = connectionDetails$password()
-    )
-  } else {
-    connection <- DatabaseConnector::connect(connectionDetails)
-  }
+  # Connect to the database with CDMConnector
+  connection <- .getCdmConnection(
+    connectionDetails = connectionDetails,
+    cdmDatabaseSchema = cdmDatabaseSchema,
+    scratchDatabaseSchema = scratchDatabaseSchema
+  )
 
   cdm <- CDMConnector::cdm_from_con(
     connection,
@@ -99,6 +90,13 @@ runCohortBenchmark <- function(
       error <- c(error, NA)
     }
   }
+
+  if (connectionDetails$dbms == 'postgresql') {
+    DBI::dbDisconnect(connection)
+  } else {
+    DatabaseConnector::disconnect(connection)
+  }
+  rm(connection)
 
   data.frame(
     cohort_name = cohort_set_definition$cohort_name,

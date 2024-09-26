@@ -48,34 +48,18 @@
     if (nrow(dedIngredients) > 1) 's' else ''
   ))
 
-  # Connect to the database. For postgres with DBI if RPostgres installed, otherwise via DatabaseConnector.
-  if (connectionDetails$dbms == 'postgresql' && system.file(package = 'RPostgres') != '') {
-    server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
+  connection <- .getCdmConnection(
+    connectionDetails = connectionDetails,
+    cdmDatabaseSchema = cdmDatabaseSchema,
+    scratchDatabaseSchema = scratchDatabaseSchema
+  )
 
-    connection <- DBI::dbConnect(
-      RPostgres::Postgres(),
-      dbname = server_parts[2],
-      host = server_parts[1],
-      user = connectionDetails$user(),
-      password = connectionDetails$password()
-    )
-
-    cdm <- CDMConnector::cdm_from_con(
-      connection,
-      cdm_schema = cdmDatabaseSchema,
-      write_schema = scratchDatabaseSchema,
-      .soft_validation = TRUE  # with validation hard error when observation period overlaps or negative durations
-    )
-  } else {
-    connection <- DatabaseConnector::connect(connectionDetails)
-    cdm <- CDMConnector::cdm_from_con(
-      connection,
-      cdm_schema = cdmDatabaseSchema,
-      write_schema = scratchDatabaseSchema,
-      .soft_validation = TRUE
-    )
-
-  }
+  cdm <- CDMConnector::cdm_from_con(
+    connection,
+    cdm_schema = cdmDatabaseSchema,
+    write_schema = scratchDatabaseSchema,
+    .soft_validation = TRUE
+  )
 
   tryCatch({
     ded_start_time <- Sys.time()

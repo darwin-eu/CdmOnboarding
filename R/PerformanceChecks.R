@@ -65,6 +65,12 @@ performanceChecks <- function(
     cdmDatabaseSchema = cdmDatabaseSchema
   )
 
+  cdmConnectorBenchmark <- .runBenchmarkCdmConnector(
+    connectionDetails,
+    cdmDatabaseSchema,
+    resultsDatabaseSchema
+  )
+
   # Applied indexes
   appliedIndexes <- NULL
   if (connectionDetails$dbms == "postgresql") {
@@ -117,6 +123,7 @@ performanceChecks <- function(
   list(
     achillesTiming = achillesTiming,
     performanceBenchmark = performanceBenchmark,
+    cdmConnectorBenchmark = cdmConnectorBenchmark,
     appliedIndexes = appliedIndexes,
     sys_details = sys_details,
     dmsVersion = dmsVersion,
@@ -311,4 +318,52 @@ getDARWINpackages <- function() {
     return(content$version)
   }
   return(NULL)
+}
+
+
+#' Run Benchmark CDMConnector
+#' @param connectionDetails An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param cdmDatabaseSchema Fully qualified name of database schema that contains OMOP CDM schema.
+#'                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
+#' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
+#' @returns list of DED diagnostics_summary and duration
+.runBenchmarkCdmConnector <- function(
+  connectionDetails,
+  cdmDatabaseSchema,
+  scratchDatabaseSchema
+) {
+  # Connect to the database with CDMConnector
+  connection <- .getCdmConnection(
+    connectionDetails = connectionDetails,
+    cdmDatabaseSchema = cdmDatabaseSchema,
+    scratchDatabaseSchema = scratchDatabaseSchema
+  )
+
+  cdm <- CDMConnector::cdm_from_con(
+    connection,
+    cdm_schema = cdmDatabaseSchema,
+    write_schema = scratchDatabaseSchema,
+    .soft_validation = TRUE
+  )
+
+  ParallelLogger::logInfo("Starting execution of CDMConnector Benchmark")
+
+  tryCatch({
+    start_time <- Sys.time()
+    benchmarkResults <- CDMConnector::benchmarkCDMConnector(cdm)
+    duration <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
+
+    # Return result with duration
+    list(result = benchmarkResults, duration = duration)
+  }, error = function(e) {
+    ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
+    NULL
+  }, finally = {
+    if (connectionDetails$dbms == 'postgresql') {
+      DBI::dbDisconnect(connection)
+    } else {
+      DatabaseConnector::disconnect(connection)
+    }
+    rm(connection)
+  })
 }

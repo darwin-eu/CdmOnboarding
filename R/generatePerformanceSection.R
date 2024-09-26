@@ -63,7 +63,7 @@ generatePerformanceSection <- function(doc, results) {
     officer::body_add_par("")
 
   doc <- doc %>%
-    officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2)
+    officer::body_add_par("Query Performance", style = pkg.env$styles$heading2)
   if (!is.null(df$performanceBenchmark$result)) {
     n_relations <- df$performanceBenchmark$result
     benchmark_query_time <- df$performanceBenchmark$duration
@@ -77,6 +77,21 @@ generatePerformanceSection <- function(doc, results) {
   } else {
     doc <- doc %>%
       officer::body_add_par("Performance benchmark of the OMOP CDM tables could not be retrieved", style = pkg.env$styles$highlight)
+  }
+
+  if (!is.null(df$cdmConnectorBenchmark$result)) {
+    df$cdmConnectorBenchmark$result <- df$cdmConnectorBenchmark$result %>%
+      select(
+        `Task` = task,
+        `Time taken (s)` = time_taken_secs,
+        `Time taken (min)` = time_taken_mins
+      )
+    doc <- doc %>%
+      my_table_caption("CDMConnector benchmark of the OMOP CDM tables.", sourceSymbol = pkg.env$sources$cdm) %>%
+      my_body_add_table_runtime(df$cdmConnectorBenchmark)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("CDMConnector benchmark of the OMOP CDM tables could not be retrieved", style = pkg.env$styles$highlight)
   }
 
   doc <- doc %>%
@@ -95,7 +110,7 @@ generatePerformanceSection <- function(doc, results) {
     expectedIndexes$expected <- 1
     indexOverview <- df$appliedIndexes$result %>%
       dplyr::mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
-      dplyr::full_join(expectedIndexes, by = join_by(TABLENAME, INDEXNAME)) %>%
+      dplyr::full_join(expectedIndexes, by = join_by(TABLENAME, INDEXNAME, type)) %>%
       dplyr::group_by(.data$TABLENAME, .data$type) %>%
       dplyr::summarize(
         n_indexes_applied = sum(actual, na.rm = TRUE),
