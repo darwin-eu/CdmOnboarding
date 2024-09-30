@@ -34,6 +34,9 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
   deathCount <- df$dataTablesCounts$result %>%
     dplyr::filter(.data$TABLENAME == 'death') %>%
     pull(.data$COUNT)
+  observationPeriodPersonCount <- df$dataTablesCounts$result %>%
+    dplyr::filter(.data$TABLENAME == tableName) %>%
+    pull(.data$N_PERSONS)
 
   # Total records per table
   df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
@@ -143,25 +146,27 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
     my_body_add_table_runtime(df$observationPeriodLength)
 
   # Combine Observation Periods per Person and overlap in one table
+  obsPeriodPerPerson <- data.frame(
+    Field = "Persons with 0 observation period(s)",
+    Value = personCount - observationPeriodPersonCount,
+    `%Persons` = prettyPc((personCount - observationPeriodPersonCount) / personCount * 100),
+    check.names = FALSE  # To allow `%Persons`
+  )
   if (!is.null(df$observationPeriodsPerPerson$result)) {
-    obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
-      mutate(
-        Field = sprintf("Persons with %s observation period(s)", .data$N_OBSERVATION_PERIODS),
-        Value = .data$N_PERSONS,
-        `%Persons` = prettyPc(.data$N_PERSONS / personCount * 100),
-        .keep = "none"  # do not display other columns
-      )
-  } else {
-    obsPeriodStats <- data.frame(
-      Field = "Persons with observation period(s)",
-      Value = NA,
-      `%Persons` = NA,
-      check.names = FALSE  # To allow `%Persons`
+    obsPeriodPerPerson <- rbind(
+      obsPeriodPerPerson,
+      df$observationPeriodsPerPerson$result %>%
+        mutate(
+          Field = sprintf("Persons with %s observation period(s)", .data$N_OBSERVATION_PERIODS),
+          Value = .data$N_PERSONS,
+          `%Persons` = prettyPc(.data$N_PERSONS / personCount * 100),
+          .keep = "none"  # do not display other columns
+        )
     )
   }
 
   obsPeriodStats <- rbind(
-    obsPeriodStats,
+    obsPeriodPerPerson,
     data.frame(
       Field = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
       Value = c(
@@ -169,7 +174,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
         sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS)
       ),
       `%Persons` = c(
-        nrow(df$observationPeriodOverlap) / personCount * 100,
+        prettyPc(nrow(df$observationPeriodOverlap) / personCount * 100),
         NA
       ),
       check.names = FALSE
