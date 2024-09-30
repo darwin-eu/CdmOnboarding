@@ -35,7 +35,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
     dplyr::filter(.data$TABLENAME == 'death') %>%
     pull(.data$COUNT)
   observationPeriodPersonCount <- df$dataTablesCounts$result %>%
-    dplyr::filter(.data$TABLENAME == tableName) %>%
+    dplyr::filter(.data$TABLENAME == 'observation_period') %>%
     pull(.data$N_PERSONS)
 
   # Total records per table
