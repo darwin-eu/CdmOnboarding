@@ -70,6 +70,15 @@ exportDedResults <- function(
   ded_results$n_records <- format(round(ded_results$n_records / 10) * 10, big.mark = ",", format = 'd')
   ded_results$n_patients <- format(round(ded_results$n_patients / 10) * 10, big.mark = ",", format = 'd')
 
+  # In DED v1.0.9 the dose columns can be missing
+  if (!("n_dose_and_missingness" %in% colnames(ded_results))) {
+    ded_results$n_dose_and_missingness <- NA
+  }
+
+  if (!("median_daily_dose_q05_q95" %in% colnames(ded_results))) {
+    ded_results$median_daily_dose_q05_q95 <- NA
+  }
+
   if (dedVersion >= '1.0.5') {
     ded_results <- ded_results %>%
       select(

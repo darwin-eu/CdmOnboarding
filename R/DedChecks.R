@@ -77,8 +77,15 @@
     duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
     ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
 
+    mappingLevel <- dedResults$conceptSummary %>%
+      group_by(ingredient_concept_id, ingredient, concept_class_id) %>%
+      summarise(
+        n_concepts = n(),
+        n_records = sum(n_records, na.rm = TRUE)
+      )
+
     # Return result with duration
-    list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
+    list(result = dedResults$diagnosticsSummary, resultMappingLevel = mappingLevel, duration = duration, packageVersion = dedVersion)
   }, error = function(e) {
     ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
     NULL

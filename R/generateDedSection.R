@@ -37,7 +37,7 @@ generateDedSection <- function(doc, df) {
   doc <- doc %>%
     my_table_caption(
       paste(
-        "Drug Exposure Diagnostics results for selected ingredients.",
+        "Drug Exposure Diagnostics results for selected ingredients, covering different types of products.",
         "Executed with minCellCount = 5, sample = 1e+06, earliestStartDate = 2010-01-01.",
         "#Records = Number of records.",
         "#Persons = Number of unique persons.",
@@ -57,6 +57,25 @@ generateDedSection <- function(doc, df) {
       sourceSymbol = pkg.env$sources$cdm
     ) %>%
     my_body_add_table_runtime(df)
+
+  if (!is.null(df$resultMappingLevel)) {
+    df$resultMappingLevel$n_records <- format(round(df$resultMappingLevel$n_records / 10) * 10, big.mark = ",", format = 'd')
+
+    df$resultMappingLevel <- df$resultMappingLevel %>%
+      select(
+        `Ingredient` = ingredient,
+        `Concept Class` = concept_class,
+        `#Concepts` = .data$n_concepts,
+        `#Records` = .data$n_records
+      )
+
+    doc <- doc %>%
+      my_table_caption(
+        "Target concept classes of selected ingredients.",
+        sourceSymbol = pkg.env$sources$cdm
+      ) %>%
+      my_body_add_table(df$resultMappingLevel)
+  }
 
   return(doc)
 }

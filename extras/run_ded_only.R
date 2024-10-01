@@ -2,6 +2,7 @@ library(DBI)
 library(RPostgres)
 library(CDMConnector)
 library(DrugExposureDiagnostics)
+library(CdmOnboarding)
 
 # Connecting using dsn, to be set up in database driver
 con <- DBI::dbConnect(
@@ -46,3 +47,4 @@ duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
 dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
 dedSummary <- list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
 saveRDS(dedSummary, "dedSummary.rds")
+exportDedResults(dedSummary, "dedResults.csv")
