@@ -28,7 +28,7 @@
 #' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
 #' @param cohortPath Path to the folder containing cohort definitions in JSON format
 #' @returns list of DED diagnostics_summary and duration
-runCohortBenchmark <- function(
+.runCohortBenchmark <- function(
   connectionDetails,
   cdmDatabaseSchema,
   scratchDatabaseSchema,
@@ -40,6 +40,15 @@ runCohortBenchmark <- function(
     cdmDatabaseSchema = cdmDatabaseSchema,
     scratchDatabaseSchema = scratchDatabaseSchema
   )
+
+  on.exit({
+    if (connectionDetails$dbms == 'postgresql') {
+      DBI::dbDisconnect(connection)
+    } else {
+      DatabaseConnector::disconnect(connection)
+    }
+    rm(connection)
+  })
 
   cdm <- CDMConnector::cdm_from_con(
     connection,
@@ -90,13 +99,6 @@ runCohortBenchmark <- function(
       error <- c(error, NA)
     }
   }
-
-  if (connectionDetails$dbms == 'postgresql') {
-    DBI::dbDisconnect(connection)
-  } else {
-    DatabaseConnector::disconnect(connection)
-  }
-  rm(connection)
 
   n_subject_bins <- cut(n_subjects, breaks = c(0, 100, 1000, 10000, 100000, 1000000, Inf), labels = c("0-100", "100-1k", "1k-10k", "10k-100k", "100k-1M", "1M+"))
 

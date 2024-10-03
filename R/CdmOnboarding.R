@@ -341,6 +341,7 @@ cdmOnboarding <- function(
       connectionDetails = connectionDetails,
       cdmDatabaseSchema = cdmDatabaseSchema,
       resultsDatabaseSchema = resultsDatabaseSchema,
+      scratchDatabaseSchema = scratchDatabaseSchema,
       cdmVersion = cdmVersion,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder
@@ -367,22 +368,32 @@ cdmOnboarding <- function(
   drugExposureDiagnostics <- NULL
   if (runDedChecks) {
     ParallelLogger::logInfo("> Running DED checks")
-    drugExposureDiagnostics <- .runDedChecks(
-      connectionDetails,
-      cdmDatabaseSchema,
-      scratchDatabaseSchema
-    )
+    drugExposureDiagnostics <- tryCatch({
+      .runDedChecks(
+        connectionDetails,
+        cdmDatabaseSchema,
+        scratchDatabaseSchema
+      )
+    }, error = function(e) {
+      ParallelLogger::logError("DED checks failed: ", e)
+      NULL
+    })
   }
 
   # Cohort Benchmark checks -------------------------------------------------------------------------------------
   cohortBenchmark <- NULL
   if (runCohortBenchmarkChecks) {
     ParallelLogger::logInfo("> Running Cohort Benchmark")
-    cohortBenchmark <- runCohortBenchmark(
-      connectionDetails,
-      cdmDatabaseSchema,
-      scratchDatabaseSchema
-    )
+    cohortBenchmark <- tryCatch({
+      .runCohortBenchmark(
+        connectionDetails,
+        cdmDatabaseSchema,
+        scratchDatabaseSchema
+      )
+    }, error = function(e) {
+      ParallelLogger::logError("Cohort Benchmark failed: ", e)
+      NULL
+    })
   }
 
   ParallelLogger::logInfo("> Done.")

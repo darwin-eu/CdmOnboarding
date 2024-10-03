@@ -43,6 +43,7 @@ performanceChecks <- function(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
+  scratchDatabaseSchema,
   cdmVersion = "5.4",
   sqlOnly = FALSE,
   outputFolder = "output"
@@ -65,11 +66,16 @@ performanceChecks <- function(
     cdmDatabaseSchema = cdmDatabaseSchema
   )
 
-  cdmConnectorBenchmark <- .runBenchmarkCdmConnector(
-    connectionDetails,
-    cdmDatabaseSchema,
-    resultsDatabaseSchema
-  )
+  cdmConnectorBenchmark <- tryCatch({
+    .runBenchmarkCdmConnector(
+      connectionDetails,
+      cdmDatabaseSchema,
+      scratchDatabaseSchema
+    )
+  }, error = function(e) {
+    ParallelLogger::logError("Execution of CDMConnector Benchmark failed: ", e)
+    NULL
+  })
 
   # Applied indexes
   appliedIndexes <- NULL
@@ -339,6 +345,15 @@ getDARWINpackages <- function() {
     scratchDatabaseSchema = scratchDatabaseSchema
   )
 
+  on.exit({
+    if (connectionDetails$dbms == 'postgresql') {
+      DBI::dbDisconnect(connection)
+    } else {
+      DatabaseConnector::disconnect(connection)
+    }
+    rm(connection)
+  })
+
   cdm <- CDMConnector::cdm_from_con(
     connection,
     cdm_schema = cdmDatabaseSchema,
@@ -348,22 +363,10 @@ getDARWINpackages <- function() {
 
   ParallelLogger::logInfo("Starting execution of CDMConnector Benchmark")
 
-  tryCatch({
-    start_time <- Sys.time()
-    benchmarkResults <- CDMConnector::benchmarkCDMConnector(cdm)
-    duration <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
+  start_time <- Sys.time()
+  benchmarkResults <- CDMConnector::benchmarkCDMConnector(cdm)
+  duration <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
 
-    # Return result with duration
-    list(result = benchmarkResults, duration = duration)
-  }, error = function(e) {
-    ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
-    NULL
-  }, finally = {
-    if (connectionDetails$dbms == 'postgresql') {
-      DBI::dbDisconnect(connection)
-    } else {
-      DatabaseConnector::disconnect(connection)
-    }
-    rm(connection)
-  })
+  # Return result with duration
+  list(result = benchmarkResults, duration = duration)
 }
