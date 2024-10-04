@@ -110,7 +110,7 @@ generatePerformanceSection <- function(doc, results) {
     expectedIndexes$expected <- 1
     indexOverview <- df$appliedIndexes$result %>%
       dplyr::mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
-      dplyr::full_join(expectedIndexes, by = join_by(.data$TABLENAME, .data$INDEXNAME, data$type)) %>%
+      dplyr::full_join(expectedIndexes, by = join_by(TABLENAME, INDEXNAME, type)) %>%
       dplyr::group_by(.data$TABLENAME, .data$type) %>%
       dplyr::summarize(
         n_indexes_applied = sum(.data$actual, na.rm = TRUE),
@@ -125,7 +125,7 @@ generatePerformanceSection <- function(doc, results) {
         names_sort = TRUE
       ) %>%
       dplyr::select(
-        data$TABLENAME,
+        .data$TABLENAME,
         xpk_applied = .data$n_indexes_applied_xpk,
         xpk_expected = .data$n_indexes_expected_xpk,
         xpk_missing = .data$n_indexes_missing_xpk,

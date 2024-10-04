@@ -64,7 +64,7 @@ generateDedSection <- function(doc, df) {
     df$resultMappingLevel <- df$resultMappingLevel %>%
       select(
         `Ingredient` = .data$ingredient,
-        `Concept Class` = .data$concept_class,
+        `Concept Class` = .data$concept_class_id,
         `#Concepts` = .data$n_concepts,
         `#Records` = .data$n_records
       )
