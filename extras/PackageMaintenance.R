@@ -15,7 +15,7 @@
 # 4. Review and merge PR
 # 5. Create Github release on darwin-eu-dev, creating a tag as well.
 #    * make sure to target main
-# 6. Git pull
+# 6. Git checkout main and git pull
 # 7. Push to darwin-public git push --tags darwin-public main
 # 8. Merge main into develop, bump dev version in DESCRIPTION (add .900)
 # 9. Create Github release on darwin-eu, reusing tag.
