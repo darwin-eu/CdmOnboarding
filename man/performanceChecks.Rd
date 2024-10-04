@@ -8,6 +8,7 @@ performanceChecks(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
+  scratchDatabaseSchema,
   cdmVersion = "5.4",
   sqlOnly = FALSE,
   outputFolder = "output"
@@ -21,6 +22,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 
 \item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
+
+\item{scratchDatabaseSchema}{Fully qualified name of database schema where temporary tables can be written.}
 
 \item{cdmVersion}{Version of the CDM to check against. Default is "5.4".}
 

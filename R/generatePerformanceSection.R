@@ -82,9 +82,9 @@ generatePerformanceSection <- function(doc, results) {
   if (!is.null(df$cdmConnectorBenchmark$result)) {
     df$cdmConnectorBenchmark$result <- df$cdmConnectorBenchmark$result %>%
       select(
-        `Task` = task,
-        `Time taken (s)` = time_taken_secs,
-        `Time taken (min)` = time_taken_mins
+        `Task` = .data$task,
+        `Time taken (s)` = .data$time_taken_secs,
+        `Time taken (min)` = .data$time_taken_mins
       )
     doc <- doc %>%
       my_table_caption("CDMConnector benchmark of the OMOP CDM tables.", sourceSymbol = pkg.env$sources$cdm) %>%
@@ -110,28 +110,28 @@ generatePerformanceSection <- function(doc, results) {
     expectedIndexes$expected <- 1
     indexOverview <- df$appliedIndexes$result %>%
       dplyr::mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
-      dplyr::full_join(expectedIndexes, by = join_by(TABLENAME, INDEXNAME, type)) %>%
+      dplyr::full_join(expectedIndexes, by = join_by(.data$TABLENAME, .data$INDEXNAME, data$type)) %>%
       dplyr::group_by(.data$TABLENAME, .data$type) %>%
       dplyr::summarize(
-        n_indexes_applied = sum(actual, na.rm = TRUE),
-        n_indexes_expected = sum(expected, na.rm = TRUE),
-        n_indexes_missing = sum(is.na(actual), na.rm = TRUE)
+        n_indexes_applied = sum(.data$actual, na.rm = TRUE),
+        n_indexes_expected = sum(.data$expected, na.rm = TRUE),
+        n_indexes_missing = sum(is.na(.data$actual), na.rm = TRUE)
       ) %>%
       tidyr::pivot_wider(
-        names_from = type,
-        values_from = c(n_indexes_applied, n_indexes_expected, n_indexes_missing),
+        names_from = .data$type,
+        values_from = c(.data$n_indexes_applied, .data$n_indexes_expected, .data$n_indexes_missing),
         names_glue = "{.name}",  #_{.value}
         values_fill = 0,
         names_sort = TRUE
       ) %>%
       dplyr::select(
-        TABLENAME,
-        xpk_applied = n_indexes_applied_xpk,
-        xpk_expected = n_indexes_expected_xpk,
-        xpk_missing = n_indexes_missing_xpk,
-        idx_applied = n_indexes_applied_idx,
-        idx_expected = n_indexes_expected_idx,
-        idx_missing = n_indexes_missing_idx
+        data$TABLENAME,
+        xpk_applied = .data$n_indexes_applied_xpk,
+        xpk_expected = .data$n_indexes_expected_xpk,
+        xpk_missing = .data$n_indexes_missing_xpk,
+        idx_applied = .data$n_indexes_applied_idx,
+        idx_expected = .data$n_indexes_expected_idx,
+        idx_missing = .data$n_indexes_missing_idx
       )
 
     indexOverview <- rbind(indexOverview, data.frame(TABLENAME  = "Total", t(colSums(indexOverview[, -1]))))
