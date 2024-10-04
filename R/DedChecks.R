@@ -87,14 +87,13 @@
 
   mappingLevel <- tryCatch({
     dedResults$conceptSummary %>%
-      summarise(
+      dplyr::group_by(
+        .data$ingredient,
+        .data$concept_class_id
+      ) %>%
+      dplyr::summarise(
         n_concepts = n(),
-        n_records = sum(.data$n_records, na.rm = TRUE),
-        .by = c(
-          .data$ingredient,
-          .data$concept_class_id
-        ),
-        .group = "drop"
+        n_records = sum(.data$n_records, na.rm = TRUE)
       )
   }, error = function(e) {
     ParallelLogger::logWarn("Could not generate mapping level summary. ", e)

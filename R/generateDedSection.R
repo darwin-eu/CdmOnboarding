@@ -60,6 +60,7 @@ generateDedSection <- function(doc, df) {
 
   if (!is.null(df$resultMappingLevel)) {
     df$resultMappingLevel <- df$resultMappingLevel %>%
+      ungroup() %>%
       mutate(
         `Ingredient` = .data$ingredient,
         `Concept Class` = .data$concept_class_id,
@@ -74,6 +75,9 @@ generateDedSection <- function(doc, df) {
         sourceSymbol = pkg.env$sources$cdm
       ) %>%
       my_body_add_table(df$resultMappingLevel)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("Could not generate mapping level summary.", style = pkg.env$styles$highlight)
   }
 
   return(doc)
