@@ -19,6 +19,7 @@ cdmOnboarding(
   runPerformanceChecks = TRUE,
   runWebAPIChecks = TRUE,
   runDedChecks = TRUE,
+  runCohortBenchmarkChecks = TRUE,
   smallCellCount = 5,
   baseUrl = "",
   sqlOnly = FALSE,
@@ -61,6 +62,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{runWebAPIChecks}{Boolean to determine if WebAPI checks need to be run. Default = TRUE}
 
 \item{runDedChecks}{Boolean to determine if DrugExposureDiagnostics checks need to be run. Default = TRUE}
+
+\item{runCohortBenchmarkChecks}{Boolean to determine if CohortBenchMark checks need to be run. Default = TRUE}
 
 \item{smallCellCount}{To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)}
 

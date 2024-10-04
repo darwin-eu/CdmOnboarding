@@ -73,7 +73,7 @@ vocabularyChecks <- function(connectionDetails,
     mappingTempTableCreation <- executeQuery(outputFolder, "mapping_temp_tables.sql", "Mapping Temp tables query executed successfully", sqlOnly = sqlOnly,
                                              activeConnection = connection, useExecuteSql = TRUE, cdmDatabaseSchema = cdmDatabaseSchema, cdmVersion = cdmVersion, optimize = optimize)
     mappingCompleteness <- executeQuery(outputFolder, "mapping_completeness.sql", "Mapping Completeness query executed successfully", sqlOnly = sqlOnly,
-                                        activeConnection = connection)
+                                        activeConnection = connection, cdmVersion = cdmVersion)
 
     drugMapping  <- executeQuery(outputFolder, "mapping_levels_drugs.sql", "Drug Level Mapping query executed successfully", sqlOnly = sqlOnly,
                                  activeConnection = connection, cdmDatabaseSchema = cdmDatabaseSchema)
@@ -106,6 +106,12 @@ vocabularyChecks <- function(connectionDetails,
                                       activeConnection = connection, cdmDomain = 'drug_route', smallCellCount = smallCellCount)
     unmappedSpecialty <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped specialty query executed successfully", sqlOnly = sqlOnly,
                                       activeConnection = connection, cdmDomain = 'specialty', smallCellCount = smallCellCount)
+    if (cdmVersion >= 5.4) {
+      unmappedEpisodes <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped episode query executed successfully", sqlOnly = sqlOnly,
+                                       activeConnection = connection, cdmDomain = 'episode', smallCellCount = smallCellCount)
+    } else {
+      unmappedEpisodes <- NULL
+    }
 
     mappedDrugs <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped drugs query executed successfully", sqlOnly = sqlOnly,
                                 activeConnection = connection, cdmDomain = 'drug', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
@@ -135,6 +141,12 @@ vocabularyChecks <- function(connectionDetails,
                                     activeConnection = connection, cdmDomain = 'drug_route', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedSpecialty <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped specialty query executed successfully", sqlOnly = sqlOnly,
                                     activeConnection = connection, cdmDomain = 'specialty', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
+    if (cdmVersion >= 5.4) {
+      mappedEpisodes <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped episodes query executed successfully", sqlOnly = sqlOnly,
+                                     activeConnection = connection, cdmDomain = 'episode', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
+    } else {
+      mappedEpisodes <- NULL
+    }
   },
   finally = {
     DatabaseConnector::disconnect(connection = connection)
@@ -160,6 +172,7 @@ vocabularyChecks <- function(connectionDetails,
     unmappedValuesObs = unmappedValuesObs,
     unmappedDrugRoute = unmappedDrugRoute,
     unmappedSpecialty = unmappedSpecialty,
+    unmappedEpisodes = unmappedEpisodes,
     mappedDrugs = mappedDrugs,
     mappedConditions = mappedConditions,
     mappedMeasurements = mappedMeasurements,
@@ -174,6 +187,7 @@ vocabularyChecks <- function(connectionDetails,
     mappedValuesObs = mappedValuesObs,
     mappedDrugRoute = mappedDrugRoute,
     mappedSpecialty = mappedSpecialty,
+    mappedEpisodes = mappedEpisodes,
     conceptCounts = conceptCounts,
     vocabularyCounts = vocabularyCounts,
     sourceConceptFrequency = sourceConceptFrequency,

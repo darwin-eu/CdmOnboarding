@@ -34,6 +34,9 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
   deathCount <- df$dataTablesCounts$result %>%
     dplyr::filter(.data$TABLENAME == 'death') %>%
     pull(.data$COUNT)
+  observationPeriodPersonCount <- df$dataTablesCounts$result %>%
+    dplyr::filter(.data$TABLENAME == 'observation_period') %>%
+    pull(.data$N_PERSONS)
 
   # Total records per table
   df$dataTablesCounts$result <- df$dataTablesCounts$result %>%
@@ -144,7 +147,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
 
   # Combine Observation Periods per Person and overlap in one table
   if (!is.null(df$observationPeriodsPerPerson$result)) {
-    obsPeriodStats <- df$observationPeriodsPerPerson$result %>%
+    obsPeriodsPerPerson <- df$observationPeriodsPerPerson$result %>%
       mutate(
         Field = sprintf("Persons with %s observation period(s)", .data$N_OBSERVATION_PERIODS),
         Value = .data$N_PERSONS,
@@ -152,7 +155,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
         .keep = "none"  # do not display other columns
       )
   } else {
-    obsPeriodStats <- data.frame(
+    obsPeriodsPerPerson <- data.frame(
       Field = "Persons with observation period(s)",
       Value = NA,
       `%Persons` = NA,
@@ -161,7 +164,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
   }
 
   obsPeriodStats <- rbind(
-    obsPeriodStats,
+    obsPeriodsPerPerson,
     data.frame(
       Field = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
       Value = c(
@@ -169,7 +172,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
         sum(df$observationPeriodOverlap$result$N_OVERLAPPING_PAIRS)
       ),
       `%Persons` = c(
-        nrow(df$observationPeriodOverlap) / personCount * 100,
+        prettyPc(nrow(df$observationPeriodOverlap) / personCount * 100),
         NA
       ),
       check.names = FALSE
@@ -195,7 +198,8 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
     df$dateRangeByTypeConcept$result <- df$dateRangeByTypeConcept$result %>%
       mutate(
         `Domain` = .data$DOMAIN,
-        `Type` = sprintf("%s (%s)", .data$TYPE_CONCEPT_NAME, .data$TYPE_STANDARD_CONCEPT),
+        `Type` = sprintf("%s (%s)", .data$TYPE_CONCEPT_NAME, dplyr::coalesce(.data$TYPE_STANDARD_CONCEPT, "-")),
+        `#Records` = COUNT_VALUE,
         `Start date [Min, Max]` = sprintf(
           "[%s, %s]",
           substr(.data$FIRST_START_DATE, 1, 7),
@@ -250,7 +254,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
       cowplot::draw_plot_label("Day of the Week", x = .15, y = .99, size = 15)
   } else {
     doc <- doc %>%
-      officer::body_add_par("No Day of the Week results.")
+      officer::body_add_par("Missing Day of the Week results.")
   }
 
   if (!is.null(df$dayOfTheMonth$result) && nrow(df$dayOfTheMonth$result) > 0) {
@@ -260,7 +264,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
       cowplot::draw_plot_label("Day of the Month", x = .65, y = .98, size = 15)
   } else {
     doc <- doc %>%
-      officer::body_add_par("No Day of the Month results.")
+      officer::body_add_par("Missing Day of the Month results.")
   }
 
   doc <- doc %>%

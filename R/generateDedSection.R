@@ -37,7 +37,7 @@ generateDedSection <- function(doc, df) {
   doc <- doc %>%
     my_table_caption(
       paste(
-        "Drug Exposure Diagnostics results for selected ingredients.",
+        "Drug Exposure Diagnostics results for selected ingredients, covering different types of products.",
         "Executed with minCellCount = 5, sample = 1e+06, earliestStartDate = 2010-01-01.",
         "#Records = Number of records.",
         "#Persons = Number of unique persons.",
@@ -57,6 +57,28 @@ generateDedSection <- function(doc, df) {
       sourceSymbol = pkg.env$sources$cdm
     ) %>%
     my_body_add_table_runtime(df)
+
+  if (!is.null(df$resultMappingLevel)) {
+    df$resultMappingLevel <- df$resultMappingLevel %>%
+      ungroup() %>%
+      mutate(
+        `Ingredient` = .data$ingredient,
+        `Concept Class` = .data$concept_class_id,
+        `#Concepts` = .data$n_concepts,
+        `#Records` = prettyHr(round(.data$n_records / 10) * 10),
+        .keep = "none"
+      )
+
+    doc <- doc %>%
+      my_table_caption(
+        "Target concept classes of selected ingredients.",
+        sourceSymbol = pkg.env$sources$cdm
+      ) %>%
+      my_body_add_table(df$resultMappingLevel)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("Could not generate mapping level summary.", style = pkg.env$styles$highlight)
+  }
 
   return(doc)
 }

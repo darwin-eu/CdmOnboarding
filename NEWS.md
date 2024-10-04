@@ -1,3 +1,11 @@
+# CdmOnboarding 3.3.0
+
+* Add Episode mapping coverage and top25 mapped/unmapped
+* Add Cohort Benchmark and CdmConnector benchmark
+* Add DED concept class mapping
+* Update reporting of applied indexes
+* Update package list
+
 # CdmOnboarding 3.2.1
 
 * Fix bug in generation on SQL Server.
@@ -5,10 +13,11 @@
 
 # CdmOnboarding 3.2.0
 
-* Make document generation robust for missing data by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/130
-* Improve generation of observation periods table by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/153
-* Refactoring for CRAN submission by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/148
-* Support DED v1.0.6 by @MaximMoinat in https://github.com/darwin-eu-dev/CdmOnboarding/pull/155
+* Export DrugExposureDiagnostics results to csv
+* Make document generation robust for missing data by @MaximMoinat
+* Improve generation of observation periods table by @MaximMoinat
+* Refactoring for CRAN submission by @MaximMoinat
+* Support DED v1.0.6 by @MaximMoinat
 
 # CdmOnboarding 3.1.0
 

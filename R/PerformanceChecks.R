@@ -34,6 +34,7 @@
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param scratchDatabaseSchema            Fully qualified name of database schema where temporary tables can be written.
 #' @param cdmVersion                       Version of the CDM to check against. Default is "5.4".
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
@@ -43,6 +44,7 @@ performanceChecks <- function(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
+  scratchDatabaseSchema,
   cdmVersion = "5.4",
   sqlOnly = FALSE,
   outputFolder = "output"
@@ -64,6 +66,17 @@ performanceChecks <- function(
     sqlOnly,
     cdmDatabaseSchema = cdmDatabaseSchema
   )
+
+  cdmConnectorBenchmark <- tryCatch({
+    .runBenchmarkCdmConnector(
+      connectionDetails,
+      cdmDatabaseSchema,
+      scratchDatabaseSchema
+    )
+  }, error = function(e) {
+    ParallelLogger::logError("Execution of CDMConnector Benchmark failed: ", e)
+    NULL
+  })
 
   # Applied indexes
   appliedIndexes <- NULL
@@ -94,23 +107,9 @@ performanceChecks <- function(
   packinfo <- packinfo[, c("Package", "Version", "LibPath", "URL")]
 
   hadesPackages <- getHADESpackages()
-  diffHADESPackages <- setdiff(hadesPackages, packinfo$Package)
-  if (length(diffHADESPackages) > 0) {
-    ParallelLogger::logInfo("> Not all the HADES packages are installed, see https://ohdsi.github.io/Hades/installingHades.html for more information") # nolint
-    ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffHADESPackages, collapse = ', ')))
-  } else {
-    ParallelLogger::logInfo("> All HADES packages are installed.")
-  }
   hadesPackageVersions <- packinfo[packinfo$Package %in% hadesPackages, ]
 
   darwinPackages <- getDARWINpackages()
-  diffDARWINPackages <- setdiff(darwinPackages, packinfo$Package)
-  if (length(diffDARWINPackages) > 0) {
-    ParallelLogger::logInfo("> Not all the DARWIN EU\u00AE packages are installed.")
-    ParallelLogger::logInfo(sprintf("> Missing: %s", paste(diffDARWINPackages, collapse = ', ')))
-  } else {
-    ParallelLogger::logInfo("> All DARWIN EU\u00AE packages are installed.")
-  }
   darwinPackageVersions <- packinfo[packinfo$Package %in% darwinPackages, ]
 
   # System details
@@ -131,6 +130,7 @@ performanceChecks <- function(
   list(
     achillesTiming = achillesTiming,
     performanceBenchmark = performanceBenchmark,
+    cdmConnectorBenchmark = cdmConnectorBenchmark,
     appliedIndexes = appliedIndexes,
     sys_details = sys_details,
     dmsVersion = dmsVersion,
@@ -145,26 +145,26 @@ performanceChecks <- function(
 #' @return character vector with HADES package names
 #' @export
 getHADESpackages <- function() {
-    ## To update the HADES package list:
-    # packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv" #nolint
-    # packageList <- read.table(packageListUrl, sep = ",", header = TRUE) #nolint
-    # packages <- packageList$name #nolint
-    # dump("packages", "") #nolint
-    c(
-      "CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
-      "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
-      "EnsemblePatientLevelPrediction", "Characterization", "Capr",
-      "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
-      "PheValuator", "CohortExplorer", "Achilles", "DataQualityDashboard",
-      "EmpiricalCalibration", "MethodEvaluation", "Andromeda", "BigKnn",
-      "BrokenAdaptiveRidge", "Cyclops", "DatabaseConnector", "Eunomia",
-      "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
-      "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
-      "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender"
-    )
-    # cran = c(
-    #     "SqlRender", "DatabaseConnector", "DatabaseConnectorJars"
-    #  )
+  ## To update the HADES package list:
+  # packageListUrl <- "https://raw.githubusercontent.com/OHDSI/Hades/main/extras/packages.csv" #nolint
+  # packageList <- read.table(packageListUrl, sep = ",", header = TRUE) #nolint
+  # packages <- packageList$name #nolint
+  # dump("packages", "") #nolint
+  c(
+    "CohortMethod", "SelfControlledCaseSeries", "SelfControlledCohort",
+    "EvidenceSynthesis", "PatientLevelPrediction", "DeepPatientLevelPrediction",
+    "EnsemblePatientLevelPrediction", "Characterization", "CohortIncidence",
+    "Capr", "CirceR", "CohortGenerator", "PhenotypeLibrary", "CohortDiagnostics",
+    "PheValuator", "CohortExplorer", "Keeper", "Achilles", "DataQualityDashboard",
+    "EmpiricalCalibration", "MethodEvaluation", "Andromeda", "BigKnn",
+    "BrokenAdaptiveRidge", "Cyclops", "DatabaseConnector", "Eunomia",
+    "FeatureExtraction", "Hydra", "IterativeHardThresholding", "OhdsiSharing",
+    "OhdsiShinyModules", "ParallelLogger", "ResultModelManager",
+    "ROhdsiWebApi", "ShinyAppBuilder", "SqlRender"
+  )
+  # cran = c(
+  #     "SqlRender", "DatabaseConnector", "DatabaseConnectorJars"
+  #  )
 }
 
 #' Hard coded list of DARWIN EU® packages that CdmOnboarding checks against.
@@ -182,8 +182,8 @@ getDARWINpackages <- function() {
   c(
     "PatientProfiles", "CDMConnector", "PaRe", "IncidencePrevalence",
     "DrugUtilisation", "DrugExposureDiagnostics", "TreatmentPatterns",
-    "CodelistGenerator", "CohortSurvival", "OMOPGenerics", "deckR",
-    "ReportGenerator", "CdmOnboarding", "DashboardExport"
+    "CodelistGenerator", "CohortSurvival", "OMOPGenerics", "ReportGenerator",
+    "CdmOnboarding", "DashboardExport"
   )
   # cran = c(
   #     "CdmConnector", "PaRe",
@@ -234,17 +234,44 @@ getDARWINpackages <- function() {
     "idx_source_to_concept_map_c", "idx_drug_strength_id_1", "idx_drug_strength_id_2"
   )
 
-  if (cdmVersion == '5.3') {
-    return(indexes)
-  } else if (cdmVersion == '5.4') {
+  tables <- c(
+    "person", "observation_period", "visit_occurrence", "visit_detail", 
+    "condition_occurrence", "drug_exposure", "procedure_occurrence", 
+    "device_exposure", "measurement", "observation", "note", "note_nlp", 
+    "specimen", "location", "care_site", "provider", "payer_plan_period", 
+    "cost", "drug_era", "dose_era", "condition_era", "episode", "metadata", 
+    "concept", "vocabulary", "domain", "concept_class", "relationship", 
+    "person", "person", "observation_period", "visit_occurrence", 
+    "visit_occurrence", "visit_detail", "visit_detail", 
+    "visit_detail", "condition_occurrence", "condition_occurrence", 
+    "condition_occurrence", "drug_exposure", "drug_exposure", "drug_exposure", 
+    "procedure_occurrence", "procedure_occurrence", "procedure_occurrence", 
+    "device_exposure", "device_exposure", "device_exposure", "measurement", 
+    "measurement", "measurement", "observation", "observation", "observation", "death", 
+    "note", "note", "note", "note", "note", "specimen", "specimen", 
+    "fact_relationship", "fact_relationship", "fact_relationship", 
+    "location", "care_site", "provider", "payer_plan_period", 
+    "cost_event", "drug_era", "drug_era", "dose_era", "dose_era", "condition_era", 
+    "condition_era", "metadata", "concept", "concept", "concept", "concept", 
+    "concept", "vocabulary", "domain", "concept_class", "concept_relationship", "concept_relationship", 
+    "concept_relationship", "relationship", "concept_synonym", 
+    "concept_ancestor", "concept_ancestor", "source_to_concept_map", 
+    "source_to_concept_map", "source_to_concept_map", "source_to_concept_map", 
+    "drug_strength", "drug_strength"
+  )
+
+  if (cdmVersion == '5.4') {
     # Indexes for the episode and episode event table (note: not applied by default CDM DDL scripts)
-    return(
-      c(indexes, "idx_episode_person_id_1", "idx_episode_concept_id_1",
-      "idx_episode_event_id_1", "idx_ee_field_concept_id_1")
-    )
-  } else {
-    return(indexes)
+    indexes <- c(indexes, "idx_episode_person_id_1", "idx_episode_concept_id_1",
+                 "idx_episode_event_id_1", "idx_ee_field_concept_id_1")
+    tables <- c(tables, "episode", "episode", "episode_event", "episode_event")
   }
+
+  data.frame(
+    TABLENAME = tables,
+    INDEXNAME = indexes,
+    type = substr(indexes, 1, 3)
+  )
 }
 
 .getDbmsVersion <- function(connectionDetails, outputFolder) {
@@ -298,4 +325,49 @@ getDARWINpackages <- function() {
     return(content$version)
   }
   return(NULL)
+}
+
+
+#' Run Benchmark CDMConnector
+#' @param connectionDetails An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param cdmDatabaseSchema Fully qualified name of database schema that contains OMOP CDM schema.
+#'                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
+#' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
+#' @returns list of DED diagnostics_summary and duration
+.runBenchmarkCdmConnector <- function(
+  connectionDetails,
+  cdmDatabaseSchema,
+  scratchDatabaseSchema
+) {
+  # Connect to the database with CDMConnector
+  connection <- .getCdmConnection(
+    connectionDetails = connectionDetails,
+    cdmDatabaseSchema = cdmDatabaseSchema,
+    scratchDatabaseSchema = scratchDatabaseSchema
+  )
+
+  on.exit({
+    if (connectionDetails$dbms == 'postgresql') {
+      DBI::dbDisconnect(connection)
+    } else {
+      DatabaseConnector::disconnect(connection)
+    }
+    rm(connection)
+  })
+
+  cdm <- CDMConnector::cdm_from_con(
+    connection,
+    cdm_schema = cdmDatabaseSchema,
+    write_schema = scratchDatabaseSchema,
+    .soft_validation = TRUE
+  )
+
+  ParallelLogger::logInfo("Starting execution of CDMConnector Benchmark")
+
+  start_time <- Sys.time()
+  benchmarkResults <- CDMConnector::benchmarkCDMConnector(cdm)
+  duration <- as.numeric(difftime(Sys.time(), start_time), units = "secs")
+
+  # Return result with duration
+  list(result = benchmarkResults, duration = duration)
 }

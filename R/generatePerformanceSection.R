@@ -45,10 +45,7 @@ generatePerformanceSection <- function(doc, results) {
   doc <- doc %>%
     officer::body_add_par("R packages", style = pkg.env$styles$heading2) %>%
     my_table_caption(
-      paste(
-        "Versions of all installed R packages from DARWIN EU\u00AE and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
-        "Packages can be installed from CRAN (install.packages(\"<package_name>\")) or Github (remotes::install_github(\"<organisation>/<package>\"))"
-      ),
+      "Installed versions of R packages from DARWIN EU\u00AE and the OHDSI Health Analytics Data-to-Evidence Suite (HADES).",
       sourceSymbol = pkg.env$sources$system
     ) %>%
     my_body_add_table(packageVersions)
@@ -66,7 +63,7 @@ generatePerformanceSection <- function(doc, results) {
     officer::body_add_par("")
 
   doc <- doc %>%
-    officer::body_add_par("Vocabulary Query Performance", style = pkg.env$styles$heading2)
+    officer::body_add_par("Query Performance", style = pkg.env$styles$heading2)
   if (!is.null(df$performanceBenchmark$result)) {
     n_relations <- df$performanceBenchmark$result
     benchmark_query_time <- df$performanceBenchmark$duration
@@ -82,6 +79,21 @@ generatePerformanceSection <- function(doc, results) {
       officer::body_add_par("Performance benchmark of the OMOP CDM tables could not be retrieved", style = pkg.env$styles$highlight)
   }
 
+  if (!is.null(df$cdmConnectorBenchmark$result)) {
+    df$cdmConnectorBenchmark$result <- df$cdmConnectorBenchmark$result %>%
+      select(
+        `Task` = .data$task,
+        `Time taken (s)` = .data$time_taken_secs,
+        `Time taken (min)` = .data$time_taken_mins
+      )
+    doc <- doc %>%
+      my_table_caption("CDMConnector benchmark of the OMOP CDM tables.", sourceSymbol = pkg.env$sources$cdm) %>%
+      my_body_add_table_runtime(df$cdmConnectorBenchmark)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("CDMConnector benchmark of the OMOP CDM tables could not be retrieved", style = pkg.env$styles$highlight)
+  }
+
   doc <- doc %>%
     officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2)
   if (!is.null(df$appliedIndexes$result)) {
@@ -89,41 +101,46 @@ generatePerformanceSection <- function(doc, results) {
 
     # filter to the OMOP CDM tables only
     if (!is.null(results$dataTablesResults$dataTablesCounts)) {
-      omop_table_names <- results$dataTablesResults$dataTablesCounts$result[,1]
+      omop_table_names <- results$dataTablesResults$dataTablesCounts$result[, 1]
       df$appliedIndexes$result <- df$appliedIndexes$result %>%
         dplyr::filter(.data$TABLENAME %in% omop_table_names)
     }
 
-    missingIndexes <- setdiff(expectedIndexes, df$appliedIndexes$result$INDEXNAME)
-    additionalIndexes <- setdiff(df$appliedIndexes$result$INDEXNAME, expectedIndexes)
-
-    df$appliedIndexes$result <- df$appliedIndexes$result %>%
-      dplyr::group_by(.data$TABLENAME) %>%
+    df$appliedIndexes$result$actual <- 1
+    expectedIndexes$expected <- 1
+    indexOverview <- df$appliedIndexes$result %>%
+      dplyr::mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
+      dplyr::full_join(expectedIndexes, by = join_by(TABLENAME, INDEXNAME, type)) %>%
+      dplyr::group_by(.data$TABLENAME, .data$type) %>%
       dplyr::summarize(
-        INDEXNAMES = paste(.data$INDEXNAME, collapse = ",")
+        n_indexes_applied = sum(.data$actual, na.rm = TRUE),
+        n_indexes_expected = sum(.data$expected, na.rm = TRUE),
+        n_indexes_missing = sum(is.na(.data$actual), na.rm = TRUE)
+      ) %>%
+      tidyr::pivot_wider(
+        names_from = .data$type,
+        values_from = c(.data$n_indexes_applied, .data$n_indexes_expected, .data$n_indexes_missing),
+        names_glue = "{.name}",  #_{.value}
+        values_fill = 0,
+        names_sort = TRUE
+      ) %>%
+      dplyr::select(
+        .data$TABLENAME,
+        `xpk - Applied` = .data$n_indexes_applied_xpk,
+        `xpk - Expected` = .data$n_indexes_expected_xpk,
+        `xpk - Missing` = .data$n_indexes_missing_xpk,
+        `idx - Applied` = .data$n_indexes_applied_idx,
+        `idx - Expected` = .data$n_indexes_expected_idx,
+        `idx - Missing` = .data$n_indexes_missing_idx
       )
+    indexTotals <- data.frame(TABLENAME  = "Total", t(colSums(indexOverview[, -1])))
+    names(indexTotals) <- names(indexOverview)
+    indexOverview <- rbind(indexOverview, indexTotals)
 
     doc <- doc %>%
-      my_table_caption("The indexes applied on the OMOP CDM tables", sourceSymbol = pkg.env$sources$system) %>%
-      my_body_add_table_runtime(df$appliedIndexes)
-
-    if (length(missingIndexes) > 0) {
-      doc <- doc %>%
-        officer::body_add_par("The following expected indexes are missing:") %>%
-        officer::body_add_par("") %>%
-        officer::body_add_par(paste(missingIndexes, collapse = ", "))
-    } else {
-      doc <- doc %>%
-        officer::body_add_par("All expected indexes are present")
-    }
-
-    if (length(additionalIndexes) > 0) {
-      doc <- doc %>%
-        officer::body_add_par("") %>%
-        officer::body_add_par("The following indexes have been applied additional to the expected indexes:") %>%
-        officer::body_add_par("") %>%
-        officer::body_add_par(paste(additionalIndexes, collapse = ", "))
-    }
+      my_table_caption("The number of indexes applied on the OMOP CDM tables. xpk=primary key, idx=index.", sourceSymbol = pkg.env$sources$system) %>%
+      my_body_add_table(indexOverview) %>%
+      my_body_add_runtime(df$appliedIndexes$duration)
   } else {
     doc <- doc %>%
       officer::body_add_par("Applied indexes could not be retrieved", style = pkg.env$styles$highlight)

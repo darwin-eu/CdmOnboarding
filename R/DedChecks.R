@@ -48,56 +48,13 @@
     if (nrow(dedIngredients) > 1) 's' else ''
   ))
 
-  # Connect to the database. For postgres with DBI if RPostgres installed, otherwise via DatabaseConnector.
-  if (connectionDetails$dbms == 'postgresql' && system.file(package = 'RPostgres') != '') {
-    server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
+  connection <- .getCdmConnection(
+    connectionDetails = connectionDetails,
+    cdmDatabaseSchema = cdmDatabaseSchema,
+    scratchDatabaseSchema = scratchDatabaseSchema
+  )
 
-    connection <- DBI::dbConnect(
-      RPostgres::Postgres(),
-      dbname = server_parts[2],
-      host = server_parts[1],
-      user = connectionDetails$user(),
-      password = connectionDetails$password()
-    )
-
-    cdm <- CDMConnector::cdm_from_con(
-      connection,
-      cdm_schema = cdmDatabaseSchema,
-      write_schema = scratchDatabaseSchema,
-      .soft_validation = TRUE  # with validation hard error when observation period overlaps or negative durations
-    )
-  } else {
-    connection <- DatabaseConnector::connect(connectionDetails)
-    cdm <- CDMConnector::cdm_from_con(
-      connection,
-      cdm_schema = cdmDatabaseSchema,
-      write_schema = scratchDatabaseSchema,
-      .soft_validation = TRUE
-    )
-  }
-
-  tryCatch({
-    ded_start_time <- Sys.time()
-
-    # Reduce output lines by suppressing both warnings and messages. Only progress bars displayed.
-    dedResults <- DrugExposureDiagnostics::executeChecks(
-      cdm = cdm,
-      ingredients = dedIngredients$concept_id,
-      checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
-      minCellCount = 5,
-      sample = 1e+06,
-      earliestStartDate = "2010-01-01"
-    )
-
-    duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-    ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
-
-    # Return result with duration
-    list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
-  }, error = function(e) {
-    ParallelLogger::logError("Execution of DrugExposureDiagnostics failed: ", e)
-    NULL
-  }, finally = {
+  on.exit({
     if (connectionDetails$dbms == 'postgresql') {
       DBI::dbDisconnect(connection)
     } else {
@@ -105,6 +62,51 @@
     }
     rm(connection)
   })
+
+  cdm <- CDMConnector::cdm_from_con(
+    connection,
+    cdm_schema = cdmDatabaseSchema,
+    write_schema = scratchDatabaseSchema,
+    .soft_validation = TRUE
+  )
+
+  ded_start_time <- Sys.time()
+
+  # Reduce output lines by suppressing both warnings and messages. Only progress bars displayed.
+  dedResults <- DrugExposureDiagnostics::executeChecks(
+    cdm = cdm,
+    ingredients = dedIngredients$concept_id,
+    checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
+    minCellCount = 5,
+    sample = 1e+06,
+    earliestStartDate = "2010-01-01"
+  )
+
+  duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
+  ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
+
+  mappingLevel <- tryCatch({
+    dedResults$conceptSummary %>%
+      dplyr::group_by(
+        .data$ingredient,
+        .data$concept_class_id
+      ) %>%
+      dplyr::summarise(
+        n_concepts = n(),
+        n_records = sum(.data$n_records, na.rm = TRUE)
+      )
+  }, error = function(e) {
+    ParallelLogger::logWarn("Could not generate mapping level summary. ", e)
+    NULL
+  })
+
+  # Return result with duration
+  list(
+    result = dedResults$diagnosticsSummary,
+    resultMappingLevel = mappingLevel,
+    duration = duration,
+    packageVersion = dedVersion
+  )
 }
 
 #' Returns data frame with concept_id and concept_name of drug ingredients

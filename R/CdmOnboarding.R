@@ -47,6 +47,7 @@
 #' @param runWebAPIChecks                  Boolean to determine if WebAPI checks need to be run. Default = TRUE
 #' @param runPerformanceChecks             Boolean to determine if performance checks need to be run. Default = TRUE
 #' @param runDedChecks                     Boolean to determine if DrugExposureDiagnostics checks need to be run. Default = TRUE
+#' @param runCohortBenchmarkChecks         Boolean to determine if CohortBenchMark checks need to be run. Default = TRUE
 #' @param smallCellCount                   To avoid patient identifiability, source values with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions. (default 5)
 #' @param baseUrl                          WebAPI url, example: http://server.org:80/WebAPI
 #' @param sqlOnly                          If TRUE, queries will be written to file instead of executed. Not supported for DED Checks.
@@ -72,6 +73,7 @@ cdmOnboarding <- function(
   runPerformanceChecks = TRUE,
   runWebAPIChecks = TRUE,
   runDedChecks = TRUE,
+  runCohortBenchmarkChecks = TRUE,
   smallCellCount = 5,
   baseUrl = "",
   sqlOnly = FALSE,
@@ -103,6 +105,7 @@ cdmOnboarding <- function(
     runPerformanceChecks = runPerformanceChecks,
     runWebAPIChecks = runWebAPIChecks,
     runDedChecks = runDedChecks,
+    runCohortBenchmarkChecks = runCohortBenchmarkChecks,
     smallCellCount = smallCellCount,
     baseUrl = baseUrl,
     sqlOnly = sqlOnly,
@@ -146,12 +149,9 @@ cdmOnboarding <- function(
 
   tryCatch({
     bundledResultsLocation <- bundleResults(outputFolder, databaseId)
-    ParallelLogger::logInfo(sprintf(
-      "All generated CDM Onboarding results are bundled for sharing at: %s",
-      bundledResultsLocation
-    ))
+    ParallelLogger::logInfo("> All generated CDM Onboarding results are bundled for sharing at: ", bundledResultsLocation)
   }, error = function(e) {
-    ParallelLogger::logWarn(sprintf("Failed to bundle CDM Onboarding results, no zip bundle has been created: %s", e))
+    ParallelLogger::logWarn("> Failed to bundle CDM Onboarding results, no zip bundle has been created: ", e)
   })
 
   if (!(is.null(documentGenerated) || documentGenerated)) {
@@ -164,26 +164,27 @@ cdmOnboarding <- function(
 # The main execution of CDM Onboarding analyses (for v5.x)
 # Results are returned as list, and stored as an .rds object in the provided output folder
 .execute <- function(
-    connectionDetails,
-    cdmDatabaseSchema,
-    resultsDatabaseSchema,
-    scratchDatabaseSchema,
-    oracleTempSchema,
-    databaseId,
-    databaseName,
-    databaseDescription,
-    runVocabularyChecks,
-    runDataTablesChecks,
-    runPerformanceChecks,
-    runWebAPIChecks,
-    runDedChecks,
-    smallCellCount,
-    baseUrl,
-    sqlOnly,
-    outputFolder,
-    verboseMode,
-    dqdJsonPath,
-    optimize
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema,
+  scratchDatabaseSchema,
+  oracleTempSchema,
+  databaseId,
+  databaseName,
+  databaseDescription,
+  runVocabularyChecks,
+  runDataTablesChecks,
+  runPerformanceChecks,
+  runWebAPIChecks,
+  runDedChecks,
+  runCohortBenchmarkChecks,
+  smallCellCount,
+  baseUrl,
+  sqlOnly,
+  outputFolder,
+  verboseMode,
+  dqdJsonPath,
+  optimize
 ) {
   # Log execution -------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
@@ -285,7 +286,7 @@ cdmOnboarding <- function(
       "Missing Achilles analysis ids in result tables: %s.",
       paste(missingAnalysisIds, collapse = ", ")
     ))
-    readline("> If this is expected, press enter to continue. If not, abort (ctrl-c) and rerun Achilles including above analyses.")
+    readline("! If this is expected, press enter to continue. If not, abort (ctrl-c) and rerun Achilles including above analyses.")
   }
 
   dqdResults <- NULL
@@ -300,7 +301,7 @@ cdmOnboarding <- function(
     dir.create(path = outputFolder, recursive = TRUE)
   }
 
-  ParallelLogger::logInfo(sprintf("CDM Onboarding of database %s started (cdm_version=v%s)", databaseName, cdmVersion))
+  ParallelLogger::logInfo(sprintf("> CDM Onboarding of database %s started (cdm_version=v%s)", databaseName, cdmVersion))
 
   # data table checks ------------------------------------------------------------------------------------------
   dataTablesResults <- NULL
@@ -340,6 +341,7 @@ cdmOnboarding <- function(
       connectionDetails = connectionDetails,
       cdmDatabaseSchema = cdmDatabaseSchema,
       resultsDatabaseSchema = resultsDatabaseSchema,
+      scratchDatabaseSchema = scratchDatabaseSchema,
       cdmVersion = cdmVersion,
       sqlOnly = sqlOnly,
       outputFolder = outputFolder
@@ -349,12 +351,12 @@ cdmOnboarding <- function(
   # webapi checks --------------------------------------------------------------------------------------------
   webApiVersion <- "unknown"
   if (runWebAPIChecks && baseUrl != "") {
-    ParallelLogger::logInfo("Running WebAPIChecks")
+    ParallelLogger::logInfo("> Running WebAPIChecks")
 
     webApiVersion <- tryCatch({
       version <- .getWebApiVersion(baseUrl)
-      ParallelLogger::logInfo(sprintf("> Connected successfully to '%s'", baseUrl))
-      ParallelLogger::logInfo(sprintf("> WebAPI version: %s", version))
+      ParallelLogger::logInfo("> Connected successfully to ", baseUrl)
+      ParallelLogger::logInfo("> WebAPI version: ", version)
       version
     }, error = function(e) {
       ParallelLogger::logWarn(sprintf("Could not connect to the WebAPI on '%s':\n%s", baseUrl, e))
@@ -365,24 +367,45 @@ cdmOnboarding <- function(
   # DED checks --------------------------------------------------------------------------------------------
   drugExposureDiagnostics <- NULL
   if (runDedChecks) {
-    ParallelLogger::logInfo("Running DED checks")
-    drugExposureDiagnostics <- .runDedChecks(
-      connectionDetails,
-      cdmDatabaseSchema,
-      scratchDatabaseSchema
-    )
+    ParallelLogger::logInfo("> Running DED checks")
+    drugExposureDiagnostics <- tryCatch({
+      .runDedChecks(
+        connectionDetails,
+        cdmDatabaseSchema,
+        scratchDatabaseSchema
+      )
+    }, error = function(e) {
+      ParallelLogger::logError("DED checks failed: ", e)
+      NULL
+    })
   }
 
-  ParallelLogger::logInfo("Done.")
+  # Cohort Benchmark checks -------------------------------------------------------------------------------------
+  cohortBenchmark <- NULL
+  if (runCohortBenchmarkChecks) {
+    ParallelLogger::logInfo("> Running Cohort Benchmark")
+    cohortBenchmark <- tryCatch({
+      .runCohortBenchmark(
+        connectionDetails,
+        cdmDatabaseSchema,
+        scratchDatabaseSchema
+      )
+    }, error = function(e) {
+      ParallelLogger::logError("Cohort Benchmark failed: ", e)
+      NULL
+    })
+  }
+
+  ParallelLogger::logInfo("> Done.")
 
   ParallelLogger::logInfo(sprintf(
-    "Complete CdmOnboarding took %.2f minutes",
+    "> Complete CdmOnboarding took %.2f minutes",
     as.numeric(difftime(Sys.time(), start_time), units = "mins")
   ))
 
   # save results
   results <- list(
-    executionDate = format(Sys.time(), "%Y-%m-%d"),
+    executionDate = format(Sys.time(), "%Y-%m-%d %H:%M"),
     executionDuration = as.numeric(difftime(Sys.time(), start_time), units = "secs"),
     cdmOnboardingVersion = packageVersion("CdmOnboarding"),
     databaseId = databaseId,
@@ -398,14 +421,15 @@ cdmOnboarding <- function(
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
     dqdResults = dqdResults,
-    drugExposureDiagnostics = drugExposureDiagnostics
+    drugExposureDiagnostics = drugExposureDiagnostics,
+    cohortBenchmark = cohortBenchmark
   )
 
   tryCatch({
     saveRDS(results, file.path(outputFolder, sprintf("onboarding_results_%s_%s.rds", databaseId, format(Sys.time(), "%Y%m%d"))))
-    ParallelLogger::logInfo(sprintf("The CDM Onboarding results have been exported to: %s", outputFolder))
+    ParallelLogger::logInfo("> The CDM Onboarding results have been exported to ", outputFolder)
   }, error = function(e) {
-    ParallelLogger::logWarn(sprintf("Failed to export CDM Onboarding results object, no rds file has been created: %s", e))
+    ParallelLogger::logWarn("> Failed to export CDM Onboarding results object, no rds file has been created: ", e)
   })
 
   return(results)

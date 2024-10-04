@@ -2,6 +2,7 @@ library(DBI)
 library(RPostgres)
 library(CDMConnector)
 library(DrugExposureDiagnostics)
+library(CdmOnboarding)
 
 # Connecting using dsn, to be set up in database driver
 con <- DBI::dbConnect(
@@ -20,28 +21,21 @@ cdm <- cdm_from_con(
 )
 
 ded_start_time <- Sys.time()
-
+dedIngredients <- CdmOnboarding::getDedIngredients()
+# dedIngredients <- dedIngredients[c(5, 8), ] # For testing
 dedResults <- DrugExposureDiagnostics::executeChecks(
   cdm = cdm,
-  ingredients = c(
-    528323,
-    954688,
-    968426,
-    1119119,
-    1125315,
-    1139042,
-    1140643,
-    1154343,
-    1550557,
-    1703687,
-    40225722
-  ),
+  ingredients = dedIngredients$concept_id,
   checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
   minCellCount = 5,
   sample = 1e+06,
   earliestStartDate = "2010-01-01"
 )
 
+# names(results$diagnosticsSummary)
+
 duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-dedSummary <- list(result = dedResults$diagnosticsSummary, duration = duration)
+dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
+dedSummary <- list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
 saveRDS(dedSummary, "dedSummary.rds")
+exportDedResults(dedSummary, "dedResults.csv")

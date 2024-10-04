@@ -1,6 +1,6 @@
 Package: CdmOnboarding
 Title: Generate report on an OMOP CDM instance
-Version: 3.2.1
+Version: 3.3.0
 Authors@R: 
   c(person(given = "Peter",
            family = "Rijnbeek",
@@ -39,6 +39,7 @@ Imports:
     prettyunits,
     tools,
     dplyr,
+    tidyr,
     officer,
     data.table,
     lubridate,
