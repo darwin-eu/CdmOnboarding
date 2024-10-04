@@ -146,27 +146,25 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
     my_body_add_table_runtime(df$observationPeriodLength)
 
   # Combine Observation Periods per Person and overlap in one table
-  obsPeriodPerPerson <- data.frame(
-    Field = "Persons with 0 observation period(s)",
-    Value = personCount - observationPeriodPersonCount,
-    `%Persons` = prettyPc((personCount - observationPeriodPersonCount) / personCount * 100),
-    check.names = FALSE  # To allow `%Persons`
-  )
   if (!is.null(df$observationPeriodsPerPerson$result)) {
-    obsPeriodPerPerson <- rbind(
-      obsPeriodPerPerson,
-      df$observationPeriodsPerPerson$result %>%
-        mutate(
-          Field = sprintf("Persons with %s observation period(s)", .data$N_OBSERVATION_PERIODS),
-          Value = .data$N_PERSONS,
-          `%Persons` = prettyPc(.data$N_PERSONS / personCount * 100),
-          .keep = "none"  # do not display other columns
-        )
+    obsPeriodsPerPerson <- df$observationPeriodsPerPerson$result %>%
+      mutate(
+        Field = sprintf("Persons with %s observation period(s)", .data$N_OBSERVATION_PERIODS),
+        Value = .data$N_PERSONS,
+        `%Persons` = prettyPc(.data$N_PERSONS / personCount * 100),
+        .keep = "none"  # do not display other columns
+      )
+  } else {
+    obsPeriodsPerPerson <- data.frame(
+      Field = "Persons with observation period(s)",
+      Value = NA,
+      `%Persons` = NA,
+      check.names = FALSE  # To allow `%Persons`
     )
   }
 
   obsPeriodStats <- rbind(
-    obsPeriodPerPerson,
+    obsPeriodsPerPerson,
     data.frame(
       Field = c("Persons with overlapping observation periods", "Number of overlapping observation periods"),
       Value = c(
