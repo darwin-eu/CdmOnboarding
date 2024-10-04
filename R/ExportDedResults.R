@@ -67,8 +67,8 @@ exportDedResults <- function(
 
 .formatDedResults <- function(ded_results, dedVersion) {
   ded_results$ingredient_concept_id <- as.character(ded_results$ingredient_concept_id)
-  ded_results$n_records <- format(round(ded_results$n_records / 10) * 10, big.mark = ",", format = 'd')
-  ded_results$n_patients <- format(round(ded_results$n_patients / 10) * 10, big.mark = ",", format = 'd')
+  ded_results$n_records <- prettyHr(round(ded_results$n_records / 10) * 10)
+  ded_results$n_patients <- prettyHr(round(ded_results$n_patients / 10) * 10)
 
   # In DED v1.0.9 the dose columns can be missing
   if (!("n_dose_and_missingness" %in% colnames(ded_results))) {

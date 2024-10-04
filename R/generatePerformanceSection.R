@@ -126,15 +126,16 @@ generatePerformanceSection <- function(doc, results) {
       ) %>%
       dplyr::select(
         .data$TABLENAME,
-        xpk_applied = .data$n_indexes_applied_xpk,
-        xpk_expected = .data$n_indexes_expected_xpk,
-        xpk_missing = .data$n_indexes_missing_xpk,
-        idx_applied = .data$n_indexes_applied_idx,
-        idx_expected = .data$n_indexes_expected_idx,
-        idx_missing = .data$n_indexes_missing_idx
+        `xpk - Applied` = .data$n_indexes_applied_xpk,
+        `xpk - Expected` = .data$n_indexes_expected_xpk,
+        `xpk - Missing` = .data$n_indexes_missing_xpk,
+        `idx - Applied` = .data$n_indexes_applied_idx,
+        `idx - Expected` = .data$n_indexes_expected_idx,
+        `idx - Missing` = .data$n_indexes_missing_idx
       )
-
-    indexOverview <- rbind(indexOverview, data.frame(TABLENAME  = "Total", t(colSums(indexOverview[, -1]))))
+    indexTotals <- data.frame(TABLENAME  = "Total", t(colSums(indexOverview[, -1])))
+    names(indexTotals) <- names(indexOverview)
+    indexOverview <- rbind(indexOverview, indexTotals)
 
     doc <- doc %>%
       my_table_caption("The number of indexes applied on the OMOP CDM tables. xpk=primary key, idx=index.", sourceSymbol = pkg.env$sources$system) %>%

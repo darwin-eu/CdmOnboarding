@@ -59,14 +59,13 @@ generateDedSection <- function(doc, df) {
     my_body_add_table_runtime(df)
 
   if (!is.null(df$resultMappingLevel)) {
-    df$resultMappingLevel$n_records <- format(round(df$resultMappingLevel$n_records / 10) * 10, big.mark = ",", format = 'd')
-
     df$resultMappingLevel <- df$resultMappingLevel %>%
-      select(
+      mutate(
         `Ingredient` = .data$ingredient,
         `Concept Class` = .data$concept_class_id,
         `#Concepts` = .data$n_concepts,
-        `#Records` = .data$n_records
+        `#Records` = prettyHr(round(.data$n_records / 10) * 10),
+        .keep = "none"
       )
 
     doc <- doc %>%
