@@ -34,7 +34,8 @@ generateDqdSection <- function(doc, df) {
       Total = c(countTotalPlausibility, countTotalConformance, countTotalCompleteness, countTotal)
     )
   )
-  dqdOverview$`%Pass` <- prettyPc(dqdOverview$Pass / dqdOverview$Total * 100)
+  dqdOverview$NotApplicable <- dqdOverview$Total - dqdOverview$Fail - dqdOverview$Pass
+  dqdOverview$`%Pass` <- prettyPc(dqdOverview$Pass / (dqdOverview$Total - dqdOverview$NotApplicable) * 100)
 
   doc <- doc %>%
     officer::body_add_par(sprintf(
@@ -46,7 +47,7 @@ generateDqdSection <- function(doc, df) {
       df$startTimestamp,
       df$executionTime
     )) %>%
-    my_table_caption("Number of passed, failed and total DQD checks per category. For DQD v2, the checks with status 'NA' are not included.", sourceSymbol = "") %>%
+    my_table_caption("Number of passed, failed and total DQD checks per category.", sourceSymbol = "") %>%
     my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r', 4)), last_row = TRUE)
 
   return(doc)
