@@ -28,13 +28,26 @@ generateDqdSection <- function(doc, df) {
   dqdOverview <- with(
     df$overview,
     data.frame(
-      Category = c("Plausibility", "Conformance", "Completeness", "Total"),
-      Pass = c(countPassedPlausibility, countPassedConformance, countPassedCompleteness, countPassed),
-      Fail = c(countFailedPlausibility, countFailedConformance, countFailedCompleteness, countOverallFailed),
-      Total = c(countTotalPlausibility, countTotalConformance, countTotalCompleteness, countTotal)
+      Category = c("Plausibility", "Conformance", "Completeness"),
+      Total = c(countTotalPlausibility, countTotalConformance, countTotalCompleteness),
+      Pass = c(countPassedPlausibility, countPassedConformance, countPassedCompleteness),
+      Fail = c(countFailedPlausibility, countFailedConformance, countFailedCompleteness)
     )
   )
-  dqdOverview$`%Pass` <- prettyPc(dqdOverview$Pass / dqdOverview$Total * 100)
+  # Totals
+  dqdOverview <- dqdOverview %>%
+    bind_rows(summarise_all(., ~if (is.numeric(.)) sum(.) else "Total"))
+
+  dqdOverview <- dqdOverview %>%
+    mutate(
+      Applicable = Fail + Pass,  # No fail/pass means check has status NA
+      `%Pass` = prettyPc(Pass / Applicable * 100),
+      .keep = 'all'
+    ) %>%
+    relocate(
+      Applicable,
+      .after = Total
+    )
 
   doc <- doc %>%
     officer::body_add_par(sprintf(
@@ -46,7 +59,7 @@ generateDqdSection <- function(doc, df) {
       df$startTimestamp,
       df$executionTime
     )) %>%
-    my_table_caption("Number of passed, failed and total DQD checks per category. For DQD v2, the checks with status 'NA' are not included.", sourceSymbol = "") %>%
+    my_table_caption("Number of total, applicable, passed and failed DQD checks per category. Pass percentage is calculated from total applicable checks. Checks can be not applicable if table/field it is applied to is empty.", sourceSymbol = "") %>%  #nolint
     my_body_add_table(dqdOverview, first_column = TRUE, alignment = c('l', rep('r', 4)), last_row = TRUE)
 
   return(doc)
