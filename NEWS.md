@@ -1,3 +1,7 @@
+# CdmOnboarding 3.3.1
+
+* Fix display of DQD overview
+
 # CdmOnboarding 3.3.0
 
 * Add Episode mapping coverage and top25 mapped/unmapped
