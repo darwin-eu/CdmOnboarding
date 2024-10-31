@@ -1,3 +1,8 @@
+# CdmOnboarding 3.3.2
+
+ * Fix generating applied indexes section when no indexes have been applied
+ * Set sample to NULL in DeD execution (fix for https://github.com/darwin-eu-dev/DrugExposureDiagnostics/issues/268)
+
 # CdmOnboarding 3.3.1
 
 * Fix display of DQD overview
