@@ -30,24 +30,6 @@
   cdmDatabaseSchema,
   scratchDatabaseSchema
 ) {
-  dedIngredients <- getDedIngredients()
-
-  dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
-  if (dedVersion <= '1.0.5') {
-    dedIngredients <- dedIngredients[5, ]
-    ParallelLogger::logWarn(sprintf(
-      "Old version of DrugExposureDiagnostics installed: '%s', only executing DED for '%s'.",
-      dedVersion,
-      dedIngredients$concept_name
-    ))
-  }
-
-  ParallelLogger::logInfo(sprintf(
-    "Starting execution of DrugExposureDiagnostics for %d ingredient%s",
-    nrow(dedIngredients),
-    if (nrow(dedIngredients) > 1) 's' else ''
-  ))
-
   connection <- .getCdmConnection(
     connectionDetails = connectionDetails,
     cdmDatabaseSchema = cdmDatabaseSchema,
@@ -70,31 +52,38 @@
     .soft_validation = TRUE
   )
 
-  ded_start_time <- Sys.time()
+  dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
+  if (dedVersion <= '1.0.5') {
+    dedIngredients <- dedIngredients[5, ]
+    ParallelLogger::logWarn(sprintf(
+      "Old version of DrugExposureDiagnostics installed: '%s', only executing DED for '%s'.",
+      dedVersion,
+      dedIngredients$concept_name
+    ))
+  }
 
-  # Reduce output lines by suppressing both warnings and messages. Only progress bars displayed.
+  dedIngredients <- getDedIngredients()
+  ParallelLogger::logInfo(sprintf(
+    "Starting execution of DrugExposureDiagnostics for %d ingredient%s",
+    nrow(dedIngredients),
+    if (nrow(dedIngredients) > 1) 's' else ''
+  ))
+
+  ded_start_time <- Sys.time()
   dedResults <- DrugExposureDiagnostics::executeChecks(
     cdm = cdm,
     ingredients = dedIngredients$concept_id,
     checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
     minCellCount = 5,
-    sample = 1e+06,
+    sample = NULL,
     earliestStartDate = "2010-01-01"
   )
-
   duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
+
   ParallelLogger::logInfo(sprintf("Executing DrugExposureDiagnostics took %.2f seconds.", duration))
 
   mappingLevel <- tryCatch({
-    dedResults$conceptSummary %>%
-      dplyr::group_by(
-        .data$ingredient,
-        .data$concept_class_id
-      ) %>%
-      dplyr::summarise(
-        n_concepts = n(),
-        n_records = sum(.data$n_records, na.rm = TRUE)
-      )
+    getMappingLevel(dedResults)
   }, error = function(e) {
     ParallelLogger::logWarn("Could not generate mapping level summary. ", e)
     NULL
@@ -107,6 +96,22 @@
     duration = duration,
     packageVersion = dedVersion
   )
+}
+
+#' Get drug class levels from DrugExposureDiagnostics results
+#' @param dedResults DrugExposureDiagnostics results object
+#' @return data frame with for each ingredient and concept_class_id the number of concepts and records
+#' @export
+getMappingLevel <- function(dedResults) {
+  dedResults$conceptSummary %>%
+    dplyr::group_by(
+      .data$ingredient,
+      .data$concept_class_id
+    ) %>%
+    dplyr::summarise(
+      n_concepts = n(),
+      n_records = sum(.data$n_records, na.rm = TRUE)
+    )
 }
 
 #' Returns data frame with concept_id and concept_name of drug ingredients
