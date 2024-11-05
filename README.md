@@ -1,6 +1,7 @@
 # CdmOnboarding
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/darwin-eu-dev/CdmOnboarding/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/darwin-eu-dev/CdmOnboarding/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/darwin-eu/CdmOnboarding/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/darwin-eu/CdmOnboarding/actions/workflows/R-CMD-check.yaml)
+[![codecov.io](https://codecov.io/gh/darwin-eu/CdmOnboarding/coverage.svg?branch=main)](https://app.codecov.io/gh/darwin-eu/CdmOnboarding?branch=main)
 <!-- badges: end -->
 
 R Package to support the onboarding process of new CDMs in the DARWIN EU Data Network
