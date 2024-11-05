@@ -40,7 +40,7 @@ exportDedResults <- function(
   outputFolder = getwd()
 ) {
   df_ded <- results$drugExposureDiagnostics
-  if (is.null(df_ded$result)) {
+  if (length(df_ded$result) == 0) {
     ParallelLogger::logInfo("No DrugExposureDiagnostics results to export")
     return()
   }

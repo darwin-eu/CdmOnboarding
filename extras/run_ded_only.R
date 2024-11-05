@@ -4,7 +4,7 @@ library(CDMConnector)
 library(DrugExposureDiagnostics)
 library(CdmOnboarding)
 
-# Connecting using dsn, to be set up in database driver
+# More DBI examples: https://darwin-eu.github.io/CDMConnector/articles/a04_DBI_connection_examples.html
 con <- DBI::dbConnect(
   RPostgres::Postgres(),
   dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
@@ -28,14 +28,21 @@ dedResults <- DrugExposureDiagnostics::executeChecks(
   ingredients = dedIngredients$concept_id,
   checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
   minCellCount = 5,
-  sample = 1e+06,
+  sample = NULL,
   earliestStartDate = "2010-01-01"
 )
+duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
 
 # names(results$diagnosticsSummary)
 
-duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
-dedSummary <- list(result = dedResults$diagnosticsSummary, duration = duration, packageVersion = dedVersion)
+mappingLevels <- CdmOnboarding::getMappingLevel(dedResults)
+
+dedSummary <- list(
+  result = dedResults$diagnosticsSummary,
+  resultMappingLevel = mappingLevels,
+  duration = duration,
+  packageVersion = packageVersion(pkg = "DrugExposureDiagnostics")
+)
+
 saveRDS(dedSummary, "dedSummary.rds")
 exportDedResults(dedSummary, "dedResults.csv")
