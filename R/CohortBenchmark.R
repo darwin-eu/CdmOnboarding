@@ -21,18 +21,16 @@
 # @author Maxim Moinat
 
 
-#' Generate cohorts
+#' Generate predefined set of cohorts
 #' @param connectionDetails An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param cdmDatabaseSchema Fully qualified name of database schema that contains OMOP CDM schema.
 #'                          On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
 #' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
-#' @param cohortPath Path to the folder containing cohort definitions in JSON format
 #' @returns list of DED diagnostics_summary and duration
 .runCohortBenchmark <- function(
   connectionDetails,
   cdmDatabaseSchema,
-  scratchDatabaseSchema,
-  cohortPath = "inst/json/cohorts"
+  scratchDatabaseSchema
 ) {
   # Connect to the database with CDMConnector
   connection <- .getCdmConnection(
@@ -57,7 +55,9 @@
     .soft_validation = TRUE
   )
 
-  cohort_set_definition <- CDMConnector::read_cohort_set(cohortPath)
+  cohort_set_definition <- CDMConnector::read_cohort_set(
+    path = system.file("json", "cohorts", package = "CdmOnboarding")
+  )
   n_cohorts <- nrow(cohort_set_definition)
 
   # Generate each cohort definition one by one to capture time taken and possible errors
