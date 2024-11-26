@@ -50,7 +50,8 @@ Imports:
     scales,
     stringr,
     httr,
-    utils
+    utils,
+    tictoc
 Suggests:
     RPostgres,
     flextable,
