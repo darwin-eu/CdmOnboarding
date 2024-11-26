@@ -94,6 +94,13 @@ generatePerformanceSection <- function(doc, results) {
       officer::body_add_par("CDMConnector benchmark of the OMOP CDM tables could not be retrieved", style = pkg.env$styles$highlight)
   }
 
+  if (!is.null(results$cohortBenchmark)) {
+    doc <- generateCohortBenchmarkSection(doc, results$cohortBenchmark)
+  } else {
+    doc <- doc %>%
+      officer::body_add_par("Cohort Benchmark results are missing, runCohortBenchmark = FALSE?", style = pkg.env$styles$highlight)
+  }
+
   doc <- doc %>%
     officer::body_add_par("Applied indexes", style = pkg.env$styles$heading2)
   if (!is.null(df$appliedIndexes$result)) {
