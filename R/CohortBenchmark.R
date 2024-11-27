@@ -100,7 +100,7 @@
     }
   }
 
-  n_subject_bins <- cut(n_subjects, breaks = c(0, 100, 1000, 10000, 100000, 1000000, Inf), labels = c("0-100", "100-1k", "1k-10k", "10k-100k", "100k-1M", "1M+"))
+  n_subject_bins <- cut(as.integer(n_subjects), breaks = c(0, 100, 1000, 10000, 100000, 1000000, Inf), labels = c("0-100", "100-1k", "1k-10k", "10k-100k", "100k-1M", "1M+"))
 
   data.frame(
     cohort_name = cohort_set_definition$cohort_name,
