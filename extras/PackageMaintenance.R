@@ -14,9 +14,8 @@
 # 2.3 Add example report, `CdmOnboarding_Syntha20k-vx.x.x.docx` for latest release.
 # 3. Create Github PR to main
 # 4. Review and merge PR
-# 5. Create Github release on darwin-eu-dev, creating a tag as well.
-#    * make sure to target main
-# 6. Git checkout main and git pull
-# 7. Push to darwin-public git push --tags darwin-public main
-# 8. Merge main into develop, bump dev version in DESCRIPTION (add .900)
+# 5. Create Github release on darwin-eu-dev, main branch, creating a tag as well.
+# 6. Git checkout main and pull
+# 7. Push to darwin-public: `git push --tags darwin-public main`
+# 8. Git checkout develop and merge main, bump dev version in DESCRIPTION (add .900)
 # 9. Create Github release on darwin-eu, reusing tag.
