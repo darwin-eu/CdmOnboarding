@@ -1,6 +1,6 @@
 Package: CdmOnboarding
 Title: Generate report on an OMOP CDM instance
-Version: 3.3.2
+Version: 3.3.3
 Authors@R: 
   c(person(given = "Peter",
            family = "Rijnbeek",
@@ -50,7 +50,8 @@ Imports:
     scales,
     stringr,
     httr,
-    utils
+    utils,
+    tictoc
 Suggests:
     RPostgres,
     flextable,

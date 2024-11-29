@@ -2,13 +2,12 @@
 % Please edit documentation in R/CohortBenchmark.R
 \name{.runCohortBenchmark}
 \alias{.runCohortBenchmark}
-\title{Generate cohorts}
+\title{Generate predefined set of cohorts}
 \usage{
 .runCohortBenchmark(
   connectionDetails,
   cdmDatabaseSchema,
-  scratchDatabaseSchema,
-  cohortPath = "inst/json/cohorts"
+  scratchDatabaseSchema
 )
 }
 \arguments{
@@ -18,12 +17,10 @@
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
 
 \item{scratchDatabaseSchema}{Fully qualified name of database schema where temporary tables can be written.}
-
-\item{cohortPath}{Path to the folder containing cohort definitions in JSON format}
 }
 \value{
 list of DED diagnostics_summary and duration
 }
 \description{
-Generate cohorts
+Generate predefined set of cohorts
 }
