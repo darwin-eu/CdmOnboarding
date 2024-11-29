@@ -22,6 +22,8 @@ testthat::test_file('test-webapiChecks.R')
 
 testthat::test_file('test-dqdJsonPath.R')
 
+testthat::test_file('test-cohortBenchmarkChecks.R')
+
 testthat::test_file('test-no_checks.R')
 
 testthat::test_file('test-full.R')

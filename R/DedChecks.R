@@ -65,7 +65,7 @@
     checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
     minCellCount = 5,
     sample = NULL,
-    earliestStartDate = "2010-01-01"
+    earliestStartDate = "2005-01-01"
   )
   duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
 
@@ -92,6 +92,9 @@
 #' @return data frame with for each ingredient and concept_class_id the number of concepts and records
 #' @export
 getMappingLevel <- function(dedResults) {
+  if (is.null(dedResults)) {
+    return(NULL)
+  }
   dedResults$conceptSummary %>%
     dplyr::group_by(
       .data$ingredient,

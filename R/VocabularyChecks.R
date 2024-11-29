@@ -108,7 +108,7 @@ vocabularyChecks <- function(connectionDetails,
                                       activeConnection = connection, cdmDomain = 'specialty', smallCellCount = smallCellCount)
     if (cdmVersion >= 5.4) {
       unmappedEpisodes <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped episode query executed successfully", sqlOnly = sqlOnly,
-                                       activeConnection = connection, cdmDomain = 'episode', smallCellCount = smallCellCount)
+                                       activeConnection = connection, cdmDomain = 'eps', smallCellCount = smallCellCount)
     } else {
       unmappedEpisodes <- NULL
     }
@@ -143,7 +143,7 @@ vocabularyChecks <- function(connectionDetails,
                                     activeConnection = connection, cdmDomain = 'specialty', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     if (cdmVersion >= 5.4) {
       mappedEpisodes <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped episodes query executed successfully", sqlOnly = sqlOnly,
-                                     activeConnection = connection, cdmDomain = 'episode', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
+                                     activeConnection = connection, cdmDomain = 'eps', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     } else {
       mappedEpisodes <- NULL
     }

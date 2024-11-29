@@ -22,9 +22,6 @@
 
 #' Convenience function to get a CDMConnector connection from connectionDetails
 #' @param connectionDetails An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
-#' @param cdmDatabaseSchema Fully qualified name of database schema that contains OMOP CDM schema.
-#'                          On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
-#' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
 #' @returns CDMConnector connection
 .getCdmConnection <- function(connectionDetails) {
   # Connect to the database. For postgres with DBI if RPostgres installed, otherwise via DatabaseConnector.

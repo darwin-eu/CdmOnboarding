@@ -38,7 +38,7 @@ generateDedSection <- function(doc, df) {
     my_table_caption(
       paste(
         "Drug Exposure Diagnostics results for selected ingredients, covering different types of products.",
-        "Executed with minCellCount = 5, sample = NULL, earliestStartDate = 2010-01-01.",
+        "Executed with minCellCount = 5, sample = NULL, earliestStartDate = 2005-01-01.",
         "#Records = Number of records.",
         "#Persons = Number of unique persons.",
         "Type (n,%) = Frequency and percentage of available drug types.",

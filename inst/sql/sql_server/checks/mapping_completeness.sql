@@ -159,6 +159,6 @@ select  'Episode',
         sum(num_records),
         sum(is_mapped * num_records),
         100.0*sum(is_mapped * num_records)/sum(num_records)
-from #episode
+from #eps
 }
 ;

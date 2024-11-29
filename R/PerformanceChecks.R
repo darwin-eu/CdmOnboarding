@@ -284,6 +284,7 @@ getDARWINpackages <- function() {
     "snowflake" = "SELECT CURRENT_VERSION();",
     "sqlite" = "SELECT SQLITE_VERSION();",
     "spark" = "SELECT version();",
+    "duckdb" = "SELECT version();",
     NULL
   )
 

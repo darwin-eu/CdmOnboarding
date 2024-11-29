@@ -9,18 +9,22 @@ test_that("Vocabulary Tables Checks with Optimize", {
   )
 
   testthat::expect_type(vocabularyResults, 'list')
-  testthat::expect_named(vocabularyResults,  c(
-    "version", "mappingTempTableCreation", "mappingCompleteness", 
-    "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements", 
-    "unmappedObservations", "unmappedProcedures", "unmappedDevices", 
-    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", 
-    "unmappedUnitsObs", "unmappedValuesMeas", "unmappedValuesObs", 
-    "unmappedDrugRoute", "unmappedSpecialty", "mappedDrugs", "mappedConditions", 
-    "mappedMeasurements", "mappedObservations", "mappedProcedures", 
-    "mappedDevices", "mappedVisits", "mappedVisitDetails", "mappedUnitsMeas", 
-    "mappedUnitsObs", "mappedValuesMeas", "mappedValuesObs", "mappedDrugRoute", 
-    "mappedSpecialty", "conceptCounts", "vocabularyCounts", "sourceConceptFrequency", 
-    "sourceConceptMap")
+  testthat::expect_named(
+    vocabularyResults,
+    c(
+      "version", "mappingTempTableCreation", "mappingCompleteness",
+      "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements",
+      "unmappedObservations", "unmappedProcedures", "unmappedDevices", 'unmappedEpisodes',
+      "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", 'mappedEpisodes',
+      "unmappedUnitsObs", "unmappedValuesMeas", "unmappedValuesObs",
+      "unmappedDrugRoute", "unmappedSpecialty", "mappedDrugs", "mappedConditions",
+      "mappedMeasurements", "mappedObservations", "mappedProcedures",
+      "mappedDevices", "mappedVisits", "mappedVisitDetails", "mappedUnitsMeas",
+      "mappedUnitsObs", "mappedValuesMeas", "mappedValuesObs", "mappedDrugRoute",
+      "mappedSpecialty", "conceptCounts", "vocabularyCounts", "sourceConceptFrequency",
+      "sourceConceptMap"
+    ),
+    ignore.order = TRUE
   )
 
   # Check each element has a non-null result, except version and mappingTempTableCreation

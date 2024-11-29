@@ -186,7 +186,7 @@ select
   episode_concept_id as concept_id,
   case when episode_concept_id = 0 or episode_concept_id > 2000000000 then 0 else 1 end as is_mapped,
   count_big(*) as num_records
-into #episode
+into #eps
 from @cdmDatabaseSchema.episode
 group by episode_concept_id, episode_source_value
 ;}

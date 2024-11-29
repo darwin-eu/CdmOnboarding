@@ -29,11 +29,11 @@ dedResults <- DrugExposureDiagnostics::executeChecks(
   checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
   minCellCount = 5,
   sample = NULL,
-  earliestStartDate = "2010-01-01"
+  earliestStartDate = "2005-01-01"
 )
+# names(dedResults$diagnosticsSummary)
 duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
-
-# names(results$diagnosticsSummary)
+CDMConnector::cdmDisconnect(cdm)
 
 mappingLevels <- CdmOnboarding::getMappingLevel(dedResults)
 

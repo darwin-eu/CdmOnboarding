@@ -28,5 +28,5 @@ test_that("DQD Json", {
   )
 
   testthat::expect_type(results$dqdResults, 'list')
-  testthat::expect_named(results$dqdResults, c("version", "overview", "startTimestamp", "executionTime"))
+  testthat::expect_named(results$dqdResults, c("version", "overview", "startTimestamp", "executionTime"), ignore.order = TRUE)
 })

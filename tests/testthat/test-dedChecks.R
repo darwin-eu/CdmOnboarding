@@ -1,6 +1,4 @@
 test_that("Drug Exposure Diagnostics Checks", {
-  skip(message = "fails on Eunomia because DatabaseConnectorDbiConnection connection not supported")
-  # Will be fixed by #103
   dedResults <- CdmOnboarding:::.runDedChecks(
     connectionDetails = params$connectionDetails,
     cdmDatabaseSchema = params$cdmDatabaseSchema,
@@ -9,7 +7,7 @@ test_that("Drug Exposure Diagnostics Checks", {
 
   testthat::expect_type(dedResults, 'list')
   testthat::expect_true(
-      !is.null(dedResults$result),
-      info = paste("The result in drugExposureDiagnostics is null")
+    !is.null(dedResults$result),
+    info = paste("The result in drugExposureDiagnostics is null")
   )
 })
