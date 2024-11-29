@@ -75,7 +75,7 @@ cdmOnboarding <- function(
   runDedChecks = TRUE,
   runCohortBenchmarkChecks = TRUE,
   smallCellCount = 5,
-  baseUrl = "",
+  baseUrl = NULL,
   sqlOnly = FALSE,
   outputFolder = "output",
   verboseMode = TRUE,
@@ -350,7 +350,7 @@ cdmOnboarding <- function(
 
   # webapi checks --------------------------------------------------------------------------------------------
   webApiVersion <- "unknown"
-  if (runWebAPIChecks && baseUrl != "") {
+  if (runWebAPIChecks && !(is.null(baseUrl) || baseUrl == "")) {
     ParallelLogger::logInfo("> Running WebAPIChecks")
 
     webApiVersion <- tryCatch({
