@@ -26,11 +26,7 @@
 #'                          On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
 #' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
 #' @returns CDMConnector connection
-.getCdmConnection <- function(
-  connectionDetails,
-  cdmDatabaseSchema,
-  scratchDatabaseSchema)
-{
+.getCdmConnection <- function(connectionDetails) {
   # Connect to the database. For postgres with DBI if RPostgres installed, otherwise via DatabaseConnector.
   if (connectionDetails$dbms == 'postgresql' && system.file(package = 'RPostgres') != '') {
     server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
@@ -42,8 +38,22 @@
       user = connectionDetails$user(),
       password = connectionDetails$password()
     )
+  } else if (connectionDetails$dbms == 'duckdb' && system.file(package = 'duckdb') != '') {
+    connection <- DBI::dbConnect(
+      duckdb::duckdb(),
+      dbdir = connectionDetails$server()
+    )
   } else {
     connection <- DatabaseConnector::connect(connectionDetails)
   }
   return(connection)
+}
+
+.disconnectCdmConnection <- function(connection) {
+  if (class(connection) == 'DatabaseConnectorDbiConnection') {
+    DatabaseConnector::disconnect(connection)
+  } else {
+    DBI::dbDisconnect(connection)
+  }
+  rm(connection)
 }

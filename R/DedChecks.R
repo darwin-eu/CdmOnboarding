@@ -30,20 +30,9 @@
   cdmDatabaseSchema,
   scratchDatabaseSchema
 ) {
-  connection <- .getCdmConnection(
-    connectionDetails = connectionDetails,
-    cdmDatabaseSchema = cdmDatabaseSchema,
-    scratchDatabaseSchema = scratchDatabaseSchema
-  )
+  connection <- .getCdmConnection(connectionDetails)
 
-  on.exit({
-    if (connectionDetails$dbms == 'postgresql') {
-      DBI::dbDisconnect(connection)
-    } else {
-      DatabaseConnector::disconnect(connection)
-    }
-    rm(connection)
-  })
+  on.exit(.disconnectCdmConnection(connection))
 
   cdm <- CDMConnector::cdm_from_con(
     connection,

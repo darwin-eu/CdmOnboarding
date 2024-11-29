@@ -56,7 +56,7 @@ select
   observation_concept_id as concept_id,
   case when observation_concept_id = 0 or observation_concept_id > 2000000000 then 0 else 1 end as is_mapped,
   count_big(*) as num_records
-into #observation
+into #obs
 from @cdmDatabaseSchema.observation
 group by observation_concept_id, observation_source_value
 ;
@@ -66,7 +66,7 @@ select
   measurement_concept_id as concept_id,
   case when measurement_concept_id = 0 or measurement_concept_id > 2000000000 then 0 else 1 end as is_mapped,
   count_big(*) as num_records
-into #measurement
+into #meas
 from @cdmDatabaseSchema.measurement
 group by measurement_concept_id, measurement_source_value
 ;

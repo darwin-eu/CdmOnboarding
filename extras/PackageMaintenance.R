@@ -11,6 +11,7 @@
 # 2. Bump version in DESCRIPTION
 # 2.1 Run Document and Check. Check should finish without notes, warnings or errors.
 # 2.2 Commit and push changes to release-candidate branch
+# 2.3 Add example report, `CdmOnboarding_Syntha20k-vx.x.x.docx` for latest release.
 # 3. Create Github PR to main
 # 4. Review and merge PR
 # 5. Create Github release on darwin-eu-dev, creating a tag as well.

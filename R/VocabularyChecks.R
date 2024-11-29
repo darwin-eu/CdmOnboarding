@@ -83,9 +83,9 @@ vocabularyChecks <- function(connectionDetails,
     unmappedConditions <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped conditions query executed successfully", sqlOnly = sqlOnly,
                                        activeConnection = connection, cdmDomain = 'condition', smallCellCount = smallCellCount)
     unmappedMeasurements <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped measurements query executed successfully", sqlOnly = sqlOnly,
-                                         activeConnection = connection, cdmDomain = 'measurement', smallCellCount = smallCellCount)
+                                         activeConnection = connection, cdmDomain = 'meas', smallCellCount = smallCellCount)
     unmappedObservations <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped observations query executed successfully", sqlOnly = sqlOnly,
-                                         activeConnection = connection, cdmDomain = 'observation', smallCellCount = smallCellCount)
+                                         activeConnection = connection, cdmDomain = 'obs', smallCellCount = smallCellCount)
     unmappedProcedures <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped procedures query executed successfully", sqlOnly = sqlOnly,
                                        activeConnection = connection, cdmDomain = 'procedure', smallCellCount = smallCellCount)
     unmappedDevices <- executeQuery(outputFolder, "unmapped_concepts_templated.sql", "Unmapped devices query executed successfully", sqlOnly = sqlOnly,
@@ -118,9 +118,9 @@ vocabularyChecks <- function(connectionDetails,
     mappedConditions <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped conditions query executed successfully", sqlOnly = sqlOnly,
                                      activeConnection = connection, cdmDomain = 'condition', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedMeasurements <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped measurements query executed successfully", sqlOnly = sqlOnly,
-                                       activeConnection = connection, cdmDomain = 'measurement', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
+                                       activeConnection = connection, cdmDomain = 'meas', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedObservations <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped observations query executed successfully", sqlOnly = sqlOnly,
-                                       activeConnection = connection, cdmDomain = 'observation', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
+                                       activeConnection = connection, cdmDomain = 'obs', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedProcedures <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped procedures query executed successfully", sqlOnly = sqlOnly,
                                      activeConnection = connection, cdmDomain = 'procedure', cdmDatabaseSchema = cdmDatabaseSchema, smallCellCount = smallCellCount)
     mappedDevices <- executeQuery(outputFolder, "mapped_concepts_templated.sql", "Mapped devices query executed successfully", sqlOnly = sqlOnly,

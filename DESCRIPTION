@@ -53,6 +53,7 @@ Imports:
     utils
 Suggests:
     RPostgres,
+    duckdb,
     flextable,
     devtools,
     knitr,
