@@ -10,8 +10,8 @@ test_that("Vocabulary Tables Checks", {
   testthat::expect_named(vocabularyResults, c(
     "version", "mappingTempTableCreation", "mappingCompleteness", 
     "drugMapping", "unmappedDrugs", "unmappedConditions", "unmappedMeasurements", 
-    "unmappedObservations", "unmappedProcedures", "unmappedDevices", 
-    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", 
+    "unmappedObservations", "unmappedProcedures", "unmappedDevices", 'unmappedEpisodes',
+    "unmappedVisits", "unmappedVisitDetails", "unmappedUnitsMeas", 'mappedEpisodes',
     "unmappedUnitsObs", "unmappedValuesMeas", "unmappedValuesObs", 
     "unmappedDrugRoute", "unmappedSpecialty", "mappedDrugs", "mappedConditions", 
     "mappedMeasurements", "mappedObservations", "mappedProcedures", 
@@ -24,6 +24,9 @@ test_that("Vocabulary Tables Checks", {
   # Check each element has a non-null result, except version and mappingTempTableCreation
   for (name in names(vocabularyResults)) {
     if (name %in% c("version", "mappingTempTableCreation")) {
+      next
+    }
+    if (params$cdmVersion != "v5.4" && name %in% c("mappedEpisodes", "unmappedEpisodes")) {
       next
     }
     testthat::expect_true(

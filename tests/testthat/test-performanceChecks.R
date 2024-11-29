@@ -7,5 +7,9 @@ test_that("Performance Checks", {
   )
 
   testthat::expect_type(performanceResults, 'list')
-  testthat::expect_named(performanceResults, c('achillesTiming', 'performanceBenchmark', 'appliedIndexes', 'sys_details', 'dmsVersion', 'packinfo', 'hadesPackageVersions', 'darwinPackageVersions'))
+  testthat::expect_named(performanceResults, c(
+    'achillesTiming', 'performanceBenchmark', 'cdmConnectorBenchmark',
+    'appliedIndexes', 'sys_details', 'dmsVersion', 'packinfo',
+    'hadesPackageVersions', 'darwinPackageVersions'
+  ))
 })

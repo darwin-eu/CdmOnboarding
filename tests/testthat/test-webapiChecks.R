@@ -1,4 +1,5 @@
 test_that("WebAPI Checks", {
+  skip(message = "requires network connection")
   results <- CdmOnboarding::cdmOnboarding(
     connectionDetails = params$connectionDetails,
     cdmDatabaseSchema = params$cdmDatabaseSchema,
@@ -11,7 +12,8 @@ test_that("WebAPI Checks", {
     runVocabularyChecks = FALSE,
     runPerformanceChecks = FALSE,
     runWebAPIChecks = TRUE,
-    runDedChecks = FALSE
+    runDedChecks = FALSE,
+    runCohortBenchmarkChecks = FALSE
   )
 
   testthat::expect_type(results$webAPIversion, 'character')
