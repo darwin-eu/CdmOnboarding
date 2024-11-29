@@ -1,3 +1,7 @@
+# CdmOnboarding 3.3.3
+
+ * Fix execution of CohortBenchmark and CdmConnectorBenchmark
+
 # CdmOnboarding 3.3.2
 
  * Fix generating applied indexes section when no indexes have been applied
