@@ -23,6 +23,7 @@ params <- list(
   scratchDatabaseSchema = 'main',  # Required write schema for DED
   databaseId = datasetName,
   cdmVersion = cdmVersion,
+  dqdJsonPath = testthat::test_path('dqd_synpuf-1k.json'),
   outputFolder = testthat::test_path('test_output'),
   baseUrl = NULL  # connection to WebAPI cannot be tested
 )

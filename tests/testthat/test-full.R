@@ -1,17 +1,4 @@
 test_that("Full CdmOnboarding executable", {
-  # Run a minimal DQD
-  library(DataQualityDashboard)
-  dqdOutputFile <- 'dqd_test.json'
-  dqd_result <- DataQualityDashboard::executeDqChecks(
-    connectionDetails = params$connectionDetails,
-    cdmDatabaseSchema = params$cdmDatabaseSchema,
-    resultsDatabaseSchema = params$resultsDatabaseSchema,
-    cdmSourceName = params$databaseId,
-    outputFolder = params$outputFolder,
-    outputFile = dqdOutputFile,
-    checkLevels = "TABLE"
-  )
-
   results <- CdmOnboarding::cdmOnboarding(
     connectionDetails = params$connectionDetails,
     cdmDatabaseSchema = params$cdmDatabaseSchema,
@@ -19,7 +6,7 @@ test_that("Full CdmOnboarding executable", {
     databaseId = params$databaseId,
     outputFolder = params$outputFolder,
     baseUrl = params$baseUrl,
-    dqdJsonPath = file.path(params$outputFolder, dqdOutputFile)
+    dqdJsonPath = params$dqdJsonPath
   )
 
   # Result returned, rds written, docx written.
