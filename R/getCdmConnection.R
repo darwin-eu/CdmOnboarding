@@ -47,7 +47,7 @@
 }
 
 .disconnectCdmConnection <- function(connection) {
-  if (class(connection) == 'DatabaseConnectorDbiConnection') {
+  if (inherits(connection, 'DatabaseConnectorDbiConnection')) {
     DatabaseConnector::disconnect(connection)
   } else {
     DBI::dbDisconnect(connection)
