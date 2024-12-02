@@ -59,6 +59,7 @@ Suggests:
     devtools,
     knitr,
     testthat (>= 3.0.0),
+    withr,
     Eunomia,
     Achilles (>= 1.7.2)
 Config/testthat/edition: 3

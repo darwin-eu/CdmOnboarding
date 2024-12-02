@@ -199,7 +199,7 @@ generateDataTablesSection <- function(doc, df, cdmSource, optimized) {
       mutate(
         `Domain` = .data$DOMAIN,
         `Type` = sprintf("%s (%s)", .data$TYPE_CONCEPT_NAME, dplyr::coalesce(.data$TYPE_STANDARD_CONCEPT, "-")),
-        `#Records` = COUNT_VALUE,
+        `#Records` = .data$COUNT_VALUE,
         `Start date [Min, Max]` = sprintf(
           "[%s, %s]",
           substr(.data$FIRST_START_DATE, 1, 7),
