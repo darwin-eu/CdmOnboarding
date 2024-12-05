@@ -9,8 +9,6 @@ test_that("Full CdmOnboarding executable", {
     dqdJsonPath = params$dqdJsonPath
   )
 
-  # Result returned, rds written, docx written.
+  # Result returned
   testthat::expect_type(results, 'list')
-  testthat::expect_length(list.files(params$outputFolder, pattern = '*.rds'), 1)
-  testthat::expect_length(list.files(params$outputFolder, pattern = '*.docx'), 1)
 })

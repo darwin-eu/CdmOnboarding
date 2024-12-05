@@ -24,6 +24,6 @@ params <- list(
   databaseId = datasetName,
   cdmVersion = cdmVersion,
   dqdJsonPath = testthat::test_path('dqd_synpuf-1k.json'),
-  outputFolder = testthat::test_path('test_output'),
+  outputFolder = testthat::test_path(),
   baseUrl = NULL  # connection to WebAPI cannot be tested
 )
