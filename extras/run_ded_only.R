@@ -13,11 +13,11 @@ con <- DBI::dbConnect(
   password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD")
 )
 
-cdm <- cdm_from_con(
+cdm <- cdmFromCon(
   con,
-  cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"),
-  write_schema = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
-  .soft_validation = TRUE
+  cdmSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"),
+  writeSchema = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
+  .softValidation = TRUE
 )
 
 ded_start_time <- Sys.time()

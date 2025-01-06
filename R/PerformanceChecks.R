@@ -345,11 +345,11 @@ getDARWINpackages <- function() {
 
   on.exit(.disconnectCdmConnection(connection))
 
-  cdm <- CDMConnector::cdm_from_con(
+  cdm <- CDMConnector::cdmFromCon(
     connection,
-    cdm_schema = cdmDatabaseSchema,
-    write_schema = scratchDatabaseSchema,
-    .soft_validation = TRUE
+    cdmSchema = cdmDatabaseSchema,
+    writeSchema = scratchDatabaseSchema,
+    .softValidation = TRUE
   )
 
   ParallelLogger::logInfo("Starting execution of CDMConnector Benchmark")
