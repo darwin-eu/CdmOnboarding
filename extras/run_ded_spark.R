@@ -14,10 +14,10 @@ con <- DBI::dbConnect(odbc::odbc(), "<your_spark_dsn>")
 #                       PWD      = "<your_spark_user_password>",
 #                       Port     = 1433)
 
-cdm <- CDMConnector::cdm_from_con(
+cdm <- CDMConnector::cdmFromCon(
                     con, 
-                    cdm_schema = "<your_cdm_schema>", 
-                    write_schema =  "<your_results_schema>")
+                    cdmSchema = "<your_cdm_schema>", 
+                    writeSchema =  "<your_results_schema>")
 
 ded_start_time <- Sys.time()
 
