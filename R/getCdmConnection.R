@@ -32,6 +32,7 @@
       RPostgres::Postgres(),
       dbname = server_parts[2],
       host = server_parts[1],
+      port = connectionDetails$port(),
       user = connectionDetails$user(),
       password = connectionDetails$password()
     )
