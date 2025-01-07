@@ -16,7 +16,7 @@ Authors@R:
            family = "van Winzum",
            role = "aut",
            email = "anne@thehyve.nl")
-   )
+  )
 Maintainer: Maxim Moinat <m.moinat@erasmusmc.nl>
 Description: The goal this R Package is to generate a report to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the data network and participate in research studies.
 License: Apache License (>= 2)
@@ -27,39 +27,37 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.0
 Depends: 
-    R (>= 4.0.0),
-    DatabaseConnector (>= 5.0.2)
+  R (>= 4.0.0)
 Imports:
-    ParallelLogger,
-    SqlRender,
-    DrugExposureDiagnostics (>= 1.0.6),
-    CDMConnector (>= 1.0.0),
-    DBI,
-    benchmarkme,
-    prettyunits,
-    tools,
-    dplyr,
-    tidyr,
-    officer,
-    data.table,
-    lubridate,
-    ggplot2,
-    jsonlite,
-    stats,
-    cowplot,
-    scales,
-    stringr,
-    httr,
-    utils,
-    tictoc
+  DatabaseConnector (>= 5.0.2),
+  ParallelLogger,
+  SqlRender,
+  DrugExposureDiagnostics (>= 1.0.6),
+  CDMConnector (>= 1.0.0),
+  DBI,
+  benchmarkme,
+  prettyunits,
+  dplyr,
+  tidyr,
+  officer,
+  data.table,
+  lubridate,
+  ggplot2,
+  jsonlite,
+  stats,
+  cowplot,
+  scales,
+  stringr,
+  httr,
+  utils,
+  tictoc
 Suggests:
-    RPostgres,
-    duckdb,
-    flextable,
-    devtools,
-    knitr,
-    testthat (>= 3.0.0),
-    withr,
-    Eunomia,
-    Achilles (>= 1.7.2)
+  RPostgres,
+  duckdb,
+  devtools,
+  testthat (>= 3.0.0),
+  withr,
+  Achilles
+Remotes:
+  OHDSI/Achilles
 Config/testthat/edition: 3
