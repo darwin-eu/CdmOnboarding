@@ -22,7 +22,6 @@ cdm <- cdmFromCon(
 
 ded_start_time <- Sys.time()
 dedIngredients <- CdmOnboarding::getDedIngredients()
-# dedIngredients <- dedIngredients[c(5, 8), ] # For testing
 dedResults <- DrugExposureDiagnostics::executeChecks(
   cdm = cdm,
   ingredients = dedIngredients$concept_id,
@@ -31,7 +30,6 @@ dedResults <- DrugExposureDiagnostics::executeChecks(
   sample = NULL,
   earliestStartDate = "2005-01-01"
 )
-# names(dedResults$diagnosticsSummary)
 duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
 CDMConnector::cdmDisconnect(cdm)
 
@@ -44,5 +42,7 @@ dedSummary <- list(
   packageVersion = packageVersion(pkg = "DrugExposureDiagnostics")
 )
 
-saveRDS(dedSummary, "dedSummary.rds")
-exportDedResults(dedSummary, "dedResults.csv")
+outputPath <- './'
+
+saveRDS(dedSummary, file.path(outputPath, "dedSummary.rds"))
+exportDedResults(outputPath)
