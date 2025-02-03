@@ -51,7 +51,8 @@ Imports:
   stringr,
   httr,
   utils,
-  tictoc
+  tictoc,
+  CirceR
 Suggests:
   RPostgres,
   duckdb,
