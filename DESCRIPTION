@@ -33,7 +33,7 @@ Imports:
   DatabaseConnector (>= 5.0.2),
   ParallelLogger,
   SqlRender,
-  DrugExposureDiagnostics (>= 1.0.6),
+  DrugExposureDiagnostics (>= 1.1.0),
   CDMConnector (>= 1.0.0),
   DBI,
   benchmarkme,

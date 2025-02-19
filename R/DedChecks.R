@@ -43,12 +43,11 @@
 
   dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
   if (dedVersion <= '1.0.5') {
-    dedIngredients <- dedIngredients[5, ]
-    ParallelLogger::logWarn(sprintf(
-      "Old version of DrugExposureDiagnostics installed: '%s', only executing DED for '%s'.",
-      dedVersion,
-      dedIngredients$concept_name
+    ParallelLogger::logError(sprintf(
+      "Unsupported version of DrugExposureDiagnostics installed: %s.",
+      dedVersion
     ))
+    stop("Unsupported version of DrugExposureDiagnostics installed.")
   }
 
   dedIngredients <- getDedIngredients()
