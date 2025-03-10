@@ -36,7 +36,7 @@ generateDqdSection <- function(doc, df) {
   )
   # Totals
   dqdOverview <- dqdOverview %>%
-    bind_rows(summarise_all(.data, ~if (is.numeric(.)) sum(.) else "Total"))
+    bind_rows(dqdOverview %>% summarise(across(everything(), ~if (is.numeric(.)) sum(.) else "Total")))
 
   dqdOverview <- dqdOverview %>%
     mutate(

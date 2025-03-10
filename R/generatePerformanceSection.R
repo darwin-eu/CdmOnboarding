@@ -117,7 +117,8 @@ generatePerformanceSection <- function(doc, results) {
     indexOverview <- df$appliedIndexes$result %>%
       dplyr::mutate(actual = 1) %>%
       dplyr::mutate(type = substr(.data$INDEXNAME, 1, 3)) %>%
-      dplyr::full_join(expectedIndexes, by = join_by(.data$TABLENAME, .data$INDEXNAME, .data$type)) %>%
+      # Note: The join by does not accept the .data$ prefix
+      dplyr::full_join(expectedIndexes, by = join_by(TABLENAME, INDEXNAME, type)) %>%
       dplyr::group_by(.data$TABLENAME, .data$type) %>%
       dplyr::summarize(
         n_indexes_applied = sum(.data$actual, na.rm = TRUE),

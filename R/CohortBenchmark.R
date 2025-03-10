@@ -59,10 +59,10 @@
     result <- tryCatch({
       suppressWarnings(suppressMessages(
         cdm <- CDMConnector::generateCohortSet(
-          cdm,
-          cohort_set_definition[i, ],
+          cdm = cdm,
+          cohortSet = cohort_set_definition[i, ],
           name = "cohort",
-          compute_attrition = FALSE,
+          computeAttrition = FALSE,
           overwrite = TRUE
         )
       ))
