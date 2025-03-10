@@ -1,3 +1,9 @@
+# CdmOnboarding 3.3.4
+
+ * Fix DED issue when using older verison
+ * Fix getCdmConnection
+ * Use camel case versions of CDMConnector functions
+
 # CdmOnboarding 3.3.3
 
  * Fix execution of CohortBenchmark and CdmConnectorBenchmark

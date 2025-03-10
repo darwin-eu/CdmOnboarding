@@ -36,8 +36,8 @@
 
   cdm <- CDMConnector::cdmFromCon(
     connection,
-    cdm_schema = cdmDatabaseSchema,
-    write_schema = scratchDatabaseSchema,
+    cdmSchema = cdmDatabaseSchema,
+    writeSchema = scratchDatabaseSchema,
     .soft_validation = TRUE
   )
 
