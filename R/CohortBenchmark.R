@@ -33,30 +33,19 @@
   scratchDatabaseSchema
 ) {
   # Connect to the database with CDMConnector
-  connection <- .getCdmConnection(
-    connectionDetails = connectionDetails,
-    cdmDatabaseSchema = cdmDatabaseSchema,
-    scratchDatabaseSchema = scratchDatabaseSchema
-  )
+  connection <- .getCdmConnection(connectionDetails)
 
-  on.exit({
-    if (connectionDetails$dbms == 'postgresql') {
-      DBI::dbDisconnect(connection)
-    } else {
-      DatabaseConnector::disconnect(connection)
-    }
-    rm(connection)
-  })
+  on.exit(.disconnectCdmConnection(connection))
 
-  cdm <- CDMConnector::cdm_from_con(
+  cdm <- CDMConnector::cdmFromCon(
     connection,
-    cdm_schema = cdmDatabaseSchema,
-    write_schema = scratchDatabaseSchema,
-    .soft_validation = TRUE
+    cdmSchema = cdmDatabaseSchema,
+    writeSchema = scratchDatabaseSchema,
+    .softValidation = TRUE
   )
 
-  cohort_set_definition <- CDMConnector::read_cohort_set(
-    path = system.file("json", "cohorts", package = "CdmOnboarding")
+  cohort_set_definition <- CDMConnector::readCohortSet(
+    path = system.file("json", "cohorts", package = "CdmOnboarding", mustWork = TRUE)
   )
   n_cohorts <- nrow(cohort_set_definition)
 
@@ -69,15 +58,15 @@
     start_time <- Sys.time()
     result <- tryCatch({
       suppressWarnings(suppressMessages(
-        cdm <- CDMConnector::generate_cohort_set(
-          cdm,
-          cohort_set_definition[i, ],
+        cdm <- CDMConnector::generateCohortSet(
+          cdm = cdm,
+          cohortSet = cohort_set_definition[i, ],
           name = "cohort",
-          compute_attrition = FALSE,
+          computeAttrition = FALSE,
           overwrite = TRUE
         )
       ))
-      cohort_count <- CDMConnector::cohort_count(cdm$cohort)
+      cohort_count <- CDMConnector::cohortCount(cdm$cohort)
       ParallelLogger::logInfo("Generated: ", cohort_set_definition[[i, 'cohort_name']])
       cohort_count
     }, error = function(e) {

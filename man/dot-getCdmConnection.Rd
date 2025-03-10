@@ -4,15 +4,10 @@
 \alias{.getCdmConnection}
 \title{Convenience function to get a CDMConnector connection from connectionDetails}
 \usage{
-.getCdmConnection(connectionDetails, cdmDatabaseSchema, scratchDatabaseSchema)
+.getCdmConnection(connectionDetails)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
-
-\item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM schema.
-On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
-
-\item{scratchDatabaseSchema}{Fully qualified name of database schema where temporary tables can be written.}
 }
 \value{
 CDMConnector connection

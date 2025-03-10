@@ -284,6 +284,7 @@ getDARWINpackages <- function() {
     "snowflake" = "SELECT CURRENT_VERSION();",
     "sqlite" = "SELECT SQLITE_VERSION();",
     "spark" = "SELECT version();",
+    "duckdb" = "SELECT version();",
     NULL
   )
 
@@ -340,26 +341,15 @@ getDARWINpackages <- function() {
   scratchDatabaseSchema
 ) {
   # Connect to the database with CDMConnector
-  connection <- .getCdmConnection(
-    connectionDetails = connectionDetails,
-    cdmDatabaseSchema = cdmDatabaseSchema,
-    scratchDatabaseSchema = scratchDatabaseSchema
-  )
+  connection <- .getCdmConnection(connectionDetails)
 
-  on.exit({
-    if (connectionDetails$dbms == 'postgresql') {
-      DBI::dbDisconnect(connection)
-    } else {
-      DatabaseConnector::disconnect(connection)
-    }
-    rm(connection)
-  })
+  on.exit(.disconnectCdmConnection(connection))
 
-  cdm <- CDMConnector::cdm_from_con(
+  cdm <- CDMConnector::cdmFromCon(
     connection,
-    cdm_schema = cdmDatabaseSchema,
-    write_schema = scratchDatabaseSchema,
-    .soft_validation = TRUE
+    cdmSchema = cdmDatabaseSchema,
+    writeSchema = scratchDatabaseSchema,
+    .softValidation = TRUE
   )
 
   ParallelLogger::logInfo("Starting execution of CDMConnector Benchmark")

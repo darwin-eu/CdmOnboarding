@@ -36,17 +36,17 @@ generateDqdSection <- function(doc, df) {
   )
   # Totals
   dqdOverview <- dqdOverview %>%
-    bind_rows(summarise_all(., ~if (is.numeric(.)) sum(.) else "Total"))
+    bind_rows(dqdOverview %>% summarise(across(everything(), ~if (is.numeric(.)) sum(.) else "Total")))
 
   dqdOverview <- dqdOverview %>%
     mutate(
-      Applicable = Fail + Pass,  # No fail/pass means check has status NA
-      `%Pass` = prettyPc(Pass / Applicable * 100),
+      Applicable = .data$Fail + .data$Pass,  # No fail/pass means check has status NA
+      `%Pass` = prettyPc(.data$Pass / .data$Applicable * 100),
       .keep = 'all'
     ) %>%
     relocate(
-      Applicable,
-      .after = Total
+      .data$Applicable,
+      .after = .data$Total
     )
 
   doc <- doc %>%

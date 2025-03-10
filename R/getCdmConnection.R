@@ -22,15 +22,8 @@
 
 #' Convenience function to get a CDMConnector connection from connectionDetails
 #' @param connectionDetails An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
-#' @param cdmDatabaseSchema Fully qualified name of database schema that contains OMOP CDM schema.
-#'                          On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
-#' @param scratchDatabaseSchema Fully qualified name of database schema where temporary tables can be written.
 #' @returns CDMConnector connection
-.getCdmConnection <- function(
-  connectionDetails,
-  cdmDatabaseSchema,
-  scratchDatabaseSchema)
-{
+.getCdmConnection <- function(connectionDetails) {
   # Connect to the database. For postgres with DBI if RPostgres installed, otherwise via DatabaseConnector.
   if (connectionDetails$dbms == 'postgresql' && system.file(package = 'RPostgres') != '') {
     server_parts <- strsplit(connectionDetails$server(), "/")[[1]]
@@ -39,11 +32,26 @@
       RPostgres::Postgres(),
       dbname = server_parts[2],
       host = server_parts[1],
+      port = connectionDetails$port(),
       user = connectionDetails$user(),
       password = connectionDetails$password()
+    )
+  } else if (connectionDetails$dbms == 'duckdb' && system.file(package = 'duckdb') != '') {
+    connection <- DBI::dbConnect(
+      duckdb::duckdb(),
+      dbdir = connectionDetails$server()
     )
   } else {
     connection <- DatabaseConnector::connect(connectionDetails)
   }
   return(connection)
+}
+
+.disconnectCdmConnection <- function(connection) {
+  if (inherits(connection, 'DatabaseConnectorDbiConnection')) {
+    DatabaseConnector::disconnect(connection)
+  } else {
+    DBI::dbDisconnect(connection)
+  }
+  rm(connection)
 }

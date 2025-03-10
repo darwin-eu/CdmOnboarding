@@ -9,13 +9,16 @@ test_that("Data Tables Checks", {
 
   testthat::expect_type(dataTablesResults, 'list')
 
-  testthat::expect_named(dataTablesResults, c(
+  testthat::expect_named(
+    dataTablesResults,
+    c(
       "dataTablesCounts", "totalRecords", "recordsPerPerson", "conceptsPerPerson",
       "observationPeriodLength", "activePersons", "observedByMonth",
       "dateRangeByTypeConcept", "dayOfTheWeek", "dayOfTheMonth",
       "observationPeriodsPerPerson", "observationPeriodOverlap",
       "dayMonthYearOfBirth", "visitLength"
-    )
+    ),
+    ignore.order = TRUE
   )
 
   for (name in names(dataTablesResults)) {

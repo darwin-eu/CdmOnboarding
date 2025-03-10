@@ -21,7 +21,7 @@ cdmOnboarding(
   runDedChecks = TRUE,
   runCohortBenchmarkChecks = TRUE,
   smallCellCount = 5,
-  baseUrl = "",
+  baseUrl = NULL,
   sqlOnly = FALSE,
   outputFolder = "output",
   verboseMode = TRUE,

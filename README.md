@@ -12,9 +12,9 @@ The DARWIN EU Coordination Center (CC) is resposonsible for building a data netw
 
 The goal of the onboarding report is to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the DARWIN EU® data network and participate in research studies.
 
-An example of an onboarding report for a OMOP Synthea database can be found in [extras/CdmOnboarding-Synthea.docx](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras).
+An example of an onboarding report for a OMOP Synthea database can be found in [extras/CdmOnboarding_Synthea20k-vx.x.x.docx](https://github.com/darwin-eu/CdmOnboarding/blob/main/extras).
 
-Main repository on [DARWIN-EU/CdmOnboarding](https://github.com/darwin-eu/cdmonboarding).
+Main repository on [DARWIN-EU/CdmOnboarding](https://github.com/darwin-eu/CdmOnboarding).
 
 # CdmOnboarding Checks
 The CdmOnboarding R Package performs the following checks on top of the required [Data Quality Dashboard](https://github.com/OHDSI/DataQualityDashboard) step.
@@ -94,13 +94,13 @@ For a template execution script, see [extras/CodeToRun.R](extras/CodeToRun.R).
 
 # User documentation
 PDF versions of the documentation are available:
-* Package manual: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding.pdf)
-* CodeToRun Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CodeToRun.R)
-* Report Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/master/extras/CdmOnboarding-Synthea.docx)
+* Package manual: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/main/extras/CdmOnboarding.pdf)
+* CodeToRun Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/main/extras/CodeToRun.R)
+* Report Example: [Link](https://github.com/darwin-eu/CdmOnboarding/blob/main/extras)
 
 # Support and contributing
 This package is maintained by the Darwin EU Coordination Centre as part of its quality control procedures.
-We use the <a href="https://github.com/darwin-eu/CdmOnbording/issues">GitHub issue tracker</a> for all bugs/issues/enhancements/questions/feedback
+We use the <a href="https://github.com/darwin-eu/CdmOnboarding/issues">GitHub issue tracker</a> for all bugs/issues/enhancements/questions/feedback
 Additions are welcome through pull requests. 
 We suggest to first create an issue and discuss with the maintainer before implementing additional functionality.
 

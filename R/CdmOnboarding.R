@@ -57,6 +57,25 @@
 #' @param optimize                         Boolean to determine if heuristics will be used to speed up execution. Currently only implemented for postgresql databases. Default = FALSE
 #' @param dedIngredientIds                 DEPRECATED, default ingredients are always used (`getDedIngredients()`).
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results
+#' @examples
+#' \donttest{
+#' connectionDetails <- DatabaseConnector::createConnectionDetails(
+#'   dbms = Sys.getenv("DBMS"),
+#'   server = Sys.getenv("DB_SERVER"),
+#'   port = Sys.getenv("DB_PORT"),
+#'   user = Sys.getenv("DB_USER"),
+#'   password = Sys.getenv("DB_PASSWORD"),
+#'   pathToDriver = Sys.getenv("PATH_TO_DRIVER")
+#' )
+#'
+#' results <- CdmOnboarding::cdmOnboarding(
+#'   connectionDetails = connectionDetails,
+#'   cdmDatabaseSchema = Sys.getenv("CDM_SCHEMA"),
+#'   resultsDatabaseSchema = Sys.getenv("RESULTS_SCHEMA"),
+#'   databaseId = Sys.getenv("DATABASE_ID"),
+#'   authors = authors,
+#'   baseUrl = Sys.getenv("WEBAPI_BASEURL")
+#' )
 #' @export
 cdmOnboarding <- function(
   connectionDetails,
@@ -75,7 +94,7 @@ cdmOnboarding <- function(
   runDedChecks = TRUE,
   runCohortBenchmarkChecks = TRUE,
   smallCellCount = 5,
-  baseUrl = "",
+  baseUrl = NULL,
   sqlOnly = FALSE,
   outputFolder = "output",
   verboseMode = TRUE,
@@ -350,7 +369,7 @@ cdmOnboarding <- function(
 
   # webapi checks --------------------------------------------------------------------------------------------
   webApiVersion <- "unknown"
-  if (runWebAPIChecks && baseUrl != "") {
+  if (runWebAPIChecks && !(is.null(baseUrl) || baseUrl == "")) {
     ParallelLogger::logInfo("> Running WebAPIChecks")
 
     webApiVersion <- tryCatch({

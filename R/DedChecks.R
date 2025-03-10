@@ -30,36 +30,24 @@
   cdmDatabaseSchema,
   scratchDatabaseSchema
 ) {
-  connection <- .getCdmConnection(
-    connectionDetails = connectionDetails,
-    cdmDatabaseSchema = cdmDatabaseSchema,
-    scratchDatabaseSchema = scratchDatabaseSchema
-  )
+  connection <- .getCdmConnection(connectionDetails)
 
-  on.exit({
-    if (connectionDetails$dbms == 'postgresql') {
-      DBI::dbDisconnect(connection)
-    } else {
-      DatabaseConnector::disconnect(connection)
-    }
-    rm(connection)
-  })
+  on.exit(.disconnectCdmConnection(connection))
 
-  cdm <- CDMConnector::cdm_from_con(
+  cdm <- CDMConnector::cdmFromCon(
     connection,
-    cdm_schema = cdmDatabaseSchema,
-    write_schema = scratchDatabaseSchema,
-    .soft_validation = TRUE
+    cdmSchema = cdmDatabaseSchema,
+    writeSchema = scratchDatabaseSchema,
+    .softValidation = TRUE
   )
 
   dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
   if (dedVersion <= '1.0.5') {
-    dedIngredients <- dedIngredients[5, ]
-    ParallelLogger::logWarn(sprintf(
-      "Old version of DrugExposureDiagnostics installed: '%s', only executing DED for '%s'.",
-      dedVersion,
-      dedIngredients$concept_name
+    ParallelLogger::logError(sprintf(
+      "Unsupported version of DrugExposureDiagnostics installed: %s.",
+      dedVersion
     ))
+    stop("Unsupported version of DrugExposureDiagnostics installed.")
   }
 
   dedIngredients <- getDedIngredients()
@@ -76,7 +64,7 @@
     checks = c("missing", "exposureDuration", "type", "route", "dose", "quantity", "diagnosticsSummary"),
     minCellCount = 5,
     sample = NULL,
-    earliestStartDate = "2010-01-01"
+    earliestStartDate = "2005-01-01"
   )
   duration <- as.numeric(difftime(Sys.time(), ded_start_time), units = "secs")
 
@@ -103,6 +91,9 @@
 #' @return data frame with for each ingredient and concept_class_id the number of concepts and records
 #' @export
 getMappingLevel <- function(dedResults) {
+  if (is.null(dedResults)) {
+    return(NULL)
+  }
   dedResults$conceptSummary %>%
     dplyr::group_by(
       .data$ingredient,

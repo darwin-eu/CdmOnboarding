@@ -41,7 +41,7 @@ select  'Observation',
         sum(num_records),
         sum(is_mapped * num_records),
         100.0*sum(is_mapped * num_records)/sum(num_records)
-from #observation
+from #obs
 union all
 select  'Measurement',
         count_big(source_value),
@@ -50,7 +50,7 @@ select  'Measurement',
         sum(num_records),
         sum(is_mapped * num_records),
         100.0*sum(is_mapped * num_records)/sum(num_records)
-from #measurement
+from #meas
 union all
 select  'Specimen',
         count_big(source_value),
@@ -159,6 +159,6 @@ select  'Episode',
         sum(num_records),
         sum(is_mapped * num_records),
         100.0*sum(is_mapped * num_records)/sum(num_records)
-from #episode
+from #eps
 }
 ;

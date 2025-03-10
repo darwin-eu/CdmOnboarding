@@ -6,12 +6,13 @@ test_that("No Checks", {
     outputFolder = params$outputFolder,
     databaseId = params$databaseId,
     dqdJsonPath = NULL,
-    baseUrl = params$baseUrl,
+    baseUrl = NULL,
     runDataTablesChecks = FALSE,
     runVocabularyChecks = FALSE,
     runPerformanceChecks = FALSE,
     runWebAPIChecks = FALSE,
-    runDedChecks = FALSE
+    runDedChecks = FALSE,
+    runCohortBenchmarkChecks = FALSE
   )
 
   testthat::expect_type(results, 'list')

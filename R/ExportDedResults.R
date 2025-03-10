@@ -49,6 +49,8 @@ exportDedResults <- function(
 
   dedResult <- .formatDedResults(df_ded$result, dedVersion)
 
+  outputFilename <- sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))
+
   dedResult %>%
     # add metadata
     rbind(c(
@@ -59,10 +61,10 @@ exportDedResults <- function(
       rep(NA, ncol(dedResult) - 4)
     )) %>%
     write.csv(
-      file = file.path(outputFolder, sprintf('ded_results_%s_%s.csv', results$databaseId, format(Sys.time(), "%Y%m%d"))),
+      file = file.path(outputFolder, outputFilename),
       row.names = TRUE # first column will be removed when uploading to portal
     )
-  ParallelLogger::logInfo(sprintf("DrugExposureDiagnostics results written to '%s'", file.path(outputFolder, 'ded_results.csv')))
+  ParallelLogger::logInfo(sprintf("DrugExposureDiagnostics results written to '%s'", outputFilename))
 }
 
 .formatDedResults <- function(ded_results, dedVersion) {

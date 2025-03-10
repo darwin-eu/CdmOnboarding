@@ -1,63 +1,65 @@
 Package: CdmOnboarding
-Title: Generate report on an OMOP CDM instance
-Version: 3.3.3
+Title: Generate Onboarding Report on an OMOP CDM Instance
+Version: 3.3.4
 Authors@R: 
   c(person(given = "Peter",
            family = "Rijnbeek",
-           role = c("aut", "cre"),
+           role = "aut",
            email = "p.rijnbeek@erasmusmc.nl",
            comment = c(ORCID = "https://orcid.org/0000-0003-0621-1979")),
     person(given = "Maxim",
            family = "Moinat",
-           role = "aut",
+           role = c("aut", "cre"),
            email = "m.moinat@erasmusmc.nl",
            comment = c(ORCID = "https://orcid.org/0000-0001-8473-2433")),
     person(given = "Anne",
            family = "van Winzum",
-           role = "aut",
-           email = "anne@thehyve.nl")
+           role = "ctb",
+           email = "anne@thehyve.nl"),
+    person("Erasmus MC", role = c("cph"))
    )
 Maintainer: Maxim Moinat <m.moinat@erasmusmc.nl>
-Description: The goal this R Package is to generate a report to provide insight into the completeness, transparency and quality of the performed Extraction Transform, and Load (ETL) process and the readiness of the data partner to be onboarded in the data network and participate in research studies.
+Description: The goal the CdmOnboarding package is to generate a report to provide insight into the completeness, transparency and quality of the records in an OMOP CDM instance. It connects to the OMOP CDM instance in a database and outputs a Word document.
 License: Apache License (>= 2)
 URL: https://github.com/darwin-eu/CdmOnboarding
-BugReports: https://github.com/darwin-eu/CdmOnboarding/issue
+BugReports: https://github.com/darwin-eu/CdmOnboarding/issues
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.0
 Depends: 
-    R (>= 4.0.0),
-    DatabaseConnector (>= 5.0.2)
+  R (>= 4.0.0)
 Imports:
-    ParallelLogger,
-    SqlRender,
-    DrugExposureDiagnostics (>= 1.0.6),
-    CDMConnector (>= 1.0.0),
-    DBI,
-    benchmarkme,
-    prettyunits,
-    tools,
-    dplyr,
-    tidyr,
-    officer,
-    data.table,
-    lubridate,
-    ggplot2,
-    jsonlite,
-    stats,
-    cowplot,
-    scales,
-    stringr,
-    httr,
-    utils,
-    tictoc
+  DatabaseConnector (>= 5.0.2),
+  ParallelLogger,
+  SqlRender,
+  DrugExposureDiagnostics (>= 1.1.0),
+  CDMConnector (>= 1.0.0),
+  DBI,
+  benchmarkme,
+  prettyunits,
+  dplyr,
+  tidyr,
+  officer,
+  data.table,
+  lubridate,
+  ggplot2,
+  jsonlite,
+  stats,
+  cowplot,
+  scales,
+  stringr,
+  httr,
+  utils,
+  tictoc,
+  CirceR
 Suggests:
-    RPostgres,
-    flextable,
-    devtools,
-    knitr,
-    testthat (>= 3.0.0),
-    Eunomia,
-    Achilles (>= 1.7.2)
+  RPostgres,
+  duckdb,
+  devtools,
+  testthat (>= 3.0.0),
+  withr,
+  Achilles
+Remotes:
+  OHDSI/Achilles
 Config/testthat/edition: 3
