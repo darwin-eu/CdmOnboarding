@@ -38,7 +38,7 @@
     connection,
     cdmSchema = cdmDatabaseSchema,
     writeSchema = scratchDatabaseSchema,
-    .soft_validation = TRUE
+    .softValidation = TRUE
   )
 
   dedVersion <- packageVersion(pkg = "DrugExposureDiagnostics")
