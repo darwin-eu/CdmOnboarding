@@ -58,7 +58,7 @@
     start_time <- Sys.time()
     result <- tryCatch({
       suppressWarnings(suppressMessages(
-        cdm <- CDMConnector::generate_cohort_set(
+        cdm <- CDMConnector::generateCohortSet(
           cdm,
           cohort_set_definition[i, ],
           name = "cohort",

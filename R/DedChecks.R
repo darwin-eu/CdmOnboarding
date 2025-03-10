@@ -34,7 +34,7 @@
 
   on.exit(.disconnectCdmConnection(connection))
 
-  cdm <- CDMConnector::cdm_from_con(
+  cdm <- CDMConnector::cdmFromCon(
     connection,
     cdm_schema = cdmDatabaseSchema,
     write_schema = scratchDatabaseSchema,
