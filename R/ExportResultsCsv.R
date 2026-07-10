@@ -159,33 +159,39 @@ exportPerformanceBenchmark <- function(results, outputFolder = getwd()) {
   performanceResults <- results$performanceResults
 
   # Combine all benchmarks to one dataframe, add a column for the benchmark type, the analysis name and the time taken
-  benchmarkResults <- bind_rows(
-    performanceResults$cdmConnectorBenchmark$result |>
+  if (!is.null(performanceResults$cdmConnectorBenchmark$result)) {
+    cdmConnectorBenchmark <- performanceResults$cdmConnectorBenchmark$result |>
       mutate(
-        benchmark = 'CdmConnector',
-        .data$task,
-        .data$time_taken_secs,
-        .keep = 'none'
-      ),
-    performanceResults$analyticsBenchmark$result |>
-      mutate(
-        benchmark = .data$package_name,
-        task = .data$group_level,
-        time_taken_secs = as.numeric(.data$estimate_value),
-        .keep = 'none'
-      ),
-    performanceResults$cohortBenchmark |>
-      mutate(
-        benchmark = 'Cohort Generation',
-        task = .data$cohort_name,
-        time_taken_secs = .data$duration,
+        task = .data$task,
+        time_taken_secs = .data$time_taken_secs,
         .keep = 'none'
       )
-  ) |>
-    mutate(
-      timeTaken = prettyunits::pretty_sec(.data$time_taken_secs),
-      .keep = 'unused'
-    )
+  }  
+  if (!is.null(performanceResults$analyticsBenchmark$result)) {
+    analyticsBenchmark <- performanceResults$analyticsBenchmark$result |>
+      mutate(
+        task = .data$task,
+        time_taken_secs = .data$time_taken_secs,
+        .keep = 'none'
+      )
+  }
+  if (!is.null(performanceResults$cohortBenchmark)) {
+    cohortBenchmark <- performanceResults$cohortBenchmark |>
+      mutate(
+        task = .data$task,
+        time_taken_secs = .data$time_taken_secs,
+        .keep = 'none'
+      )
+  }
+
+  benchmarkResults <- bind_rows(
+    if (exists("cdmConnectorBenchmark")) cdmConnectorBenchmark else NULL,
+    if (exists("analyticsBenchmark")) analyticsBenchmark else NULL,
+    if (exists("cohortBenchmark")) cohortBenchmark else NULL
+  ) |> mutate(
+    timeTaken = prettyunits::pretty_sec(.data$time_taken_secs),
+    .keep = 'unused'
+  )
   
   # Metadata
   metadata <- c(
