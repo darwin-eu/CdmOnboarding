@@ -1,14 +1,11 @@
 # This takes the rds file stored in given path, and writes the docx report to the same path
-path <- readline("Enter the path where CdmOnboarding results are: ")
-# Strip from quotes
-path <- dirname(gsub("'", "", path))
-rds <- list.files(path, '*.rds')
-results <- readRDS(file.path(path, rds))
+rds <- readline("Enter the path where CdmOnboarding results are: ")
+results <- readRDS(rds)
 authors <- c('-')
 
 # Optional, add separate DED results
-path_ded <- readline("Enter the path for DED file: ")
-ded_results <- readRDS(path_ded)
+rds_ded <- readline("Enter the path for DED file: ")
+ded_results <- readRDS(rds_ded)
 results$drugExposureDiagnostics <- ded_results
 
 if (FALSE) {
@@ -16,6 +13,7 @@ if (FALSE) {
   # remotes::install_github('darwin-eu/cdmonboarding', ref='3.3.4')
   devtools::install(quick = TRUE, upgrade = 'never')
   devtools::reload()
+  devtools::load_all()
 }
 # Optional, make compatible with current version
 source('extras/compat.R')
@@ -23,7 +21,7 @@ results <- compat(results)
 
 CdmOnboarding::generateResultsDocument(
   results = results,
-  outputFolder = path,
+  outputFolder = dirname(path),
   authors = authors
 )
 

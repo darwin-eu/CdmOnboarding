@@ -15,6 +15,7 @@ compat <- function(r) {
   # General
   r$cdmOnboardingVersion <- dplyr::coalesce(r$cdmOnboardingVersion, .get_cdmonboarding_version(r))
   r$runWithOptimizedQueries <- dplyr::coalesce(r$runWithOptimizedQueries, FALSE)
+  r$runWithDbiConnection <- dplyr::coalesce(r$runWithDbiConnection, r$withDbiConnection, FALSE)
 
   if (.get_cdmonboarding_version(r) >= '2.1') {
     date_format <- "%Y-%m-%d"

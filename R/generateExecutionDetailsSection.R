@@ -29,7 +29,7 @@ generateExecutionDetails <- function(doc, df) {
     c("CdmOnboarding package version", paste0(
       df$cdmOnboardingVersion,
       if (df$runWithOptimizedQueries) ' (performance optimized=TRUE)' else '',
-      if (df$withDbiConnection) ' (using DbiConnection)' else ' (using non-DbiConnection)'
+      if (df$runWithDbiConnection) ' (using DbiConnection)' else ' (using non-DbiConnection)'
     )),
     c("Database", df$dms),
     c("CDM version", df$cdmSource$CDM_VERSION),

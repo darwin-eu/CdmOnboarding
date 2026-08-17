@@ -503,13 +503,13 @@ cdmOnboarding <- function(
     performanceResults = performanceResults,
     webAPIversion = webApiVersion,
     dms = connection@dbms,
-    withDbiConnection = inherits(connection, 'DatabaseConnectorDbiConnection'),
     cdmSource = cdmSource,
     cdmSnapshot = cdmSnapshot,
     cdmHashByTable = cdmHashByTable,
     achillesMetadata = achillesMetadata,
     smallCellCount = smallCellCount,
     runWithOptimizedQueries = optimize,
+    runWithDbiConnection = inherits(connection, 'DatabaseConnectorDbiConnection'),
     dqdResults = dqdResults,
     drugExposureDiagnostics = drugExposureDiagnostics
   )
