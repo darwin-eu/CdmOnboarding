@@ -17,11 +17,11 @@ if (FALSE) {
 }
 # Optional, make compatible with current version
 source('extras/compat.R')
-results <- compat(results)
+results <- compat(results, fixCasing = FALSE)
 
 CdmOnboarding::generateResultsDocument(
   results = results,
-  outputFolder = dirname(path),
+  outputFolder = dirname(rds),
   authors = authors
 )
 

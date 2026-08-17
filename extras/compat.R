@@ -7,10 +7,15 @@ library(dplyr)
 #' \code{compat} provides compatibility by converting results from previous versions of CdmOnboarding to the latest version.
 #'
 #' @param r A list of results from CdmOnboarding.
+#' @param fixCasing Recursively uppercase all names?
 #' @return A list of results from CdmOnboarding, forwards compatible with v3.
 #' @export
-compat <- function(r) {
+compat <- function(r, fixCasing = FALSE) {
   print(sprintf("Converting results from version %s to %s", .get_cdmonboarding_version(r), packageVersion("CdmOnboarding")))
+
+  if (fixCasing) {
+    r <- fixCasing(results)
+  }
 
   # General
   r$cdmOnboardingVersion <- dplyr::coalesce(r$cdmOnboardingVersion, .get_cdmonboarding_version(r))
@@ -244,6 +249,8 @@ compat <- function(r) {
     return(NULL)
   }
 
+  names(result) <- toupper(names(result))
+
   names(result) <- names(result) |>
     str_replace("^#$", "ROW_NUM") |>
     str_replace('^C$', "N_CLASSIFICATION_CONCEPTS") |>
@@ -329,3 +336,25 @@ compat <- function(r) {
   df <- .fixDataFrameNames(df)
   return(df)
   }
+
+fixCasing <- function(results) {
+  # Recursively iterate through elements in results and convert to uppercase
+  convert_data_tables <- function(x) {
+    if (is.data.frame(x)) {
+      names(x) <- toupper(names(x))
+      return(x)
+    } else if (is.list(x)) {
+      return(lapply(x, convert_data_tables))
+    } else {
+      return(x)
+    }
+  }
+  results$dataTablesResults <- convert_data_tables(results$dataTablesResults)
+  results$vocabularyResults <- convert_data_tables(results$vocabularyResults)
+  # results$performanceResults <- convert_data_tables(results$performanceResults)
+  results$performanceResults$appliedIndexes$result <- convert_data_tables(results$performanceResults$appliedIndexes$result)
+  results$achillesMetadata <- convert_data_tables(results$achillesMetadata)
+  results$performanceResults$achillesTiming <- convert_data_tables(results$performanceResults$achillesTiming)
+
+  return(results)
+}
