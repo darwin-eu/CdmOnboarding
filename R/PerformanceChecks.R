@@ -56,17 +56,12 @@ performanceChecks <- function(
   )
 
   # System details
-  systemDetails <- tryCatch({
-    benchmarkme::get_sys_details(sys_info = FALSE)
-  }, error = function(e) {
-    ParallelLogger::logWarn(sprintf("Failed to fun benchmarkme::get_sys_details: %s", conditionMessage(e)))
-    ParallelLogger::logInfo("Trying to get system details partially...")
-    list(
-      r_version = tryCatch(benchmarkme::get_r_version(), error = function(e) NA),
-      cpu = tryCatch(benchmarkme::get_cpu(), error = function(e) NA),
-      ram = tryCatch(benchmarkme::get_ram(), error = function(e) NA)
-    )
-  })
+  systemDetails <- list(
+    r_version = version,
+    cpu = tryCatch(benchmarkme::get_cpu(), error = function(e) list(vendor_id = NA, model_name = NA, no_of_cores = NA)),
+    ram = tryCatch(benchmarkme::get_ram(), error = function(e) NA)
+  )
+
   ParallelLogger::logInfo(sprintf(
     "Running Performance Checks on %s cpu with %s cores, and %s ram.",
     systemDetails$cpu$model_name,
