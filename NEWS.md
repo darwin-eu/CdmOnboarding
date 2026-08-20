@@ -1,3 +1,7 @@
+# CdmOnboarding 4.1.2
+
+ * Fix for checkAchillesTablesExist
+
 # CdmOnboarding 4.1.1
 
  * Fixes for DED export
