@@ -33,7 +33,7 @@
       table = table
     )
 
-    sql_translated <- SqlRender::translate(sql_rendered, targetDialect = connectionDetails$dbms)
+    sql_translated <- SqlRender::translate(sql_rendered, targetDialect = connection@dbms)
 
     result <- tryCatch({
       df <- DatabaseConnector::querySql(connection, sql_translated, snakeCaseToCamelCase = TRUE)
