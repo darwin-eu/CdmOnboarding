@@ -1,5 +1,3 @@
-#' CodeToRun.R
-#' 
 #' This script provides an example of how to run the CdmOnboarding package.
 #' It retrieves connection details from environment variables defeined your .Renviron file:
 #' Note that these follow DBI driver settings and might differ per DBMS. For postgres:
@@ -23,8 +21,8 @@ library(CdmOnboarding)
 
 # Fill out the DBI connection details -----------------------------------------------------------------------
 connectionDetails <- DatabaseConnector::createDbiConnectionDetails(
-  dbms = Sys.getenv("DBMS"),
   drv = RPostgres::Postgres(),
+  dbms = Sys.getenv("DBMS"),
   host = Sys.getenv("DB_HOST"),
   port = Sys.getenv("DB_PORT"),
   dbname = Sys.getenv("DB_NAME"),
@@ -37,18 +35,14 @@ cdmSchema <- Sys.getenv("CDM_SCHEMA")
 resultsSchema <- Sys.getenv("RESULTS_SCHEMA")
 
 # Details specific to the database:
-databaseId <- Sys.getenv("DATABASE_ID")
+databaseId <- "your_database_name"
 authors <- c('<author_1>', '<author_2>') # used on the title page
-
-# (optional) URL to the WebAPI that your local Atlas instance uses, e.g. http://localhost:8080/WebAPI
-baseUrl <- Sys.getenv("WEBAPI_BASEURL")
 
 # (optional) Path to your DQD results file
 dqdJsonPath <- 'extras/example_input/dqd_synthea20k.json'
 
 outputFolder <- file.path(getwd(), "output", databaseId)
 smallCellCount <- 5
-verboseMode <- TRUE
 
 # *******************************************************
 # SECTION 3: Run the package
@@ -60,7 +54,6 @@ results <- CdmOnboarding::cdmOnboarding(
   databaseId = databaseId,
   authors = authors,
   smallCellCount = smallCellCount,
-  baseUrl = baseUrl,
   outputFolder = outputFolder,
   dqdJsonPath = dqdJsonPath
 )
